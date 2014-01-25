@@ -1,0 +1,9 @@
+{
+    "name": "mollify"
+  , "description": "Mollify web file manager"
+  , "keywords": ["mollify"]
+  , "homepage": "http://www.mollify.org"
+  , "author": "Samuli Järvelä"
+  , "license": "EPL"
+
+}

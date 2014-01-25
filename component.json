@@ -1,0 +1,8 @@
+{
+  "name": "mollify",
+  "version": "2.0.0",
+  "main": ["./js/mollify.js", "./css/mollify.css"],
+  "dependencies": {
+    "jquery": "~1.8.0"
+  }
+}
