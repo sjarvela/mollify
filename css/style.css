@@ -190,6 +190,7 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 }
 
 #mollify-mainview-main {
+	padding-left: 40px;
 }
 
 #mollify-notification-container.mollify-mainview-notification-container {
@@ -345,7 +346,7 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 }
 
 #mollify-mainview-navlist-parent {
-	margin: 8px 0 0 8px;
+	margin: 10px;
 	z-index: 1;
 }
 
@@ -1067,31 +1068,59 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 	float: left;
 }
 
-#mollify-dropbox {
+#mollify-dropbox, #mollify-navlist {
 	position: fixed;
 	top: 0;
-	right: 0;
 	width: 0;
 	background-color: #eeeeee;
 	float: left;
 	z-index: 15;
 }
 
-#mollify-dropbox-handle {
+#mollify-dropbox {
+	right: 0;
+}
+
+#mollify-navlist {
+	left: 0;
+}
+
+#mollify-mainview-navlist-container {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+#mollify-mainview-navlist-content {
+	width: 200px;
+}
+
+#mollify-dropbox-handle, #mollify-navlist-handle {
 	position: absolute;
 	width: 30px;
 	height: 30px;
 	background-color: #c8c8c8;
 	top: 0;
+	cursor: pointer;
+}
+
+#mollify-dropbox-handle {
 	left: 0;
 	margin-left: -30px;
-	cursor: pointer;
 	-webkit-border-bottom-left-radius: 4px;
 	-moz-border-bottom-left-radius: 4px;
 	border-bottom-left-radius: 4px;
 }
 
-#mollify-dropbox-handle > .mollify-dropbox-handle-icon {
+#mollify-navlist-handle {
+	right: 0;
+	margin-right: -30px;
+	-webkit-border-bottom-right-radius: 4px;
+	-moz-border-bottom-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+}
+
+#mollify-dropbox-handle > .mollify-dropbox-handle-icon, #mollify-navlist-handle > .mollify-navlist-handle-icon {
 	display: none;
 	color: black;
 	float: left;
@@ -1104,6 +1133,14 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 }
 
 #mollify-dropbox.closed #mollify-dropbox-handle-icon-open {
+	display: block;
+}
+
+#mollify-navlist.opened #mollify-navlist-handle-icon-close {
+	display: block;
+}
+
+#mollify-navlist.closed #mollify-navlist-handle-icon-open {
 	display: block;
 }
 
@@ -1341,7 +1378,7 @@ a.mollify-tableaction {
 
 @media (min-width: 980px) {
 	body {
-		padding-top: 90px;
+		padding-top: 70px;
 	}
 	
 	#mollify-mainview-menu {
@@ -1397,17 +1434,21 @@ a.mollify-tableaction {
 	.navbar .btn-navbar {
 		margin: 25px 0 0 0;
 	}
+	
+	#mollify-mainview-header {
+		margin-bottom: 0;
+	}
 }
 
-#mollify-mainview-navlist-parent {
+/*#mollify-mainview-navlist-parent {
 	width: 16.92817679558011%;
-}
+}*/
 	
 /* Large desktop */
 @media (min-width: 1200px) {
-	#mollify-mainview-navlist-parent {
+	/*#mollify-mainview-navlist-parent {
 		width: 18.404255319148934%;
-	}
+	}*/
 }
  
 /* Portrait tablet to landscape and desktop */

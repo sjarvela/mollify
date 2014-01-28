@@ -36,8 +36,8 @@
 		}
 		
 		this.onLoad = function(viewId) {
+			that._initNavList();
 			$(window).resize(that.onResize);
-			that.onResize();
 
 			mollify.dom.template("mollify-tmpl-main-username", mollify.session).appendTo("#mollify-mainview-user");
 			if (mollify.session.user) {
@@ -73,6 +73,7 @@
 				}
 				that.activateView(view, viewId);
 			}
+			that.onResize();
 		};
 		
 		this._findView = function(id) {
@@ -196,11 +197,42 @@
 					initItems();
 				}
 			};
-		}
+		};
 		
 		this.onResize = function() {
-			if (that._currentView) that._currentView.onResize();
-		}
+			var y = $("#mollify-mainview-header").height();
+			that._$navList.css("top", y+"px").height($(window).height()-y);
+			
+			if (that._currentView && that._currentView.onResize) that._currentView.onResize();
+		};
+		
+		this._initNavList = function() {
+			that._$navList = mollify.dom.template("mollify-tmpl-main-navlist").appendTo(mollify.App.getElement());
+			
+			$("#mollify-navlist-handle").click(function() {
+				openNavlist();
+			});
+			
+			var openNavlist = function(o) {
+				var open = that._$navList.hasClass("opened");
+				if (window.def(o)) {
+					if (o == open) return;
+				} else {
+					o = !open;
+				}
+				
+				if (!o) {
+					that._$navList.removeClass("opened").addClass("closed").animate({"width": "0"}, 300);
+					$("#mollify-mainview-main").animate({"margin-left": "0"}, 300);
+				} else {
+					var w = $("#mollify-mainview-navlist-content").outerWidth();
+					that._$navList.addClass("opened").removeClass("closed").animate({"width": w+""}, 300);
+					$("#mollify-mainview-main").animate({"margin-left": w+""}, 300);
+				}
+			};
+			
+			openNavlist(false);
+		};
 		
 		this.getSessionActions = function() {
 			var actions = [];		
@@ -503,13 +535,11 @@
 			});
 			
 			that.itemContext = new mollify.ui.itemContext();
-		}
+		};
 
 		this.addCustomFolderType = function(id, h) {
 			this._customFolderTypes[id] = h;
-		}
-		
-		this.onResize = function() {}
+		};
 		
 		this.onActivate = function(h) {
 			mollify.dom.template("mollify-tmpl-fileview").appendTo(h.content);
@@ -975,7 +1005,7 @@
 			that._scrollInThreshold = that._scrollOutThreshold - 60;
 			$("#mollify-folderview-detachholder").css("height", (that._scrollInThreshold + 40)+"px");
 			$("#mollify-folderview").removeClass("detached");
-			that.onResize();
+
 			that._updateSelect();
 			
 			// show description

@@ -17,16 +17,31 @@
 		</div>
 	</div>
 </div>
-<div id="mollify-mainview-main" class="container-fluid">
+<div id="mollify-mainview-main" class="container-fluid">	
 	<div id="mollify-mainview-content" class="row-fluid">
-		<div id="mollify-mainview-navlist-container" class="span3">
-			<div id="mollify-mainview-navlist-parent" class="well affix"></div>
-		</div>
-		
-		<div id="mollify-mainview-viewcontent" class="span9">
+		<div id="mollify-mainview-viewcontent" class="span12">
 		</div>
 	</div>
 </div>
+
+<script id="mollify-tmpl-main-navlist" type="text/x-jquery-tmpl">
+	<div id="mollify-navlist" class="closed">
+		<div id="mollify-navlist-handle">
+			<div id="mollify-navlist-handle-icon-open" class="mollify-navlist-handle-icon">
+				<i class="icon-caret-right"></i>
+			</div>
+			<div id="mollify-navlist-handle-icon-close" class="mollify-navlist-handle-icon">
+				<i class="icon-caret-left"></i>
+			</div>
+		</div>
+		<div id="mollify-mainview-navlist-container">
+			<div id="mollify-mainview-navlist-content">
+				<div id="mollify-mainview-navlist-parent">
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
 
 <script id="mollify-tmpl-main-notification" type="text/x-jquery-tmpl">
 	<div class="mollify-mainview-notification alert {{if type}}alert-${type}{{/if}} {{if cls}}${cls}{{/if}}">
