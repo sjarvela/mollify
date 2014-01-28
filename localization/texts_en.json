@@ -246,6 +246,10 @@
 		"pluginPermissionsAdminOptionSubject_none": "None (generic/default)",
 		"pluginPermissionsAdminOptionSubject_filesystem_item": "File or folder",
 		"pluginPermissionsAdminOptionSubject_filesystem_child": "Any file or folder under",
+		"pluginPermissionsSelectItemTitle": "Select item",
+		"pluginPermissionsSelectItemMsg": "Select item",
+		"pluginPermissionsSelectFolderTitle": "Select folder",
+		"pluginPermissionsSelectFolderMsg": "Select folder",
 				
 		"pluginDropboxAddTo": "Add to Dropbox",
 

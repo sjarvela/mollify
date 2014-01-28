@@ -56,6 +56,8 @@
 		
 		public function getSessionId() { return NULL; }
 		
+		public function hasData($k) { return FALSE; }
+		
 		public function log() {}
 	}
 	

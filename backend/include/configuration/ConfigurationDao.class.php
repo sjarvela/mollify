@@ -449,7 +449,7 @@
 		}
 		
 		public function cleanupItemIds($ids) {
-			$this->db->update("DELETE FROM ".$this->db->table("item_description")." WHERE item_id in (".$db->arrayString($ids, TRUE).")");
+			$this->db->update("DELETE FROM ".$this->db->table("item_description")." WHERE item_id in (".$this->db->arrayString($ids, TRUE).")");
 
 		}
 				

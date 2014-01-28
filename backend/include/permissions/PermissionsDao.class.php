@@ -301,7 +301,7 @@
 			
 			$criteria .= ((isset($data["user_id"]) and $data["user_id"] != NULL) ? " AND user_id=".$this->db->string($data["user_id"]) : "");
 			
-			$count = $this->db->query("select count(name) FROM ".$this->db->table("permission")." WHERE ".$criteria)->value(0);
+			$count = $this->db->query("select count(name) FROM ".$this->db->table("permission")." as permission WHERE ".$criteria)->value(0);
 			$rows = isset($data["count"]) ? $data["count"] : 50;
 			$start = isset($data["start"]) ? $data["start"] : 0;
 			

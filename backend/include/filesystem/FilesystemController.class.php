@@ -321,7 +321,7 @@
 		public function cleanupItemIds($ids) {
 			$this->env->db()->startTransaction();
 			$this->idProvider->deleteIds($ids);
-			$this->env->configuration->cleanupItemIds($ids);
+			$this->env->configuration()->cleanupItemIds($ids);
 			
 			foreach ($this->itemCleanupHandlers as $cleanupHandler)
 				$cleanupHandler->cleanupItemIds($ids);
