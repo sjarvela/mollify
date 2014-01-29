@@ -17,16 +17,17 @@ module.exports = function (grunt) {
     return string.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
   };
 
-  var fs = require('fs');
-  var path = require('path');
-
+  /*var fs = require('fs');
+  var path = require('path');*/
+  var pkg = grunt.file.readJSON('package.json');
+  
   // Project configuration.
   grunt.initConfig({
 
     // Metadata.
-    pkg: grunt.file.readJSON('package.json'),
+    pkg: pkg,
     banner: '/*!\n' +
-            ' * Mollify v<%= pkg.version %> (<%= pkg.homepage %>)\n' +
+            ' * Mollify v<%= pkg.version %> rev<%= pkg.revision %> (<%= pkg.homepage %>)\n' +
             ' * Copyright 2008-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
             ' * Licensed under <%= _.pluck(pkg.licenses, "type") %> (<%= _.pluck(pkg.licenses, "url") %>)\n' +
             ' */\n',
@@ -184,6 +185,15 @@ module.exports = function (grunt) {
       	files: [
         	{ src: 'backend/example/example_index.html', dest: 'dist/index.html' }
         ]
+      },
+      dist_ver: {
+      	src: 'backend/include/Version.info.php',
+      	dest: 'dist/backend/include/Version.info.php',
+        options: {
+			process: function (content, srcpath) {
+				return "<?php $VERSION=\""+pkg.version+"\"; $REVISION="+pkg.revision+"; ?>";
+			}
+        }
       }
     },
     
@@ -214,7 +224,7 @@ module.exports = function (grunt) {
   grunt.registerTask('dist-backend', ['copy:backend']);
 
   // Full distribution task.
-  grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'compress']);
+  grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'copy:dist_ver', 'compress']);
 
   // Default task.
   grunt.registerTask('default', ['dist']);

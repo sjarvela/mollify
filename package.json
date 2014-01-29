@@ -2,6 +2,7 @@
     "name": "mollify"
   , "description": "Mollify"
   , "version": "2.4.4"
+  , "revision": "2"
   , "keywords": ["mollify"]
   , "homepage": "http://www.mollify.org/"
   , "author": "Samuli Järvelä"
