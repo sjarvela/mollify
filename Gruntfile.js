@@ -19,10 +19,6 @@ module.exports = function (grunt) {
 
   var fs = require('fs');
   var path = require('path');
-  /*var generateGlyphiconsData = require('./docs/grunt/bs-glyphicons-data-generator.js');
-  var BsLessdocParser = require('./docs/grunt/bs-lessdoc-parser.js');
-  var generateRawFilesJs = require('./docs/grunt/bs-raw-files-generator.js');
-  var updateShrinkwrap = require('./test-infra/shrinkwrap.js');*/
 
   // Project configuration.
   grunt.initConfig({
@@ -33,7 +29,7 @@ module.exports = function (grunt) {
             ' * Mollify v<%= pkg.version %> (<%= pkg.homepage %>)\n' +
             ' * Copyright 2008-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
             ' * Licensed under <%= _.pluck(pkg.licenses, "type") %> (<%= _.pluck(pkg.licenses, "url") %>)\n' +
-            ' */\n'
+            ' */\n',
 
     // Task configuration.
     clean: {
@@ -83,28 +79,125 @@ module.exports = function (grunt) {
       },
       mollify: {
         src: [
-          'js/configview.js',
           'js/init.js',
+          'js/ui.js',
           'js/loginview.js',
           'js/mainview.js',
           'js/plugins.js',
-          'js/ui.js',
+          'js/configview.js',
           'js/uploader.js'
         ],
         dest: 'dist/js/<%= pkg.name %>.js'
+      },
+      full: {
+        src: [
+          'js/lib/jquery.min.js',
+          'js/lib/json.js',
+          'js/lib/jquery.tmpl.min.js',
+          'js/lib/jquery-ui.js',
+          'js/lib/bootstrap.js',
+          'js/lib/bootstrap-datetimepicker.js',
+          'js/lib/bootstrap-lightbox.js',
+          'js/lib/modernizr.js',
+          'js/lib/date.js',
+          'js/lib/jquery-file-uploader.js',
+          'js/lib/jquery-singledoubleclick.js',
+          'js/lib/ZeroClipboard.js',
+          
+          'dist/js/<%= pkg.name %>.js',
+        ],
+        dest: 'dist/js/<%= pkg.name %>.full.js'
       }
     },
 
     uglify: {
-      bootstrap: {
+      mollify: {
         options: {
           banner: '<%= banner %>',
           report: 'min'
         },
-        src: '<%= concat.mollify.dest %>',
-        dest: 'dist/js/<%= pkg.name %>.min.js'
+        files: [
+        	{ src: 'dist/js/mollify.js', dest: 'dist/js/mollify.min.js'},
+        	{ src: 'dist/js/mollify.full.js', dest: 'dist/js/mollify.full.min.js'}
+        ]
       }
-    }
+    },
+    
+    cssmin: {
+	  combine: {
+        options: {
+          keepSpecialComments: '*',
+          noAdvanced: true, // turn advanced optimizations off until the issue is fixed in clean-css
+          report: 'min',
+          selectorsMergeMode: 'ie8'
+        },
+	    files: {
+	      'dist/css/<%= pkg.name %>.min.css': ['css/style.css']
+	    }
+	  }/*,
+      compress: {
+        options: {
+          keepSpecialComments: '*',
+          noAdvanced: true, // turn advanced optimizations off until the issue is fixed in clean-css
+          report: 'min',
+          selectorsMergeMode: 'ie8'
+        },
+        src: [
+          'dist/css/<%= pkg.name %>.css'
+        ],
+        dest: 'dist/css/<%= pkg.name %>.min.css'
+      }*/
+    },
+
+    usebanner: {
+      dist: {
+        options: {
+          position: 'top',
+          banner: '<%= banner %>'
+        },
+        files: {
+          src: [
+            'dist/css/<%= pkg.name %>.css',
+            'dist/css/<%= pkg.name %>.min.css'
+          ]
+        }
+      }
+    },
+    
+    copy: {
+      css: {
+        expand: true,
+        src: ['css/font/**','css/images/**'],
+        dest: 'dist/'
+      },
+      js: {
+        expand: true,
+        src: ['js/lib/*','templates/**','localization/**'],
+        dest: 'dist/'
+      },
+      backend: {
+        expand: true,
+        src: ['backend/**', '!backend/dav/**', '!backend/configuration.php', '!backend/*.db'],
+        dest: 'dist/'
+      },
+      dist: {
+      	files: [
+        	{ src: 'backend/example/example_index.html', dest: 'dist/index.html' }
+        ]
+      }
+    },
+    
+	compress: {
+	  dist: {
+	    options: {
+	      archive: 'dist/<%= pkg.name %>_<%= pkg.version %>.zip'
+	    },
+	    files: [
+	      {expand: true, cwd: 'dist/', src: ['**', '!<%= pkg.name %>_<%= pkg.version %>.zip'], dest: 'mollify/'}
+	    ]
+	  }
+	}
+
   });
 
 
@@ -112,13 +205,16 @@ module.exports = function (grunt) {
   require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
 
   // JS distribution task.
-  grunt.registerTask('dist-js', ['concat', 'uglify']);
+  grunt.registerTask('dist-js', ['concat', 'uglify', 'copy:js']);
 
   // CSS distribution task.
-  //grunt.registerTask('dist-css', ['less', 'cssmin', 'csscomb', 'usebanner']);
+  grunt.registerTask('dist-css', ['cssmin', 'usebanner', 'copy:css']);
+
+  // JS distribution task.
+  grunt.registerTask('dist-backend', ['copy:backend']);
 
   // Full distribution task.
-  grunt.registerTask('dist', ['clean', 'dist-js']);
+  grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'compress']);
 
   // Default task.
   grunt.registerTask('default', ['dist']);
