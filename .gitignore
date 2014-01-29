@@ -1,1 +1,4 @@
 backend/configuration.php
+bower_components
+node_modules
+dist
