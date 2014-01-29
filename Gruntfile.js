@@ -17,8 +17,6 @@ module.exports = function (grunt) {
     return string.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
   };
 
-  /*var fs = require('fs');
-  var path = require('path');*/
   var pkg = grunt.file.readJSON('package.json');
   
   // Project configuration.
@@ -194,6 +192,11 @@ module.exports = function (grunt) {
 				return "<?php $VERSION=\""+pkg.version+"\"; $REVISION="+pkg.revision+"; ?>";
 			}
         }
+      },
+      dav: {
+      	files: [
+        	{ expand: true, cwd: 'backend/', src: 'dav/**', dest: 'dist/' }
+        ]
       }
     },
     
@@ -204,6 +207,14 @@ module.exports = function (grunt) {
 	    },
 	    files: [
 	      {expand: true, cwd: 'dist/', src: ['**', '!<%= pkg.name %>_<%= pkg.version %>.zip'], dest: 'mollify/'}
+	    ]
+	  },
+	  dav: {
+	    options: {
+	      archive: 'dist/mollify_webdav.zip'
+	    },
+	    files: [
+	      {expand: true, cwd: 'dist/dav/', src: ['**'], dest: 'dav/'}
 	    ]
 	  }
 	}
@@ -222,9 +233,12 @@ module.exports = function (grunt) {
 
   // JS distribution task.
   grunt.registerTask('dist-backend', ['copy:backend']);
-
+  
+  // WebDAV
+  grunt.registerTask('dist-dav', ['clean', 'copy:dav', 'compress:dav']);
+  
   // Full distribution task.
-  grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'copy:dist_ver', 'compress']);
+  grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'copy:dist_ver', 'compress:dist']);
 
   // Default task.
   grunt.registerTask('default', ['dist']);
