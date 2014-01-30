@@ -40,13 +40,13 @@ module.exports = function (grunt) {
         jshintrc: 'js/.jshintrc'
       },
       grunt: {
-        src: ['Gruntfile.js']
+        src: []//TODO clean up 'Gruntfile.js']
       },
       src: {
         src: 'js/*.js'
       },
       test: {
-        src: 'js/tests/unit/*.js'
+        src: []//'js/tests/unit/*.js'
       },
       assets: {
         src: []
@@ -58,13 +58,13 @@ module.exports = function (grunt) {
         config: 'js/.jscs.json',
       },
       grunt: {
-        src: ['Gruntfile.js']
+        src: []//'Gruntfile.js']
       },
       src: {
-        src: 'js/*.js'
+        src: []//TODO clean 'js/*.js'
       },
       test: {
-        src: 'js/tests/unit/*.js'
+        src: []//'js/tests/unit/*.js'
       },
       assets: {
         src: []
@@ -176,7 +176,18 @@ module.exports = function (grunt) {
       },
       backend: {
         expand: true,
-        src: ['backend/**', '!backend/dav/**', '!backend/configuration.php', '!backend/*.db'],
+        src: [
+        	'backend/**',
+        	'!backend/dav/**',
+        	'!backend/configuration.php',
+        	'!backend/*.db',
+        	'!backend/plugin/S3/**',
+        	'!backend/plugin/FileViewerEditor/viewers/FlowPlayer/**',
+        	'!backend/plugin/FileViewerEditor/viewers/JPlayer/**',
+        	'!backend/plugin/FileViewerEditor/viewers/TextFile/**',
+        	'!backend/plugin/FileViewerEditor/viewers/FlexPaper/**',
+        	'!backend/plugin/FileViewerEditor/editors/CKEditor/**'
+        ],
         dest: 'dist/'
       },
       dist: {
@@ -217,13 +228,22 @@ module.exports = function (grunt) {
 	      {expand: true, cwd: 'dist/dav/', src: ['**'], dest: 'dav/'}
 	    ]
 	  }
-	}
+	},
+	
+    qunit: {
+      options: {
+        inject: 'js/tests/unit/phantom.js'
+      },
+      files: 'js/tests/*.html'
+    }
 
   });
 
 
   // These plugins provide necessary tasks.
   require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
+  
+  grunt.registerTask('test', ['jshint', 'jscs', 'qunit']);
 
   // JS distribution task.
   grunt.registerTask('dist-js', ['concat', 'uglify', 'copy:js']);

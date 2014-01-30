@@ -9,7 +9,7 @@
  
 !function($, mollify) {
 
-	"use strict"; // jshint ;_;
+	"use strict";
 
 	mollify.MollifyHTML5Uploader = function() {
 		var t = this;

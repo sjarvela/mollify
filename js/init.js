@@ -39,7 +39,7 @@ var mollifyDefaults = {
 
 !function($) {
 
-	"use strict"; // jshint ;_;
+	"use strict";
 	
 	var mollify = {
 		App : {},
