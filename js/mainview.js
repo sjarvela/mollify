@@ -30,7 +30,7 @@
 			});
 			
 			that.itemContext = new mollify.ui.itemContext();
-			mollify.dom.loadContentInto($c, mollify.templates.url("mainview.html"), function() {
+			return mollify.dom.loadContentInto($c, mollify.templates.url("mainview.html"), function() {
 				that.onLoad(viewId);
 			}, ['localize']);			
 		}

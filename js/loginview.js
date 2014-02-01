@@ -15,7 +15,7 @@
 		var that = this;
 		
 		that.init = function($c) {
-			mollify.dom.loadContentInto($c, mollify.templates.url("loginview.html"), that, ['localize', 'bubble']);
+			return mollify.dom.loadContentInto($c, mollify.templates.url("loginview.html"), that, ['localize', 'bubble']);
 		}
 		
 		that.onLoad = function() {
@@ -65,7 +65,7 @@
 				return;
 			}
 			that.wait = mollify.ui.dialogs.wait({target: "mollify-login-main"});
-			mollify.service.post("session/authenticate", {username: username, password: window.Base64.encode(password), remember: remember}).done(function(s) {
+			mollify.service.post("session/authenticate/", {username: username, password: window.Base64.encode(password), remember: remember}).done(function(s) {
 				mollify.events.dispatch('session/start', s);
 			}).fail(function(e) {
 				if (e.code == 107) this.handled = true;

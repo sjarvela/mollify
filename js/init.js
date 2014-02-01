@@ -62,7 +62,7 @@ var mollifyDefaults = {
 	/* APP */
 
 	mollify.App.init = function(s, p) {
-		var df = $.Deferred();
+		mollify.App._df = $.Deferred();
 		window.Modernizr.testProp("touch");
 		
 		mollify.App._initialized = false;
@@ -99,12 +99,11 @@ var mollifyDefaults = {
 			});
 		};
 		
-		var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); df.reject(); };
+		var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); mollify.App._df.reject(); };
 		mollify.ui.initialize().done(function() {
 			mollify.plugins.initialize().done(function() {
 				mollify.App._initialized = true;
 				start();
-				df.resolve();
 			}).fail(onError);
 		}).fail(onError);
 		
@@ -112,7 +111,7 @@ var mollifyDefaults = {
 			window.onpopstate = function(event) {
 				mollify.App.onRestoreState(document.location.href, event.state);
 			};
-		return df;
+		return mollify.App._df;
 	};
 	
 	mollify.App.getElement = function() { return $("#"+mollify.settings["app-element-id"]); };
@@ -163,7 +162,9 @@ var mollifyDefaults = {
 				}
 			}
 			
-			mollify.App.activeView.init(mollify.App.getElement(), id);
+			mollify.App.activeView.init(mollify.App.getElement(), id).done(function() {
+				if (mollify.App._df) { mollify.App._df.resolve(); mollify.App._df = false; }
+			});
 		};
 		
 		if (id) {
@@ -943,12 +944,16 @@ var mollifyDefaults = {
 					
 	md.loadContentInto = function($target, url, handler, process) {
 		var u = mollify.resourceUrl(url);
-		if (!u) return;
+		if (!u) return $.Deferred().resolve().promise();
+		
+		var df = $.Deferred();
 		$target.load(mollify.helpers.noncachedUrl(u), function() {
 			if (process) mollify.ui.process($target, process, handler);
 			if (typeof handler === 'function') handler();
 			else if (handler.onLoad) handler.onLoad($target);
+			df.resolve();
 		});
+		return df;
 	};
 		
 	md.template = function(id, data, opt) {

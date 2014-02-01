@@ -368,6 +368,8 @@
 		};
 
 		this._updateNavBar = function(list) {
+			if (!list) return;
+			
 			that._list = list;
 			var navBarItems = [];
 			var itemsById = {};
