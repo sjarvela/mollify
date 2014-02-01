@@ -62,6 +62,7 @@ var mollifyDefaults = {
 	/* APP */
 
 	mollify.App.init = function(s, p) {
+		var df = $.Deferred();
 		window.Modernizr.testProp("touch");
 		
 		mollify.App._initialized = false;
@@ -98,11 +99,12 @@ var mollifyDefaults = {
 			});
 		};
 		
-		var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); };
+		var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); df.reject(); };
 		mollify.ui.initialize().done(function() {
 			mollify.plugins.initialize().done(function() {
 				mollify.App._initialized = true;
 				start();
+				df.resolve();
 			}).fail(onError);
 		}).fail(onError);
 		
@@ -110,6 +112,7 @@ var mollifyDefaults = {
 			window.onpopstate = function(event) {
 				mollify.App.onRestoreState(document.location.href, event.state);
 			};
+		return df;
 	};
 	
 	mollify.App.getElement = function() { return $("#"+mollify.settings["app-element-id"]); };
