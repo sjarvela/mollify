@@ -4,6 +4,8 @@
   , "keywords": ["mollify"]
   , "homepage": "http://www.mollify.org"
   , "author": "Samuli Järvelä"
-  , "license": "EPL"
-
+  , "license": "GPLv2"
+  , "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    }
 }

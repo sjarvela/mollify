@@ -235,7 +235,18 @@ module.exports = function (grunt) {
         inject: 'js/tests/unit/phantom.js'
       },
       files: 'js/tests/*.html'
-    }
+    },
+    
+	phpunit: {
+	    classes: {
+	        dir: 'backend/test/'
+	    },
+	    options: {
+	        bin: 'vendor/bin/phpunit',
+	        //bootstrap: 'tests/php/phpunit.php',
+	        colors: true
+	    }
+	}
 
   });
 
@@ -243,7 +254,7 @@ module.exports = function (grunt) {
   // These plugins provide necessary tasks.
   require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
   
-  grunt.registerTask('test', ['jshint', 'jscs', 'qunit']);
+  grunt.registerTask('test', ['jshint', 'jscs', 'qunit', 'phpunit']);
 
   // JS distribution task.
   grunt.registerTask('dist-js', ['concat', 'uglify', 'copy:js']);
