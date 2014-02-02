@@ -35,15 +35,19 @@
 	};
   	window.fakeService = {
 		sessionInfo : function(s) {
-			window._ajaxResults["backend/r.php/session/info/"] = s
+			window._ajaxResults["backend/r.php/session/info/"] = s;
 		},
 		authenticate : function(s) {
-			window._ajaxResults["backend/r.php/session/authenticate/"] = s
+			window._ajaxResults["backend/r.php/session/authenticate/"] = s;
+		},
+		folderInfo : function(id, s) {
+			window._ajaxResults["backend/r.php/filesystem/"+id+"/info/?h=1"] = s;
 		}
   	};
   	$.ajax = function(o) {
-  		if (o.url.startsWith("templates/") || o.url.startsWith("localization/") || o.url.startsWith("css/")) {
+  		if (o.url.indexOf("r.php/") < 0) {
   			o.url = "../../" + o.url;
+  			o.async = false;
   			return window._$ajax(o);
   		}
   		console.log(o);
@@ -51,7 +55,7 @@
 	  	return $.Deferred().resolve(window._ajaxResults[o.url] || {});
   	};
   	
-  	function startApp() {
+  	function reload() {
   		$("#mollify").empty();
   		
 	  	return mollify.App.init({
@@ -83,15 +87,15 @@
 						"last-modified" : {},
 						"size": {}
 					}
-				}),
-				new mollify.plugin.FileViewerEditorPlugin(),
-				new mollify.plugin.DropboxPlugin(),
-				new mollify.plugin.CommentPlugin(),
-				new mollify.plugin.SharePlugin(),
-				new mollify.plugin.ArchiverPlugin(),
-				new mollify.plugin.ItemCollectionPlugin(),
-				new mollify.plugin.SendViaEmailPlugin(),
-				new mollify.plugin.RegistrationPlugin()
+				})
+				//new mollify.plugin.FileViewerEditorPlugin(),
+				//new mollify.plugin.DropboxPlugin(),
+				//new mollify.plugin.CommentPlugin(),
+				//new mollify.plugin.SharePlugin(),
+				//new mollify.plugin.ArchiverPlugin(),
+				//new mollify.plugin.ItemCollectionPlugin(),
+				//new mollify.plugin.SendViaEmailPlugin(),
+				//new mollify.plugin.RegistrationPlugin()
 			]
 		);
   	}
