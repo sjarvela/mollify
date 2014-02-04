@@ -4,7 +4,8 @@ require_once "PHPUnit/Extensions/Database/TestCase.php";
 
 abstract class Mollify_TestCase extends PHPUnit_Extensions_Database_TestCase {
 	static private $CONFIGURATION = array(
-		"debug" => TRUE
+		"debug" => TRUE,
+		"timezone" => "Europe/Helsinki"
 	);
 	
     // only instantiate pdo once for test clean-up/fixture load
