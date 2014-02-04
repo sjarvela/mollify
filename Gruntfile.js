@@ -206,7 +206,8 @@ module.exports = function (grunt) {
       },
       dav: {
       	files: [
-        	{ expand: true, cwd: 'backend/', src: 'dav/**', dest: 'dist/' }
+        	{ expand: true, cwd: 'backend/', src: 'dav/**', dest: 'dist/' },
+        	{ expand: true, cwd: 'backend/', src: 'dav/.htaccess', dest: 'dist/' }
         ]
       }
     },
