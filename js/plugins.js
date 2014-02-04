@@ -2817,9 +2817,12 @@
 					$("#mollify-registration-form").hide();
 					$("#mollify-registration-main").addClass("wide");
 					$("#mollify-registration-success").show();
-				}).fail(function() {
+				}).fail(function(er) {
 					this.handled = true;
-					mollify.ui.dialogs.error({message: mollify.ui.texts.get('registrationFailed')});
+					if (er.code == 301)
+						mollify.ui.dialogs.error({message: mollify.ui.texts.get('registrationFailedDuplicateNameOrEmail')});
+					else
+						mollify.ui.dialogs.error({message: mollify.ui.texts.get('registrationFailed')});
 				});
 			}
 		};

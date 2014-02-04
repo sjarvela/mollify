@@ -107,6 +107,15 @@
 		}
 		
 		private function getError($error) {
+			if (is_array($error)) {
+				$invalid = (count($error) < 2 or count($error) > 3 or !is_numeric($error[0]));
+				if (count($error) == 3 and !is_numeric($error[2])) $invalid = true;
+				if ($invalid) return array(0, "Unknown error: ".$error, 403);
+				
+				if (count($error) == 2) $error[] = 403;
+				return $error;
+			}
+			
 			if (array_key_exists($error, self::$ERRORS)) {
 				return self::$ERRORS[$error];
 			} else {

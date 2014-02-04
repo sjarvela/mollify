@@ -64,7 +64,9 @@
 		public static function logException($e) {
 			$c = get_class($e);
 			if ($c === "ServiceException") {
-				$msg = "ServiceException: ".$e->type()."=".$e->details();
+				$t = $e->type();
+				if (is_array($t)) $t = Util::array2str($t);
+				$msg = "ServiceException: ".$t."=".$e->details();
 			} else {
 				$msg = "Exception (".$c."): ".$e->getMessage();
 			}

@@ -93,11 +93,11 @@
 			$db = $this->env->db();
 			$query = "select count(id) from ".$db->table("registration")." where name=".$db->string($name,TRUE)." or email=".$db->string($email,TRUE);
 			$count = $db->query($query)->value(0);
-			if ($count > 0) throw new ServiceException("REQUEST_FAILED", "User already registered with same name or email");
+			if ($count > 0) throw new ServiceException(array(301, "User already registered with same name or email"), "Registration: ".$name."/".$email);
 			
 			$query = "select count(id) from ".$db->table("user")." where name=".$db->string($name,TRUE)." or email=".$db->string($email,TRUE);
 			$count = $db->query($query)->value(0);
-			if ($count > 0) throw new ServiceException("REQUEST_FAILED", "User already exists with same name or email");
+			if ($count > 0) throw new ServiceException(array(301, "User already registered with same name or email"), "Registration: ".$name."/".$email);
 		}
 
 		private function processConfirm() {
