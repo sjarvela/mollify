@@ -506,6 +506,9 @@
 					$folder['path'] = rtrim($root, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$folder['path'];
 				}
 				
+				if (!isset($folder['type'])) $folder['type'] = 'local';
+				//TODO assert type
+				
 				if (!isset($folder['name']) or !isset($folder['path'])) throw $this->invalidRequestException();
 				$createNonExisting = (isset($folder['create']) and ($folder['create'] == "1" or strcasecmp("true", $folder['create']) == 0));
 				
@@ -519,7 +522,7 @@
 					}
 				}
 				
-				$this->env->configuration()->addFolder($folder['name'], $folder['path']);
+				$this->env->configuration()->addFolder($folder['name'], $folder['path'], $folder['type']);
 				$this->response()->success(TRUE);
 				return;
 			}

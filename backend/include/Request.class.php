@@ -15,6 +15,7 @@
 		const METHOD_POST = 'post';
 		const METHOD_DELETE = 'delete';
 		
+		private $sessionId;
 		private $method;
 		private $uri;
 		private $parts;
@@ -22,22 +23,32 @@
 		private $ip;
 		private $raw;
 		
-		public function __construct($raw = FALSE) {
-			$this->method = strtolower($_SERVER['REQUEST_METHOD']);
-			$this->uri = $this->getUri();
-			$this->ip = $this->getIp();
-			$this->raw = $raw;
+		public static function get($raw = FALSE) {
+			$method = strtolower($_SERVER['REQUEST_METHOD']);
+			$uri = self::getUri();
+			$ip = self::getIp();
+
 			if (isset($_SERVER['HTTP_MOLLIFY_HTTP_METHOD']))
-				$this->method = strtolower($_SERVER['HTTP_MOLLIFY_HTTP_METHOD']);
+				$method = strtolower($_SERVER['HTTP_MOLLIFY_HTTP_METHOD']);
 			
-			$p = stripos($this->uri, "?");
-			if ($p) $this->uri = trim(substr($this->uri, 0, $p), "/");
+			$p = stripos($uri, "?");
+			if ($p) $uri = trim(substr($uri, 0, $p), "/");
 			
-			$this->parts = strlen($this->uri) > 0 ? explode("/", $this->uri) : array();
-			$this->initData();
+			$parts = strlen($uri) > 0 ? explode("/", $uri) : array();
+			$params = self::getParams($method);
+			$data = self::getData($method, $raw, $params);
+			
+			return new Request(self::getMollifySessionId($params), $method, $uri, $ip, $parts, $params, $data);
 		}
 		
-		private function getIp() {
+		private static function getUri() {
+			$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
+			$pos = strpos($uri, "/r.php/");
+			if ($pos === FALSE) return "";
+			return trim(substr($uri, $pos + 7), "/");
+		}
+		
+		private static function getIp() {
 			if (function_exists("apache_request_headers")) {
 				$headers = apache_request_headers();
 				
@@ -47,40 +58,58 @@
 			
 			return $_SERVER["REMOTE_ADDR"];
 		}
-		
-		private function initData() {
-			$this->data = NULL;
-			
-			switch($this->method) {
+
+		private static function getParams($method) {
+			switch($method) {
 				case self::METHOD_GET:
-					$this->params = $_GET;
-					break;
+					return $_GET;
+
 				case self::METHOD_POST:
 				case self::METHOD_PUT:
 				case self::METHOD_DELETE:
-					$this->params = $_REQUEST;
-					if (!$this->raw and (!isset($this->params['format']) or $this->params['format'] != 'binary')) {
+					return $_REQUEST;
+			}
+		}
+		
+		private static function getMollifySessionId($params) {
+			if (isset($params['session'])) return $params["session"];
+			if (isset($_SERVER['HTTP_MOLLIFY_SESSION_ID'])) return $_SERVER['HTTP_MOLLIFY_SESSION_ID'];
+			return NULL;
+		}
+				
+		private static function getData($method, $raw, $params) {
+			switch($method) {
+				case self::METHOD_GET:
+					break;
+
+				case self::METHOD_POST:
+				case self::METHOD_PUT:
+				case self::METHOD_DELETE:
+
+					if (!$raw and (!isset($params['format']) or $params['format'] != 'binary')) {
 						$data = file_get_contents("php://input");
 						if ($data and strlen($data) > 0)
-							$this->data = json_decode($data, TRUE);
+							return json_decode($data, TRUE);
 					}
 					break;
 				default:
 					throw new Exception("Unsupported method: ".$this->method);
 			}
-		}
-		
-		public function getSessionId() {
-			if ($this->hasParam("session")) return $this->param("session");
-			if (isset($_SERVER['HTTP_MOLLIFY_SESSION_ID'])) return $_SERVER['HTTP_MOLLIFY_SESSION_ID'];
 			return NULL;
 		}
 		
-		private function getUri() {
-			$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
-			$pos = strpos($uri, "/r.php/");
-			if ($pos === FALSE) return "";
-			return trim(substr($uri, $pos + 7), "/");
+		public function __construct($sessionId, $method, $uri, $ip, $parts, $params, $data) {
+			$this->sessionId = $sessionId;
+			$this->method = $method;
+			$this->uri = $uri;
+			$this->ip = $ip;
+			$this->parts = $parts;
+			$this->params = $params;
+			$this->data = $data;
+		}
+
+		public function getSessionId() {
+			return $this->sessionId;
 		}
 		
 		public function method() {
@@ -128,6 +157,7 @@
 		}
 		
 		public function header($key) {
+			//TODO extract
 			$headerKey = 'HTTP_'.$key;			
 			return $_SERVER[$headerKey];
 		}

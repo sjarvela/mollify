@@ -70,8 +70,7 @@
 			$info = array(
 				"authenticated" => $auth->isAuthenticated(),
 				"features" => $this->env->features()->getFeatures(),
-				"plugins" => $this->env->plugins()->getSessionInfo(),
-				"plugin_base_url" => $this->env->getPluginBaseUrl()
+				"plugins" => $this->env->plugins()->getSessionInfo()
 			);
 			
 			if ($auth->isAuthenticated()) {

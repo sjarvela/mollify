@@ -62,7 +62,7 @@
 					$this->processDelete();
 					break;
 				default:
-					throw new RequestException("Unsupported method '".$this->request->method()."'");
+					throw new ServiceException("INVALID_REQUEST", "Unsupported method '".$this->request->method()."'");
 			}
 		}
 		

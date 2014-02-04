@@ -60,7 +60,7 @@
 	try {
 		$settings = new Settings($CONFIGURATION);
 		$backend = new MollifyBackend($settings, getDB($settings), $responseHandler);
-		$backend->processRequest(new Request());
+		$backend->processRequest(Request::get());
 	} catch (ServiceException $e) {
 		Logging::logException($e);
 		$responseHandler->error($e->type(), $e->details(), $e->data());
