@@ -31,13 +31,24 @@
 			return $db;
 		}
 		
-		public function __construct($str, $user, $pw, $tablePrefix) {
+		public static function createFromObj($db, $type) {
+			$db = new PDODatabase($type, "", "", "", $db);
+			$db->init();
+			return $db;			
+		}
+		
+		public function __construct($str, $user, $pw, $tablePrefix, $db = NULL) {
 			Logging::logDebug("PDO: ".$str);
 			$this->str = $str;
 			$this->user = $user;
 			$this->pw = $pw;
 			$this->tablePrefix = $tablePrefix;
-			$this->type = substr($str, 0, strpos($str, ":"));
+			
+			$this->type = $str;
+			$p = strpos($str, ":");
+			if ($p > 0)
+				$this->type = substr($str, 0, $p);
+			$this->db = $db;
 		}
 		
 		public function type() {
@@ -73,6 +84,7 @@
 		}
 		
 		public function connect($selectDb = TRUE) {
+			if ($this->db != NULL) return;
 			try {
 				$db = new PDO($this->str, $this->user, $this->pw);
 			} catch (PDOException $e) {
@@ -80,10 +92,12 @@
 			}
 
 			$this->db = $db;
-			
-			if ($this->type == "sqlite") {
+			$this->init();
+		}
+		
+		public function init() {
+			if ($this->type == "sqlite")
 				$this->db->sqliteCreateFunction('REGEX', 'sqlite_regex_match', 2);
-			}
 		}
 		
 		public function setCharset($charset) {

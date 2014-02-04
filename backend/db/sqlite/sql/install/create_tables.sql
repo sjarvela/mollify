@@ -27,7 +27,8 @@ CREATE TABLE user_group (
 CREATE TABLE folder (
   id INTEGER PRIMARY KEY,
   name varchar(255) NOT NULL,
-  path varchar(255) NOT NULL
+  path varchar(255) NOT NULL,
+  type char(32) NOT NULL
 );
 CREATE TABLE item_description (
   item_id char(255) NOT NULL,

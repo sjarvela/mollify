@@ -31,6 +31,7 @@ CREATE TABLE `{TABLE_PREFIX}user_group` (
 
 CREATE TABLE `{TABLE_PREFIX}folder` (
   `id` int(11) NOT NULL auto_increment,
+  `type` char(32) NOT NULL,
   `name` varchar(255) NOT NULL,
   `path` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)

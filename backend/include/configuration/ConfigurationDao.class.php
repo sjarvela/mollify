@@ -305,11 +305,11 @@
 		}
 	
 		public function getFolders() {
-			return $this->db->query("SELECT id, name, path FROM ".$this->db->table("folder")." ORDER BY id ASC")->rows();
+			return $this->db->query("SELECT id, type, name, path FROM ".$this->db->table("folder")." ORDER BY id ASC")->rows();
 		}
 
 		public function getFolder($id) {
-			return $this->db->query(sprintf("SELECT id, name, path FROM ".$this->db->table("folder")." where id='%s'", $this->db->string($id)))->firstRow();
+			return $this->db->query(sprintf("SELECT id, type, name, path FROM ".$this->db->table("folder")." where id='%s'", $this->db->string($id)))->firstRow();
 		}
 		
 		public function getFolderUsers($id) {
@@ -330,8 +330,8 @@
 			return TRUE;
 		}
 
-		public function addFolder($name, $path) {
-			$this->db->update(sprintf("INSERT INTO ".$this->db->table("folder")." (name, path) VALUES ('%s', '%s')", $this->db->string($name), $this->db->string($path)));
+		public function addFolder($name, $path, $type = 'local') {
+			$this->db->update(sprintf("INSERT INTO ".$this->db->table("folder")." (type, name, path) VALUES (%s, %s, %s)", $this->db->string($type, TRUE), $this->db->string($name, TRUE), $this->db->string($path, TRUE)));
 			return $this->db->lastId();
 		}
 
@@ -369,7 +369,7 @@
 			}
 			$userQuery = sprintf("(uf.user_id in (%s))", $this->db->arrayString($userIds));
 
-			$l = $this->db->query(sprintf("SELECT f.id as id, uf.name as name, f.name as default_name, f.path as path FROM ".$userFolderTable." uf, ".$folderTable." f, ".$userTable." u WHERE %s AND f.id = uf.folder_id AND u.id = uf.user_id ORDER BY u.is_group asc", $userQuery))->rows();
+			$l = $this->db->query(sprintf("SELECT f.id as id, f.type as type, uf.name as name, f.name as default_name, f.path as path FROM ".$userFolderTable." uf, ".$folderTable." f, ".$userTable." u WHERE %s AND f.id = uf.folder_id AND u.id = uf.user_id ORDER BY u.is_group asc", $userQuery))->rows();
 			return $l;
 		}
 		

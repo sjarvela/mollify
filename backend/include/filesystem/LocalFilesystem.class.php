@@ -10,6 +10,8 @@
 	 */
 
 	class LocalFilesystem extends MollifyFilesystem {
+		const FS_TYPE = "local";
+		
 		private $rootPath;
 		
 		function __construct($id, $def, $filesystemInfo) {
@@ -405,6 +407,12 @@
 			$name = strrchr(rtrim($path, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
 			if (!$name) return "";
 			return substr($name, 1);
+		}
+	}
+	
+	class LocalFilesystemFactory {
+		public function createFilesystem($id, $folderDef, $controller) {
+			return new LocalFilesystem($id, $folderDef, $controller);
 		}
 	}
 ?>

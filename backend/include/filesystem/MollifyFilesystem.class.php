@@ -9,9 +9,7 @@
 	 * License: http://www.mollify.org/license.php
 	 */
 
-	abstract class MollifyFilesystem {
-		const TYPE_LOCAL = "local";
-		
+	abstract class MollifyFilesystem {		
 		protected $id;
 		protected $name;
 		protected $filesystemInfo;
