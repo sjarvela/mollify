@@ -27,7 +27,7 @@
 		
 		<script type="text/javascript">
 			$(document).ready(function(){	
-				mollify.App.init({
+				mollify.init({
 					"language": {
 						default: "en"
 					},
@@ -47,8 +47,8 @@
 								"size": {}
 							}
 						}),
-						new mollify.plugin.FileViewerEditorPlugin(),
-						new mollify.plugin.DropboxPlugin()
+						new mollify.plugins.FileViewerEditorPlugin(),
+						new mollify.plugins.DropboxPlugin()
 					]
 				);
 			});
