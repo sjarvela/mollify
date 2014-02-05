@@ -186,7 +186,9 @@
 		return {
 			element : that._element,
 			init : that._init,
+			
 			openView : that._openView,
+			getActiveView : function() { return that._activeView; },
 			
 			storeView : function(viewId) {
 				if (!_m.settings["view-url"]) return;

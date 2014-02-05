@@ -1658,7 +1658,8 @@ window.mollify.modules.push(function($, _m, _gm) {
 	};
 	
 	dh.notification = function(spec) {
-		if (_m.App.activeView && _m.App.activeView.onNotification && _m.App.activeView.onNotification(spec)) return;
+		var av = _m.App.getActiveView();
+		if (av && av.onNotification && av.onNotification(spec)) return;
 		
 		var $trg = (spec && spec.target) ? ((typeof spec.target === 'string') ? $("#"+spec.target) : spec.target) : $("#mollify-notification-container");
 		if ($trg.length === 0) $trg = $("body");
