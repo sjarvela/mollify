@@ -19,12 +19,6 @@
   <!-- qunit -->
   <link rel="stylesheet" href="vendor/qunit.css" media="screen">
   <script src="vendor/qunit.js"></script>
-  <script>
-    // See https://github.com/axemclion/grunt-saucelabs#test-result-details-with-qunit
-    QUnit.done(function(results) {
-      window.global_test_results = results
-    })
-  </script>
   
   <script>
 	window._$ajax = $.ajax;
@@ -33,15 +27,15 @@
 	window.lastAjaxRequest = function() {
 		return window._ajaxRequests[window._ajaxRequests.length-1];
 	};
-  	window.fakeService = {
-		sessionInfo : function(s) {
-			window._ajaxResults["backend/r.php/session/info/"] = s;
+  	window.service = {
+		whenSessionInfo : function(s) {
+			window._ajaxResults["backend/r.php/session/info/"] = {"result": s};
 		},
-		authenticate : function(s) {
-			window._ajaxResults["backend/r.php/session/authenticate/"] = s;
+		whenAuthenticate : function(s) {
+			window._ajaxResults["backend/r.php/session/authenticate/"] = {"result": s};
 		},
-		folderInfo : function(id, s) {
-			window._ajaxResults["backend/r.php/filesystem/"+id+"/info/?h=1"] = s;
+		whenFolderInfo : function(id, s) {
+			window._ajaxResults["backend/r.php/filesystem/"+id+"/info/?h=1"] = {"result": s};
 		}
   	};
   	$.ajax = function(o) {
@@ -55,15 +49,28 @@
 	  	return $.Deferred().resolve(window._ajaxResults[o.url] || {});
   	};
   	
+  	window.testData = {
+	  	sessionInfo_admin : function(roots) {
+		  	return {"authenticated":true,"session_id":"1","user_id":"1","username":"admin","user_type":"a","lang":null,"folders":roots,"roots":roots,"features":{descriptions:true}, "permissions":{}};
+	  	}	
+  	};
+  	
+  	QUnit.testStart(function() {
+		window._ajaxResults = {};
+		window._ajaxRequests = [];
+		
+		window.service.whenSessionInfo({"authenticated":false});
+  	});
+  	
   	function reload() {
   		$("#mollify").empty();
   		
-	  	return mollify.App.init({
+	  	return mollify.init({
 			"language": {
 				default: "en"
 				//options: ["en", "de"]
 			},
-			"view-url": true,
+			"view-url": false,
 			"file-view": {
 				"default-view-mode" : "list",
 				"list-view-columns": {
@@ -76,28 +83,28 @@
 					"share-info": {}
 				}
 			}
-		}, [
-				new mollify.plugin.ItemDetailsPlugin({
-					"jpg,tiff": {
-						"last-modified" : {},
-						"size": {},
-						"exif": {},
-					},
-					"*": {
-						"last-modified" : {},
-						"size": {}
-					}
-				})
-				//new mollify.plugin.FileViewerEditorPlugin(),
-				//new mollify.plugin.DropboxPlugin(),
-				//new mollify.plugin.CommentPlugin(),
-				//new mollify.plugin.SharePlugin(),
-				//new mollify.plugin.ArchiverPlugin(),
-				//new mollify.plugin.ItemCollectionPlugin(),
-				//new mollify.plugin.SendViaEmailPlugin(),
-				//new mollify.plugin.RegistrationPlugin()
-			]
-		);
+		},
+		[
+			new mollify.plugins.ItemDetailsPlugin({
+				"jpg,tiff": {
+					"last-modified" : {},
+					"size": {},
+					"exif": {},
+				},
+				"*": {
+					"last-modified" : {},
+					"size": {}
+				}
+			})
+			//new mollify.plugin.FileViewerEditorPlugin(),
+			//new mollify.plugin.DropboxPlugin(),
+			//new mollify.plugin.CommentPlugin(),
+			//new mollify.plugin.SharePlugin(),
+			//new mollify.plugin.ArchiverPlugin(),
+			//new mollify.plugin.ItemCollectionPlugin(),
+			//new mollify.plugin.SendViaEmailPlugin(),
+			//new mollify.plugin.RegistrationPlugin()
+		]);
   	}
   </script>
 
