@@ -1547,7 +1547,7 @@
 					return that._m.service.del("permissions/list/", { list: list });
 				}
 	
-				var listView = new that._m.view.ConfigListView($c, {
+				var listView = new _gm.components.ConfigListView(that._m, $c, {
 					actions: [
 						{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
 							that._m.ui.dialogs.confirmation({
@@ -1807,7 +1807,7 @@
 				});
 			};
 
-			permissionsView = new that._m.view.ConfigListView($c, {
+			permissionsView = new that._gm.components.ConfigListView(that._m, $c, {
 				title: title,
 				actions: [
 					{ id: "action-edit", content:'<i class="icon-user"></i>', tooltip: that._m.ui.texts.get(u.is_group == '1' ? 'pluginPermissionsEditGroupPermissionsAction' : 'pluginPermissionsEditUserPermissionsAction'), callback: function() { that.editGenericPermissions(u, refresh); } },
@@ -2638,7 +2638,7 @@
 				return (invalid.indexOf(i.id) < 0);
 			};
 
-			listView = new that._m.view.ConfigListView($c, {
+			listView = new _gm.components.ConfigListView(that._m, $c, {
 				table: {
 					key: "id",
 					columns: [

@@ -7,11 +7,13 @@
  * License: http://www.mollify.org/license.php
  */
 
-window.mollify.modules.push(function($, _m) {
+!function($, _gm) {
 
 	"use strict";
 	
-	_m.view.LoginView = function(){
+	_gm.views.LoginView = function(_m){
+		this.id = "login";
+		
 		var that = this;
 		
 		that.init = function($c) {
@@ -98,4 +100,4 @@ window.mollify.modules.push(function($, _m) {
 			});
 		}
 	};
-});
+}(window.jQuery, window.mollify);

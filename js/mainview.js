@@ -7,11 +7,13 @@
  * License: http://www.mollify.org/license.php
  */
  
-window.mollify.modules.push(function($, _m) {
+!function($, _gm) {
 
 	"use strict";
 	
-	_m.view.MainView = function() {
+	_gm.views.MainView = function(_m) {
+		this.id = "main";
+
 		var that = this;
 		this._mainFileView = false;
 		this._mainConfigView = false;
@@ -19,8 +21,8 @@ window.mollify.modules.push(function($, _m) {
 		this._currentView = false;
 		
 		this.init = function($c, viewId) {
-			that._mainFileView = new _m.view.MainViewFileView();
-			that._mainConfigView = new _m.view.MainViewConfigView();
+			that._mainFileView = new _gm.views.main.FileView(_m);
+			that._mainConfigView = new _gm.views.main.ConfigView(_m);
 			that._views = [ this._mainFileView, this._mainConfigView ];
 
 			$.each(_m.plugins.getMainViewPlugins(), function(i, p) {
@@ -88,7 +90,7 @@ window.mollify.modules.push(function($, _m) {
 		
 		this.onRestoreView = function(id) {
 			var viewId = id[0];
-			if (that._currentView && that._currentView.viewId == viewId) {
+			if (that._currentView && that._currentView.id == viewId) {
 				that._currentView.onRestoreView(id.slice(1));
 			} else {
 				var view = that._findView(viewId);
@@ -295,10 +297,10 @@ window.mollify.modules.push(function($, _m) {
 		}
 	}
 	
-	_m.view.MainViewFileView = function() {
-		var that = this;
-		this.viewId = "files";
+	_gm.views.main.FileView = function(_m) {
+		this.id = "files";
 		
+		var that = this;
 		this._currentFolder = false;
 		this._currentFolderData = false;
 		this._viewStyle = 0;
@@ -1157,10 +1159,10 @@ window.mollify.modules.push(function($, _m) {
 			var $h = $("#mollify-folderview-header-items").empty();
 			if (that.isListView()) {
 				var cols = _m.settings["file-view"]["list-view-columns"];
-				that.itemWidget = new FileList('mollify-folderview-items', $h, 'main', this._filelist, cols);
+				that.itemWidget = new FileList(_m, 'mollify-folderview-items', $h, 'main', this._filelist, cols);
 			} else {
 				var thumbs = !!_m.session.features.thumbnails;
-				that.itemWidget = new IconView('mollify-folderview-items', $h, 'main', that._viewStyle == 1 ? 'iconview-small' : 'iconview-large', thumbs);
+				that.itemWidget = new IconView(_m, 'mollify-folderview-items', $h, 'main', that._viewStyle == 1 ? 'iconview-small' : 'iconview-large', thumbs);
 			}
 			
 			that.itemWidget.init({
@@ -1304,7 +1306,7 @@ window.mollify.modules.push(function($, _m) {
 		}
 	};
 	
-	var IconView = function(container, $headerContainer, id, cls, thumbs) {
+	var IconView = function(_m, container, $headerContainer, id, cls, thumbs) {
 		var t = this;
 		t.$c = $("#"+container);
 		t.viewId = 'mollify-iconview-'+id;
@@ -1448,7 +1450,7 @@ window.mollify.modules.push(function($, _m) {
 		};
 	};
 		
-	var FileList = function(container, $headerContainer, id, filelistSpec, columns) {
+	var FileList = function(_m, container, $headerContainer, id, filelistSpec, columns) {
 		var t = this;
 		t.minColWidth = 25;
 		t.$c = $("#"+container);
@@ -1722,4 +1724,4 @@ window.mollify.modules.push(function($, _m) {
 			});
 		};
 	};
-});
+}(window.jQuery, window.mollify);

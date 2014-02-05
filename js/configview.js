@@ -7,13 +7,14 @@
  * License: http://www.mollify.org/license.php
  */
  
-window.mollify.modules.push(function($, _m, _gm) {
+!function($, _gm) {
 
 	"use strict";
 
-	_m.view.MainViewConfigView = function() {
+	_gm.views.main.ConfigView = function(_m) {
+		this.id = "admin";
+		
 		var that = this;
-		this.viewId = "admin";
 		
 		this._views = [];
 		this._adminViews = [];
@@ -23,7 +24,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 			that.title = _m.ui.texts.get('configviewMenuTitle');
 			that.icon = "icon-cogs";
 			
-			that._views.push(new _m.view.config.user.AccountView(mv));
+			that._views.push(new _gm.views.config.user.AccountView(_m, mv));
 
 			$.each(_m.plugins.getConfigViewPlugins(), function(i, p) {
 				if (!p.configViewHandler.views) return;
@@ -67,18 +68,15 @@ window.mollify.modules.push(function($, _m, _gm) {
 						that._adminViewsLoaded = true;
 						
 						// default admin views
-						that._adminViews.unshift(new _m.view.config.admin.FoldersView());
-						that._adminViews.unshift(new _m.view.config.admin.GroupsView());
-						that._adminViews.unshift(new _m.view.config.admin.UsersView());
+						that._adminViews.unshift(new _gm.views.config.admin.FoldersView(_m));
+						that._adminViews.unshift(new _gm.views.config.admin.GroupsView(_m));
+						that._adminViews.unshift(new _gm.views.config.admin.UsersView(_m));
 												
 						var plugins = [];
 						for (var k in _m.session.plugins) {
 							if (!_m.session.plugins[k] || !_m.session.plugins[k].admin) continue;
 							plugins.push(k);
 						}
-						_m.admin = {
-							plugins : []
-						};
 						that._loadAdminPlugins(plugins).done(function(){
 							that._initAdminViews(h);
 						});
@@ -93,14 +91,9 @@ window.mollify.modules.push(function($, _m, _gm) {
 			var df = $.Deferred();
 			var l = [];
 			l.push(_m.service.get("configuration/settings").done(function(s) { that._settings = s; }));			
-			for (var i=0,j=ids.length;i<j;i++) {
-				if (_gm.admin.loaded[ids[i]]) continue;
-				(function(pid) {
-					l.push(_m.dom.importScript(_m.plugins.url(pid, "plugin.js", true)).done(function(){
-						_gm.admin.loaded[pid] = true;
-					}));
-				})(ids[i]);
-			}
+
+			for (var i=0,j=ids.length;i<j;i++)
+				l.push(_m.dom.importScript(_m.plugins.url(ids[i], "plugin.js", true)));
 			
 			$.when.apply($, l).done(function() {
 				var o = [];
@@ -203,7 +196,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 		}
 	}
 
-	_m.view.ConfigListView = function($e, o) {
+	_gm.components.ConfigListView = function(_m, $e, o) {
 		_m.dom.template("mollify-tmpl-configlistview", {title: o.title, actions: o.actions || false}).appendTo($e);
 		var $table = $e.find(".mollify-configlistview-table");
 		var table = _m.ui.controls.table($table, o.table);
@@ -248,15 +241,11 @@ window.mollify.modules.push(function($, _m, _gm) {
 		};
 	}
 
-	_m.view.config = {
-		user: {},
-		admin: {}
-	};
-
 	/* Account */
-	_m.view.config.user.AccountView = function(mv) {
+	_gm.views.config.user.AccountView = function(_m, mv) {
+		this.id = "account";
 		var that = this;
-		this.viewId = "account";
+
 		this.title = _m.ui.texts.get("configUserAccountNavTitle");
 
 		this.onActivate = function($c) {
@@ -267,9 +256,9 @@ window.mollify.modules.push(function($, _m, _gm) {
 	}
 
 	/* Users */
-	_m.view.config.admin.UsersView = function() {
+	_gm.views.config.admin.UsersView = function(_m) {
+		this.id = "users";
 		var that = this;
-		this.viewId = "users";
 		
 		this.init = function(m, opt, cv) {
 			that._cv = cv;
@@ -308,7 +297,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				refresh();
 			};
 						
-			listView = new _m.view.ConfigListView($c, {
+			listView = new _gm.components.ConfigListView(_m, $c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditUser(false, updateUsers); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
@@ -508,7 +497,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				});
 			};
 
-			foldersView = new _m.view.ConfigListView($e.find(".mollify-config-admin-userdetails-folders"), {
+			foldersView = new _gm.components.ConfigListView(_m, $e.find(".mollify-config-admin-userdetails-folders"), {
 				title: _m.ui.texts.get('configAdminUsersFoldersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserFolders },
@@ -540,7 +529,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				}
 			});
 
-			groupsView = new _m.view.ConfigListView($e.find(".mollify-config-admin-userdetails-groups"), {
+			groupsView = new _gm.components.ConfigListView(_m, $e.find(".mollify-config-admin-userdetails-groups"), {
 				title: _m.ui.texts.get('configAdminUsersGroupsTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserGroups },
@@ -694,9 +683,10 @@ window.mollify.modules.push(function($, _m, _gm) {
 	}
 
 	/* Groups */
-	_m.view.config.admin.GroupsView = function() {
+	_gm.views.config.admin.GroupsView = function(_m) {
+		this.id = "groups";
+		
 		var that = this;
-		this.viewId = "groups";
 		
 		this.init = function(m, s, cv) {
 			that._cv = cv;
@@ -718,7 +708,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				});
 			};
 			
-			listView = new _m.view.ConfigListView($c, {
+			listView = new _gm.components.ConfigListView(_m, $c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditGroup(false, updateGroups); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
@@ -859,7 +849,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				});
 			};
 
-			foldersView = new _m.view.ConfigListView($folders, {
+			foldersView = new _gm.components.ConfigListView(_m, $folders, {
 				title: _m.ui.texts.get('configAdminGroupsFoldersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddGroupFolders },
@@ -891,7 +881,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				}
 			});
 
-			usersView = new _m.view.ConfigListView($users, {
+			usersView = new _gm.components.ConfigListView(_m, $users, {
 				title: _m.ui.texts.get('configAdminGroupsUsersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddGroupUsers},
@@ -976,9 +966,9 @@ window.mollify.modules.push(function($, _m, _gm) {
 	}
 
 	/* Folders */
-	_m.view.config.admin.FoldersView = function() {
+	_gm.views.config.admin.FoldersView = function(_m) {
+		this.id = "folders";
 		var that = this;
-		this.viewId = "folders";
 		
 		this.init = function(m, s, cv) {
 			that._cv = cv;
@@ -1001,7 +991,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				});
 			};
 
-			listView = new _m.view.ConfigListView($c, {
+			listView = new _gm.components.ConfigListView(_m, $c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditFolder(false, updateFolders); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
@@ -1099,7 +1089,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				});
 			}
 
-			usersAndGroupsView = new _m.view.ConfigListView($usersAndGroups, {
+			usersAndGroupsView = new _gm.components.ConfigListView(_m, $usersAndGroups, {
 				title: _m.ui.texts.get('configAdminFolderUsersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserGroup },
@@ -1217,4 +1207,4 @@ window.mollify.modules.push(function($, _m, _gm) {
 		}
 	}
 
-});
+}(window.jQuery, window.mollify);

@@ -161,12 +161,11 @@
 					that._activeViewId = id[0];
 				} else {
 					if (!_m.session.user) {
-						that._activeView = new _m.view.LoginView();
-						that._activeViewId = "login";
+						that._activeView = new _gm.views.LoginView(_m);
 					} else {
-						that._activeView = new _m.view.MainView();
-						that._activeViewId = "main";
+						that._activeView = new _gm.views.MainView(_m);
 					}
+					that._activeViewId = that._activeView.id;
 				}
 				
 				that._activeView.init(that._element, id).done(function() {
@@ -220,6 +219,14 @@
 			loaded : {},
 			plugins : {}
 		},
+		views : {
+			main : {},
+			config : {
+				user: {},
+				admin: {}
+			}
+		},
+		components : {},
 		init : function(s, p) {
 			// instance
 			var _m = {
