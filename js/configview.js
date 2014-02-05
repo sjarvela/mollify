@@ -7,11 +7,11 @@
  * License: http://www.mollify.org/license.php
  */
  
-window.mollify.modules.push(function($, mollify) {
+window.mollify.modules.push(function($, _m, _gm) {
 
 	"use strict";
 
-	mollify.view.MainViewConfigView = function() {
+	_m.view.MainViewConfigView = function() {
 		var that = this;
 		this.viewId = "admin";
 		
@@ -20,12 +20,12 @@ window.mollify.modules.push(function($, mollify) {
 		this._adminViewsLoaded = false;
 
 		this.init = function(mv) {
-			that.title = mollify.ui.texts.get('configviewMenuTitle');
+			that.title = _m.ui.texts.get('configviewMenuTitle');
 			that.icon = "icon-cogs";
 			
-			that._views.push(new mollify.view.config.user.AccountView(mv));
+			that._views.push(new _m.view.config.user.AccountView(mv));
 
-			$.each(mollify.plugins.getConfigViewPlugins(), function(i, p) {
+			$.each(_m.plugins.getConfigViewPlugins(), function(i, p) {
 				if (!p.configViewHandler.views) return;
 
 				var views = p.configViewHandler.views();
@@ -43,8 +43,8 @@ window.mollify.modules.push(function($, mollify) {
 		this.onResize = function() {}
 
 		this.onActivate = function(h) {
-			mollify.templates.load("configview", mollify.templates.url("configview.html")).done(function() {				
-				mollify.dom.template("mollify-tmpl-configview").appendTo(h.content);
+			_m.templates.load("configview", _m.templates.url("configview.html")).done(function() {				
+				_m.dom.template("mollify-tmpl-configview").appendTo(h.content);
 				
 				that.showLoading(true);
 
@@ -54,29 +54,29 @@ window.mollify.modules.push(function($, mollify) {
 				});
 
 				that._userNav = h.addNavBar({
-					title: mollify.ui.texts.get("configViewUserNavTitle"),
+					title: _m.ui.texts.get("configViewUserNavTitle"),
 					items: navBarItems
 				});
 
 				that.onResize();
 
-				if (mollify.session.user.admin) {
+				if (_m.session.user.admin) {
 					if (that._adminViewsLoaded) {
 						that._initAdminViews(h);
 					} else {
 						that._adminViewsLoaded = true;
 						
 						// default admin views
-						that._adminViews.unshift(new mollify.view.config.admin.FoldersView());
-						that._adminViews.unshift(new mollify.view.config.admin.GroupsView());
-						that._adminViews.unshift(new mollify.view.config.admin.UsersView());
+						that._adminViews.unshift(new _m.view.config.admin.FoldersView());
+						that._adminViews.unshift(new _m.view.config.admin.GroupsView());
+						that._adminViews.unshift(new _m.view.config.admin.UsersView());
 												
 						var plugins = [];
-						for (var k in mollify.session.plugins) {
-							if (!mollify.session.plugins[k] || !mollify.session.plugins[k].admin) continue;
+						for (var k in _m.session.plugins) {
+							if (!_m.session.plugins[k] || !_m.session.plugins[k].admin) continue;
 							plugins.push(k);
 						}
-						mollify.admin = {
+						_m.admin = {
 							plugins : []
 						};
 						that._loadAdminPlugins(plugins).done(function(){
@@ -92,12 +92,12 @@ window.mollify.modules.push(function($, mollify) {
 		this._loadAdminPlugins = function(ids) {
 			var df = $.Deferred();
 			var l = [];
-			l.push(mollify.service.get("configuration/settings").done(function(s) { that._settings = s; }));			
+			l.push(_m.service.get("configuration/settings").done(function(s) { that._settings = s; }));			
 			for (var i=0,j=ids.length;i<j;i++) {
-				if (window.mollify.admin.loaded[ids[i]]) continue;
+				if (_gm.admin.loaded[ids[i]]) continue;
 				(function(pid) {
-					l.push(mollify.dom.importScript(mollify.plugins.url(pid, "plugin.js", true)).done(function(){
-						window.mollify.admin.loaded[pid] = true;
+					l.push(_m.dom.importScript(_m.plugins.url(pid, "plugin.js", true)).done(function(){
+						_gm.admin.loaded[pid] = true;
 					}));
 				})(ids[i]);
 			}
@@ -108,12 +108,12 @@ window.mollify.modules.push(function($, mollify) {
 				var addView = function(i, v) {
 					that._adminViews.push(v);
 				};
-				for (var pk in window.mollify.admin.plugins) {
-					var p = window.mollify.admin.plugins[pk];
+				for (var pk in _gm.admin.plugins) {
+					var p = _gm.admin.plugins[pk];
 					if (!p || !p.views) continue;
 
 					if (p.resources && p.resources.texts)
-						o.push(mollify.ui.texts.loadPlugin(pk));
+						o.push(_m.ui.texts.loadPlugin(pk));
 					$.each(p.views, addView);
 				}
 
@@ -124,7 +124,7 @@ window.mollify.modules.push(function($, mollify) {
 
 		this._initAdminViews = function(h) {
 			$.each(that._adminViews, function(i, v) {
-				if (v.init) v.init(mollify, that._settings, that);
+				if (v.init) v.init(_m, that._settings, that);
 			});
 
 			var navBarItems = [];
@@ -133,7 +133,7 @@ window.mollify.modules.push(function($, mollify) {
 			});
 
 			that._adminNav = h.addNavBar({
-				title: mollify.ui.texts.get("configViewAdminNavTitle"),
+				title: _m.ui.texts.get("configViewAdminNavTitle"),
 				items: navBarItems
 			});
 			
@@ -184,7 +184,7 @@ window.mollify.modules.push(function($, mollify) {
 			that.showLoading(false);
 			
 			that._activeView = v;
-			if (!noStore && that._activeView.viewId) mollify.App.storeView("admin/"+that._activeView.viewId);
+			if (!noStore && that._activeView.viewId) _m.App.storeView("admin/"+that._activeView.viewId);
 			$("#mollify-configview-header").html(v.title);
 			v.onActivate(that._getContentElement().empty(), that);
 		}
@@ -203,10 +203,10 @@ window.mollify.modules.push(function($, mollify) {
 		}
 	}
 
-	mollify.view.ConfigListView = function($e, o) {
-		mollify.dom.template("mollify-tmpl-configlistview", {title: o.title, actions: o.actions || false}).appendTo($e);
+	_m.view.ConfigListView = function($e, o) {
+		_m.dom.template("mollify-tmpl-configlistview", {title: o.title, actions: o.actions || false}).appendTo($e);
 		var $table = $e.find(".mollify-configlistview-table");
-		var table = mollify.ui.controls.table($table, o.table);
+		var table = _m.ui.controls.table($table, o.table);
 		var enableAction = function(id, e) {
 			if (e)
 				$e.find("#mollify-configlistview-action-"+id).removeClass("disabled");
@@ -216,7 +216,7 @@ window.mollify.modules.push(function($, mollify) {
 		if (o.actions) {
 			$.each(o.actions, function(i, a) {
 				if (a.depends) enableAction(a.id, false);
-				if (a.tooltip) mollify.ui.controls.tooltip($("#mollify-configlistview-action-" + a.id), { title: a.tooltip });
+				if (a.tooltip) _m.ui.controls.tooltip($("#mollify-configlistview-action-" + a.id), { title: a.tooltip });
 			});
 			
 			table.onSelectionChanged(function() {
@@ -248,43 +248,43 @@ window.mollify.modules.push(function($, mollify) {
 		};
 	}
 
-	mollify.view.config = {
+	_m.view.config = {
 		user: {},
 		admin: {}
 	};
 
 	/* Account */
-	mollify.view.config.user.AccountView = function(mv) {
+	_m.view.config.user.AccountView = function(mv) {
 		var that = this;
 		this.viewId = "account";
-		this.title = mollify.ui.texts.get("configUserAccountNavTitle");
+		this.title = _m.ui.texts.get("configUserAccountNavTitle");
 
 		this.onActivate = function($c) {
-			mollify.dom.template("mollify-tmpl-config-useraccountview", mollify.session).appendTo($c);
-			mollify.ui.process($c, ["localize"]);
+			_m.dom.template("mollify-tmpl-config-useraccountview", _m.session).appendTo($c);
+			_m.ui.process($c, ["localize"]);
 			$("#user-account-change-password-btn").click(mv.changePassword);
 		}
 	}
 
 	/* Users */
-	mollify.view.config.admin.UsersView = function() {
+	_m.view.config.admin.UsersView = function() {
 		var that = this;
 		this.viewId = "users";
 		
 		this.init = function(m, opt, cv) {
 			that._cv = cv;
-			that.title = mollify.ui.texts.get("configAdminUsersNavTitle");
+			that.title = _m.ui.texts.get("configAdminUsersNavTitle");
 	
 			that._authenticationOptions = opt.authentication_methods;
 			that._authFormatter = function(am) { return am; /* TODO */ }
 			that._defaultAuthMethod = opt.authentication_methods[0];
-			that._langFormatter = function(l) { return mollify.ui.texts.get('language_'+l); }
+			that._langFormatter = function(l) { return _m.ui.texts.get('language_'+l); }
 		}
 		
 		this.onActivate = function($c) {
 			var users = false;
 			var listView = false;
-			that._details = mollify.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
+			that._details = _m.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
 			
 			var getQueryParams = function(i) {
 				var params = { criteria: {} };
@@ -308,13 +308,13 @@ window.mollify.modules.push(function($, mollify) {
 				refresh();
 			};
 						
-			listView = new mollify.view.ConfigListView($c, {
+			listView = new _m.view.ConfigListView($c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditUser(false, updateUsers); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.ui.dialogs.confirmation({
-							title: mollify.ui.texts.get("configAdminUsersRemoveUsersConfirmationTitle"),
-							message: mollify.ui.texts.get("configAdminUsersRemoveUsersConfirmationMessage", [sel.length]),
+						_m.ui.dialogs.confirmation({
+							title: _m.ui.texts.get("configAdminUsersRemoveUsersConfirmationTitle"),
+							message: _m.ui.texts.get("configAdminUsersRemoveUsersConfirmationMessage", [sel.length]),
 							callback: function() { that._removeUsers(sel).done(updateUsers); }
 						});
 					}},
@@ -334,28 +334,28 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-user"></i>' },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle'), sortable: true },
-						{ id: "user_type", title: mollify.ui.texts.get('configAdminUsersTypeTitle'), sortable: true, valueMapper: function(item, type) {
-							if (type == null) return mollify.ui.texts.get("configAdminUsersTypeNormal");
-							return mollify.ui.texts.get("configAdminUsersType_"+type.toLowerCase());
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersNameTitle'), sortable: true },
+						{ id: "user_type", title: _m.ui.texts.get('configAdminUsersTypeTitle'), sortable: true, valueMapper: function(item, type) {
+							if (type == null) return _m.ui.texts.get("configAdminUsersTypeNormal");
+							return _m.ui.texts.get("configAdminUsersType_"+type.toLowerCase());
 						} },
-						{ id: "email", title: mollify.ui.texts.get('configAdminUsersEmailTitle'), sortable: true },
-						{ id: "edit", title: mollify.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
-						{ id: "pw", title:mollify.ui.texts.get('configAdminUsersActionChangePasswordTitle'), type: "action", content:'<i class="icon-key"></i>' },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "email", title: _m.ui.texts.get('configAdminUsersEmailTitle'), sortable: true },
+						{ id: "edit", title: _m.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
+						{ id: "pw", title:_m.ui.texts.get('configAdminUsersActionChangePasswordTitle'), type: "action", content:'<i class="icon-key"></i>' },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, u) {
 						if (id == "edit") {
-							mollify.service.get("configuration/users/"+u.id).done(function(user){
+							_m.service.get("configuration/users/"+u.id).done(function(user){
 								that.onAddEditUser(user, updateUsers);
 							});
 						} else if (id == "pw") {
 							that.onChangePassword(u);
 						} else if (id == "remove") {
-							mollify.ui.dialogs.confirmation({
-								title: mollify.ui.texts.get("configAdminUsersRemoveUserConfirmationTitle"),
-								message: mollify.ui.texts.get("configAdminUsersRemoveUserConfirmationMessage", [u.name]),
-								callback: function() { mollify.service.del("configuration/users/"+u.id).done(updateUsers); }
+							_m.ui.dialogs.confirmation({
+								title: _m.ui.texts.get("configAdminUsersRemoveUserConfirmationTitle"),
+								message: _m.ui.texts.get("configAdminUsersRemoveUserConfirmationMessage", [u.name]),
+								callback: function() { _m.service.del("configuration/users/"+u.id).done(updateUsers); }
 							});
 						}
 					},
@@ -373,13 +373,13 @@ window.mollify.modules.push(function($, mollify) {
 			that._cv.showLoading(true);
 						
 			var $options = $c.find(".mollify-configlistview-options");
-			mollify.dom.template("mollify-tmpl-config-admin-user-searchoptions").appendTo($options);
-			mollify.ui.process($options, ["localize"]);
+			_m.dom.template("mollify-tmpl-config-admin-user-searchoptions").appendTo($options);
+			_m.ui.process($options, ["localize"]);
 
-			var gp = mollify.service.get("configuration/usergroups").done(function(g) {
+			var gp = _m.service.get("configuration/usergroups").done(function(g) {
 				that._allGroups = g;
 			});
-			var fp = mollify.service.get("configuration/folders").done(function(f) {
+			var fp = _m.service.get("configuration/folders").done(function(f) {
 				that._allFolders = f;
 			});
 			$.when(gp, fp).done(refresh);
@@ -390,14 +390,14 @@ window.mollify.modules.push(function($, mollify) {
 			var $name = false;
 			var $password = false;
 			
-			mollify.ui.dialogs.custom({
+			_m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 200],
-				title: mollify.ui.texts.get('configAdminUsersChangePasswordDialogTitle', u.name),
-				content: mollify.dom.template("mollify-tmpl-config-admin-userchangepassworddialog", {user: u}),
+				title: _m.ui.texts.get('configAdminUsersChangePasswordDialogTitle', u.name),
+				content: _m.dom.template("mollify-tmpl-config-admin-userchangepassworddialog", {user: u}),
 				buttons: [
-					{ id: "yes", "title": mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": _m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": _m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -408,10 +408,10 @@ window.mollify.modules.push(function($, mollify) {
 					var password = $password.val();
 					if (!password || password.length === 0) return;
 					
-					mollify.service.put("configuration/users/"+u.id+"/password", {"new": window.Base64.encode(password)}).done(d.close).done(cb);
+					_m.service.put("configuration/users/"+u.id+"/password", {"new": window.Base64.encode(password)}).done(d.close).done(cb);
 				},
 				"on-show": function(h, $d) {
-					$("#change-password-title").text(mollify.ui.texts.get('configAdminUsersChangePasswordTitle', u.name));
+					$("#change-password-title").text(_m.ui.texts.get('configAdminUsersChangePasswordTitle', u.name));
 					
 					$content = $d.find("#mollify-config-admin-userchangepassworddialog-content");
 					$password = $d.find("#passwordField");
@@ -428,8 +428,8 @@ window.mollify.modules.push(function($, mollify) {
 		};
 
 		this._showUserDetails = function(u, $e, allGroups, allFolders) {
-			mollify.dom.template("mollify-tmpl-config-admin-userdetails", {user: u}).appendTo($e);
-			mollify.ui.process($e, ["localize"]);
+			_m.dom.template("mollify-tmpl-config-admin-userdetails", {user: u}).appendTo($e);
+			_m.ui.process($e, ["localize"]);
 			var $groups = $e.find(".mollify-config-admin-userdetails-groups");
 			var $folders = $e.find(".mollify-config-admin-userdetails-folders");
 			var foldersView = false;
@@ -440,7 +440,7 @@ window.mollify.modules.push(function($, mollify) {
 			
 			var updateGroups = function() {
 				$groups.addClass("loading");
-				mollify.service.get("configuration/users/"+u.id+"/groups/").done(function(l) {
+				_m.service.get("configuration/users/"+u.id+"/groups/").done(function(l) {
 					$groups.removeClass("loading");
 					groups = l;
 					groupsView.table.set(groups);
@@ -448,28 +448,28 @@ window.mollify.modules.push(function($, mollify) {
 			};
 			var updateFolders = function() {
 				$folders.addClass("loading");
-				mollify.service.get("configuration/users/"+u.id+"/folders/").done(function(l) {
+				_m.service.get("configuration/users/"+u.id+"/folders/").done(function(l) {
 					$folders.removeClass("loading");
 					folders = l;
 					foldersView.table.set(folders);
 				});
 			};
 			var onAddUserFolders = function() {
-				var currentIds = mollify.helpers.extractValue(folders, "id");
-				var selectable = mollify.helpers.filter(allFolders, function(f) { return currentIds.indexOf(f.id) < 0; });
+				var currentIds = _m.helpers.extractValue(folders, "id");
+				var selectable = _m.helpers.filter(allFolders, function(f) { return currentIds.indexOf(f.id) < 0; });
 				//if (selectable.length === 0) return;
 
-				mollify.ui.dialogs.select({
-					title: mollify.ui.texts.get('configAdminUserAddFolderTitle'),
-					message: mollify.ui.texts.get('configAdminUserAddFolderMessage'),
+				_m.ui.dialogs.select({
+					title: _m.ui.texts.get('configAdminUserAddFolderTitle'),
+					message: _m.ui.texts.get('configAdminUserAddFolderMessage'),
 					key: "id",
 					initSize: [600, 400],
 					columns: [
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersFolderDefaultNameTitle') },
-						{ id: "user_name", title: mollify.ui.texts.get('configAdminUsersFolderNameTitle'), type:"input" },
-						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersFolderDefaultNameTitle') },
+						{ id: "user_name", title: _m.ui.texts.get('configAdminUsersFolderNameTitle'), type:"input" },
+						{ id: "path", title: _m.ui.texts.get('configAdminFoldersPathTitle') }
 					],
 					list: selectable,
 					onSelect: function(sel, o) {
@@ -481,39 +481,39 @@ window.mollify.modules.push(function($, mollify) {
 									folder.name = name;
 							folders.push(folder);
 						});
-						mollify.service.post("configuration/users/"+u.id+"/folders/", folders).done(updateFolders);
+						_m.service.post("configuration/users/"+u.id+"/folders/", folders).done(updateFolders);
 					}
 				});
 			};
 			var onAddUserGroups = function() {
-				var currentIds = mollify.helpers.extractValue(groups, "id");
-				var selectable = mollify.helpers.filter(allGroups, function(f) { return currentIds.indexOf(f.id) < 0; });
+				var currentIds = _m.helpers.extractValue(groups, "id");
+				var selectable = _m.helpers.filter(allGroups, function(f) { return currentIds.indexOf(f.id) < 0; });
 				//if (selectable.length === 0) return;
 
-				mollify.ui.dialogs.select({
-					title: mollify.ui.texts.get('configAdminUserAddGroupTitle'),
-					message: mollify.ui.texts.get('configAdminUserAddGroupMessage'),
+				_m.ui.dialogs.select({
+					title: _m.ui.texts.get('configAdminUserAddGroupTitle'),
+					message: _m.ui.texts.get('configAdminUserAddGroupMessage'),
 					key: "id",
 					initSize: [600, 400],
 					columns: [
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersGroupNameTitle') },
-						{ id: "description", title: mollify.ui.texts.get('configAdminGroupsDescriptionTitle') }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersGroupNameTitle') },
+						{ id: "description", title: _m.ui.texts.get('configAdminGroupsDescriptionTitle') }
 					],
 					list: selectable,
 					onSelect: function(sel, o) {
-						mollify.service.post("configuration/users/"+u.id+"/groups/", mollify.helpers.extractValue(sel, "id")).done(updateGroups);
+						_m.service.post("configuration/users/"+u.id+"/groups/", _m.helpers.extractValue(sel, "id")).done(updateGroups);
 					}
 				});
 			};
 
-			foldersView = new mollify.view.ConfigListView($e.find(".mollify-config-admin-userdetails-folders"), {
-				title: mollify.ui.texts.get('configAdminUsersFoldersTitle'),
+			foldersView = new _m.view.ConfigListView($e.find(".mollify-config-admin-userdetails-folders"), {
+				title: _m.ui.texts.get('configAdminUsersFoldersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserFolders },
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.service.del("configuration/users/"+u.id+"/folders/", { ids: mollify.helpers.extractValue(sel, "id") }).done(updateFolders);
+						_m.service.del("configuration/users/"+u.id+"/folders/", { ids: _m.helpers.extractValue(sel, "id") }).done(updateFolders);
 					}}
 				],
 				table: {
@@ -523,29 +523,29 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersFolderNameTitle'), formatter: function(f, v) {
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersFolderNameTitle'), formatter: function(f, v) {
 							var n = f.name;
 							if (n && n.length > 0) return n;
-							return mollify.ui.texts.get('configAdminUsersFolderDefaultName', f.default_name);
+							return _m.ui.texts.get('configAdminUsersFolderDefaultName', f.default_name);
 						} },
-						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "path", title: _m.ui.texts.get('configAdminFoldersPathTitle') },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, f) {
 						if (id == "remove") {
-							mollify.service.del("configuration/users/"+u.id+"/folders/"+f.id).done(updateFolders);
+							_m.service.del("configuration/users/"+u.id+"/folders/"+f.id).done(updateFolders);
 						}
 					}
 				}
 			});
 
-			groupsView = new mollify.view.ConfigListView($e.find(".mollify-config-admin-userdetails-groups"), {
-				title: mollify.ui.texts.get('configAdminUsersGroupsTitle'),
+			groupsView = new _m.view.ConfigListView($e.find(".mollify-config-admin-userdetails-groups"), {
+				title: _m.ui.texts.get('configAdminUsersGroupsTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserGroups },
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.service.del("configuration/users/"+u.id+"/groups/", { ids: mollify.helpers.extractValue(sel, "id") }).done(updateGroups);
+						_m.service.del("configuration/users/"+u.id+"/groups/", { ids: _m.helpers.extractValue(sel, "id") }).done(updateGroups);
 					}}
 				],
 				table: {
@@ -555,19 +555,19 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-user"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersGroupNameTitle') },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersGroupNameTitle') },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, g) {
 						if (id == "remove") {
-							mollify.service.del("configuration/users/"+u.id+"/groups/"+g.id).done(updateGroups);
+							_m.service.del("configuration/users/"+u.id+"/groups/"+g.id).done(updateGroups);
 						}
 					}
 				}
 			});
 			
-			mollify.plugins.get('plugin-permissions').getUserConfigPermissionsListView($e.find(".mollify-config-admin-userdetails-permissions"), mollify.ui.texts.get('configAdminUsersPermissionsTitle'), u);
+			_m.plugins.get('plugin-permissions').getUserConfigPermissionsListView($e.find(".mollify-config-admin-userdetails-permissions"), _m.ui.texts.get('configAdminUsersPermissionsTitle'), u);
 			
 			updateGroups();
 			updateFolders();
@@ -597,7 +597,7 @@ window.mollify.modules.push(function($, mollify) {
 		}
 		
 		this._removeUsers = function(users) {
-			return mollify.service.del("configuration/users", {ids: mollify.helpers.extractValue(users, "id")});
+			return _m.service.del("configuration/users", {ids: _m.helpers.extractValue(users, "id")});
 		}
 		
 		this.onAddEditUser = function(u, cb) {
@@ -609,16 +609,16 @@ window.mollify.modules.push(function($, mollify) {
 			var $authentication = false;
 			var $language = false;
 			var $expiration = false;
-			var showLanguages = (mollify.settings.language.options && mollify.settings.language.options.length > 1);
+			var showLanguages = (_m.settings.language.options && _m.settings.language.options.length > 1);
 			
-			mollify.ui.dialogs.custom({
+			_m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 400],
-				title: mollify.ui.texts.get(u ? 'configAdminUsersUserDialogEditTitle' : 'configAdminUsersUserDialogAddTitle'),
-				content: mollify.dom.template("mollify-tmpl-config-admin-userdialog", {user: u, showLanguages: showLanguages}),
+				title: _m.ui.texts.get(u ? 'configAdminUsersUserDialogEditTitle' : 'configAdminUsersUserDialogAddTitle'),
+				content: _m.dom.template("mollify-tmpl-config-admin-userdialog", {user: u, showLanguages: showLanguages}),
 				buttons: [
-					{ id: "yes", "title": mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": _m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": _m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -628,7 +628,7 @@ window.mollify.modules.push(function($, mollify) {
 					var username = $name.val();
 					var email = $email.val();
 					var type = $type.selected();
-					var expiration = mollify.helpers.formatInternalTime($expiration.get());
+					var expiration = _m.helpers.formatInternalTime($expiration.get());
 					var auth = $authentication.selected();
 					if (!username || username.length === 0) return;
 					var lang = null;
@@ -637,13 +637,13 @@ window.mollify.modules.push(function($, mollify) {
 					var user = { name: username, email: email, user_type : type, expiration: expiration, auth: auth, lang: lang };
 					
 					if (u) {	
-						mollify.service.put("configuration/users/"+u.id, user).done(d.close).done(cb);
+						_m.service.put("configuration/users/"+u.id, user).done(d.close).done(cb);
 					} else {
 						var password = $password.val();
 						if (!password || password.length === 0) return;
 						
 						user.password = window.Base64.encode(password);
-						mollify.service.post("configuration/users", user).done(d.close).done(cb);
+						_m.service.post("configuration/users", user).done(d.close).done(cb);
 					}
 				},
 				"on-show": function(h, $d) {
@@ -652,26 +652,26 @@ window.mollify.modules.push(function($, mollify) {
 					$email = $d.find("#emailField");
 					$password = $d.find("#passwordField");
 					$("#generatePasswordBtn").click(function(){ $password.val(that._generatePassword()); return false; });
-					$type = mollify.ui.controls.select("typeField", {
+					$type = _m.ui.controls.select("typeField", {
 						values: ['a'],
-						none: mollify.ui.texts.get('configAdminUsersTypeNormal'),
+						none: _m.ui.texts.get('configAdminUsersTypeNormal'),
 						formatter : function(t) {
-							return mollify.ui.texts.get('configAdminUsersType_' + t);
+							return _m.ui.texts.get('configAdminUsersType_' + t);
 						}
 					});
-					$authentication = mollify.ui.controls.select("authenticationField", {
+					$authentication = _m.ui.controls.select("authenticationField", {
 						values: that._authenticationOptions,
-						none: mollify.ui.texts.get('configAdminUsersUserDialogAuthDefault', that._defaultAuthMethod),
+						none: _m.ui.texts.get('configAdminUsersUserDialogAuthDefault', that._defaultAuthMethod),
 						formatter: that._authFormatter
 					});
 					if (showLanguages)
-						$language = mollify.ui.controls.select("languageField", {
-							values: mollify.settings.language.options,
-							none: mollify.ui.texts.get('configAdminUsersUserDialogLangDefault', (mollify.settings.language["default"] || 'en')),
+						$language = _m.ui.controls.select("languageField", {
+							values: _m.settings.language.options,
+							none: _m.ui.texts.get('configAdminUsersUserDialogLangDefault', (_m.settings.language["default"] || 'en')),
 							formatter: that._langFormatter
 						});
-					$expiration = mollify.ui.controls.datepicker("expirationField", {
-						format: mollify.ui.texts.get('shortDateTimeFormat'),
+					$expiration = _m.ui.controls.datepicker("expirationField", {
+						format: _m.ui.texts.get('shortDateTimeFormat'),
 						time: true
 					});
 					
@@ -680,7 +680,7 @@ window.mollify.modules.push(function($, mollify) {
 						$email.val(u.email || "");
 						$type.select(u.user_type ? u.user_type.toLowerCase() : null);
 						$authentication.select(u.auth ? u.auth.toLowerCase() : null);
-						$expiration.set(mollify.helpers.parseInternalTime(u.expiration));
+						$expiration.set(_m.helpers.parseInternalTime(u.expiration));
 						if (showLanguages && u.lang) $language.select(u.lang);
 					} else {
 						$type.select(null);	
@@ -694,37 +694,37 @@ window.mollify.modules.push(function($, mollify) {
 	}
 
 	/* Groups */
-	mollify.view.config.admin.GroupsView = function() {
+	_m.view.config.admin.GroupsView = function() {
 		var that = this;
 		this.viewId = "groups";
 		
 		this.init = function(m, s, cv) {
 			that._cv = cv;
-			that.title = mollify.ui.texts.get("configAdminGroupsNavTitle");	
+			that.title = _m.ui.texts.get("configAdminGroupsNavTitle");	
 		}
 		
 		this.onActivate = function($c) {
 			var groups = false;
 			var listView = false;
-			that._details = mollify.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
+			that._details = _m.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
 			
 			var updateGroups = function() {
 				that._details.hide();
 				that._cv.showLoading(true);
-				mollify.service.get("configuration/usergroups/").done(function(l) {
+				_m.service.get("configuration/usergroups/").done(function(l) {
 					that._cv.showLoading(false);
 					groups = l;
 					listView.table.set(groups);
 				});
 			};
 			
-			listView = new mollify.view.ConfigListView($c, {
+			listView = new _m.view.ConfigListView($c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditGroup(false, updateGroups); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.ui.dialogs.confirmation({
-							title: mollify.ui.texts.get("configAdminGroupsRemoveGroupsConfirmationTitle"),
-							message: mollify.ui.texts.get("configAdminGroupsRemoveGroupsConfirmationMessage", [sel.length]),
+						_m.ui.dialogs.confirmation({
+							title: _m.ui.texts.get("configAdminGroupsRemoveGroupsConfirmationTitle"),
+							message: _m.ui.texts.get("configAdminGroupsRemoveGroupsConfirmationMessage", [sel.length]),
 							callback: function() { that._removeGroups(sel).done(updateGroups); }
 						});
 					}},
@@ -738,19 +738,19 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-user"></i>' },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle') },
-						{ id: "description", title: mollify.ui.texts.get('configAdminGroupsDescriptionTitle') },
-						{ id: "edit", title: mollify.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersNameTitle') },
+						{ id: "description", title: _m.ui.texts.get('configAdminGroupsDescriptionTitle') },
+						{ id: "edit", title: _m.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, g) {
 						if (id == "edit") {
 							that.onAddEditGroup(g, updateGroups);
 						} else if (id == "remove") {
-							mollify.ui.dialogs.confirmation({
-								title: mollify.ui.texts.get("configAdminGroupsRemoveGroupConfirmationTitle"),
-								message: mollify.ui.texts.get("configAdminGroupsRemoveGroupConfirmationMessage", [g.name]),
-								callback: function() { mollify.service.del("configuration/usergroups/"+g.id).done(updateGroups); }
+							_m.ui.dialogs.confirmation({
+								title: _m.ui.texts.get("configAdminGroupsRemoveGroupConfirmationTitle"),
+								message: _m.ui.texts.get("configAdminGroupsRemoveGroupConfirmationMessage", [g.name]),
+								callback: function() { _m.service.del("configuration/usergroups/"+g.id).done(updateGroups); }
 							});
 						}
 					},
@@ -767,10 +767,10 @@ window.mollify.modules.push(function($, mollify) {
 			updateGroups();
 
 			that._cv.showLoading(true);
-			var up = mollify.service.get("configuration/users").done(function(u) {
+			var up = _m.service.get("configuration/users").done(function(u) {
 				that._allUsers = u;
 			});
-			var fp = mollify.service.get("configuration/folders").done(function(f) {
+			var fp = _m.service.get("configuration/folders").done(function(f) {
 				that._allFolders = f;
 			});
 			$.when(up, fp).done(function(){ that._cv.showLoading(false); });
@@ -781,8 +781,8 @@ window.mollify.modules.push(function($, mollify) {
 		};
 
 		this._showGroupDetails = function(g, $e, allUsers, allFolders) {
-			mollify.dom.template("mollify-tmpl-config-admin-groupdetails", {group: g}).appendTo($e);
-			mollify.ui.process($e, ["localize"]);
+			_m.dom.template("mollify-tmpl-config-admin-groupdetails", {group: g}).appendTo($e);
+			_m.ui.process($e, ["localize"]);
 			var $users = $e.find(".mollify-config-admin-groupdetails-users");
 			var $folders = $e.find(".mollify-config-admin-groupdetails-folders");
 			var foldersView = false;
@@ -792,7 +792,7 @@ window.mollify.modules.push(function($, mollify) {
 			
 			var updateUsers = function() {
 				$users.addClass("loading");
-				mollify.service.get("configuration/usergroups/"+g.id+"/users/").done(function(l) {
+				_m.service.get("configuration/usergroups/"+g.id+"/users/").done(function(l) {
 					$users.removeClass("loading");
 					users = l;
 					usersView.table.set(users);
@@ -800,49 +800,49 @@ window.mollify.modules.push(function($, mollify) {
 			};
 			var updateFolders = function() {
 				$folders.addClass("loading");
-				mollify.service.get("configuration/users/"+g.id+"/folders/").done(function(l) {
+				_m.service.get("configuration/users/"+g.id+"/folders/").done(function(l) {
 					$folders.removeClass("loading");
 					folders = l;
 					foldersView.table.set(folders);
 				});
 			};
 			var onAddGroupUsers = function() {
-				var currentIds = mollify.helpers.extractValue(users, "id");
-				var selectable = mollify.helpers.filter(allUsers, function(f) { return currentIds.indexOf(f.id) < 0; });
+				var currentIds = _m.helpers.extractValue(users, "id");
+				var selectable = _m.helpers.filter(allUsers, function(f) { return currentIds.indexOf(f.id) < 0; });
 				//if (selectable.length === 0) return;
 
-				mollify.ui.dialogs.select({
-					title: mollify.ui.texts.get('configAdminGroupAddUserTitle'),
-					message: mollify.ui.texts.get('configAdminGroupAddUserMessage'),
+				_m.ui.dialogs.select({
+					title: _m.ui.texts.get('configAdminGroupAddUserTitle'),
+					message: _m.ui.texts.get('configAdminGroupAddUserMessage'),
 					key: "id",
 					initSize: [600, 400],
 					columns: [
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle') }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersNameTitle') }
 					],
 					list: selectable,
 					onSelect: function(sel, o) {
-						mollify.service.post("configuration/usergroups/"+g.id+"/users/", mollify.helpers.extractValue(sel, "id")).done(updateUsers);
+						_m.service.post("configuration/usergroups/"+g.id+"/users/", _m.helpers.extractValue(sel, "id")).done(updateUsers);
 					}
 				});
 			};
 			var onAddGroupFolders = function() {
-				var currentIds = mollify.helpers.extractValue(folders, "id");
-				var selectable = mollify.helpers.filter(allFolders, function(f) { return currentIds.indexOf(f.id) < 0; });
+				var currentIds = _m.helpers.extractValue(folders, "id");
+				var selectable = _m.helpers.filter(allFolders, function(f) { return currentIds.indexOf(f.id) < 0; });
 				//if (selectable.length === 0) return;
 
-				mollify.ui.dialogs.select({
-					title: mollify.ui.texts.get('configAdminGroupAddFolderTitle'),
-					message: mollify.ui.texts.get('configAdminGroupAddFolderMessage'),
+				_m.ui.dialogs.select({
+					title: _m.ui.texts.get('configAdminGroupAddFolderTitle'),
+					message: _m.ui.texts.get('configAdminGroupAddFolderMessage'),
 					key: "id",
 					initSize: [600, 400],
 					columns: [
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersFolderDefaultNameTitle') },
-						{ id: "user_name", title: mollify.ui.texts.get('configAdminUsersFolderNameTitle'), type:"input" },
-						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersFolderDefaultNameTitle') },
+						{ id: "user_name", title: _m.ui.texts.get('configAdminUsersFolderNameTitle'), type:"input" },
+						{ id: "path", title: _m.ui.texts.get('configAdminFoldersPathTitle') }
 					],
 					list: selectable,
 					onSelect: function(sel, o) {
@@ -854,17 +854,17 @@ window.mollify.modules.push(function($, mollify) {
 									folder.name = name;
 							folders.push(folder);
 						});
-						mollify.service.post("configuration/users/"+g.id+"/folders/", folders).done(updateFolders);
+						_m.service.post("configuration/users/"+g.id+"/folders/", folders).done(updateFolders);
 					}
 				});
 			};
 
-			foldersView = new mollify.view.ConfigListView($folders, {
-				title: mollify.ui.texts.get('configAdminGroupsFoldersTitle'),
+			foldersView = new _m.view.ConfigListView($folders, {
+				title: _m.ui.texts.get('configAdminGroupsFoldersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddGroupFolders },
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.service.del("configuration/users/"+g.id+"/folders/", {ids: mollify.helpers.extractValue(sel, "id")}).done(updateFolders);
+						_m.service.del("configuration/users/"+g.id+"/folders/", {ids: _m.helpers.extractValue(sel, "id")}).done(updateFolders);
 					}}
 				],
 				table: {
@@ -874,29 +874,29 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder"></i>' },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersFolderNameTitle'), valueMapper: function(f, v) {
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersFolderNameTitle'), valueMapper: function(f, v) {
 							var n = f.name;
 							if (n && n.length > 0) return n;
-							return mollify.ui.texts.get('configAdminUsersFolderDefaultName', f.default_name);
+							return _m.ui.texts.get('configAdminUsersFolderDefaultName', f.default_name);
 						} },
-						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "path", title: _m.ui.texts.get('configAdminFoldersPathTitle') },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, f) {
 						if (id == "remove") {
-							mollify.service.del("configuration/users/"+g.id+"/folders/"+f.id).done(updateFolders);
+							_m.service.del("configuration/users/"+g.id+"/folders/"+f.id).done(updateFolders);
 						}
 					}
 				}
 			});
 
-			usersView = new mollify.view.ConfigListView($users, {
-				title: mollify.ui.texts.get('configAdminGroupsUsersTitle'),
+			usersView = new _m.view.ConfigListView($users, {
+				title: _m.ui.texts.get('configAdminGroupsUsersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddGroupUsers},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.service.post("configuration/usergroups/"+g.id+"/remove_users/", mollify.helpers.extractValue(sel, "id")).done(updateUsers);
+						_m.service.post("configuration/usergroups/"+g.id+"/remove_users/", _m.helpers.extractValue(sel, "id")).done(updateUsers);
 					}}
 				],
 				table: {
@@ -905,26 +905,26 @@ window.mollify.modules.push(function($, mollify) {
 					narrow: true,
 					columns: [
 						{ type:"selectrow" },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle') },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUsersNameTitle') },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, u) {
 						if (id == "remove") {
-							mollify.service.post("configuration/usergroups/"+g.id+"/remove_users/", [u.id]).done(updateUsers);
+							_m.service.post("configuration/usergroups/"+g.id+"/remove_users/", [u.id]).done(updateUsers);
 						}
 					}
 				}
 			});
 			
-			mollify.plugins.get('plugin-permissions').getUserConfigPermissionsListView($e.find(".mollify-config-admin-groupdetails-permissions"), mollify.ui.texts.get('configAdminGroupsPermissionsTitle'), g);
+			_m.plugins.get('plugin-permissions').getUserConfigPermissionsListView($e.find(".mollify-config-admin-groupdetails-permissions"), _m.ui.texts.get('configAdminGroupsPermissionsTitle'), g);
 			
 			updateUsers();
 			updateFolders();
 		}
 		
 		this._removeGroups = function(groups) {
-			return mollify.service.del("configuration/usergroups", {ids: mollify.helpers.extractValue(groups, "id")});
+			return _m.service.del("configuration/usergroups", {ids: _m.helpers.extractValue(groups, "id")});
 		}
 		
 		this.onAddEditGroup = function(g, cb) {
@@ -932,14 +932,14 @@ window.mollify.modules.push(function($, mollify) {
 			var $name = false;
 			var $description = false;
 			
-			mollify.ui.dialogs.custom({
+			_m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 400],
-				title: mollify.ui.texts.get(g ? 'configAdminGroupsDialogEditTitle' : 'configAdminGroupsDialogAddTitle'),
-				content: mollify.dom.template("mollify-tmpl-config-admin-groupdialog", {group: g}),
+				title: _m.ui.texts.get(g ? 'configAdminGroupsDialogEditTitle' : 'configAdminGroupsDialogAddTitle'),
+				content: _m.dom.template("mollify-tmpl-config-admin-groupdialog", {group: g}),
 				buttons: [
-					{ id: "yes", "title": mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": _m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": _m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -953,9 +953,9 @@ window.mollify.modules.push(function($, mollify) {
 					var group = { name: name, description : desc };
 					
 					if (g) {	
-						mollify.service.put("configuration/usergroups/"+g.id, group).done(d.close).done(cb);
+						_m.service.put("configuration/usergroups/"+g.id, group).done(d.close).done(cb);
 					} else {
-						mollify.service.post("configuration/usergroups", group).done(d.close).done(cb);
+						_m.service.post("configuration/usergroups", group).done(d.close).done(cb);
 					}
 				},
 				"on-show": function(h, $d) {
@@ -976,38 +976,38 @@ window.mollify.modules.push(function($, mollify) {
 	}
 
 	/* Folders */
-	mollify.view.config.admin.FoldersView = function() {
+	_m.view.config.admin.FoldersView = function() {
 		var that = this;
 		this.viewId = "folders";
 		
 		this.init = function(m, s, cv) {
 			that._cv = cv;
 			that._settings = s;
-			that.title = mollify.ui.texts.get("configAdminFoldersNavTitle");
+			that.title = _m.ui.texts.get("configAdminFoldersNavTitle");
 		}
 		
 		this.onActivate = function($c) {
 			var folders = false;
 			var listView = false;
-			that._details = mollify.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
+			that._details = _m.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
 
 			var updateFolders = function() {
 				that._cv.showLoading(true);
 				
-				mollify.service.get("configuration/folders/").done(function(l) {
+				_m.service.get("configuration/folders/").done(function(l) {
 					that._cv.showLoading(false);
 					folders = l;
 					listView.table.set(folders);
 				});
 			};
 
-			listView = new mollify.view.ConfigListView($c, {
+			listView = new _m.view.ConfigListView($c, {
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: function() { that.onAddEditFolder(false, updateFolders); }},
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.ui.dialogs.confirmation({
-							title: mollify.ui.texts.get("configAdminFoldersRemoveFoldersConfirmationTitle"),
-							message: mollify.ui.texts.get("configAdminFoldersRemoveFoldersConfirmationMessage", [sel.length]),
+						_m.ui.dialogs.confirmation({
+							title: _m.ui.texts.get("configAdminFoldersRemoveFoldersConfirmationTitle"),
+							message: _m.ui.texts.get("configAdminFoldersRemoveFoldersConfirmationMessage", [sel.length]),
 							callback: function() { that._removeFolders(sel).done(updateFolders); }
 						});
 					}},
@@ -1021,19 +1021,19 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder-close"></i>' },
-						{ id: "name", title: mollify.ui.texts.get('configAdminFoldersNameTitle') },
-						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') },
-						{ id: "edit", title: mollify.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "name", title: _m.ui.texts.get('configAdminFoldersNameTitle') },
+						{ id: "path", title: _m.ui.texts.get('configAdminFoldersPathTitle') },
+						{ id: "edit", title: _m.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, f) {
 						if (id == "edit") {
 							that.onAddEditFolder(f, updateFolders);
 						} else if (id == "remove") {
-							mollify.ui.dialogs.confirmation({
-								title: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationTitle"),
-								message: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationMessage", [f.name]),
-								callback: function() { mollify.service.del("configuration/folders/"+f.id).done(updateFolders); }
+							_m.ui.dialogs.confirmation({
+								title: _m.ui.texts.get("configAdminFoldersRemoveFolderConfirmationTitle"),
+								message: _m.ui.texts.get("configAdminFoldersRemoveFolderConfirmationMessage", [f.name]),
+								callback: function() { _m.service.del("configuration/folders/"+f.id).done(updateFolders); }
 							});
 						}
 					},
@@ -1050,7 +1050,7 @@ window.mollify.modules.push(function($, mollify) {
 			updateFolders();
 			
 			that._cv.showLoading(true);
-			var gp = mollify.service.get("configuration/usersgroups").done(function(r) {
+			var gp = _m.service.get("configuration/usersgroups").done(function(r) {
 				that._allUsers = r.users;
 				that._allGroups = r.groups;
 				that._cv.showLoading(false);
@@ -1062,8 +1062,8 @@ window.mollify.modules.push(function($, mollify) {
 		};
 		
 		this._showFolderDetails = function(f, $e, allUsers, allGroups) {
-			mollify.dom.template("mollify-tmpl-config-admin-folderdetails", {folder: f}).appendTo($e);
-			mollify.ui.process($e, ["localize"]);
+			_m.dom.template("mollify-tmpl-config-admin-folderdetails", {folder: f}).appendTo($e);
+			_m.ui.process($e, ["localize"]);
 			var $usersAndGroups = $e.find(".mollify-config-admin-folderdetails-usersandgroups");
 			var usersAndGroupsView = false;
 			var usersAndGroups = false;
@@ -1071,40 +1071,40 @@ window.mollify.modules.push(function($, mollify) {
 			
 			var updateUsersAndGroups = function() {
 				$usersAndGroups.addClass("loading");
-				mollify.service.get("configuration/folders/"+f.id+"/users/").done(function(l) {
+				_m.service.get("configuration/folders/"+f.id+"/users/").done(function(l) {
 					$usersAndGroups.removeClass("loading");
 					usersAndGroups = l;
 					usersAndGroupsView.table.set(l);
 				});
 			};
 			var onAddUserGroup = function() {
-				var currentIds = mollify.helpers.extractValue(usersAndGroups, "id");
-				var selectable = mollify.helpers.filter(allUsersAndGroups, function(ug) { return currentIds.indexOf(ug.id) < 0; });
+				var currentIds = _m.helpers.extractValue(usersAndGroups, "id");
+				var selectable = _m.helpers.filter(allUsersAndGroups, function(ug) { return currentIds.indexOf(ug.id) < 0; });
 				//if (selectable.length === 0) return;
 
-				mollify.ui.dialogs.select({
-					title: mollify.ui.texts.get('configAdminFolderAddUserTitle'),
-					message: mollify.ui.texts.get('configAdminFolderAddUserMessage'),
+				_m.ui.dialogs.select({
+					title: _m.ui.texts.get('configAdminFolderAddUserTitle'),
+					message: _m.ui.texts.get('configAdminFolderAddUserMessage'),
 					key: "id",
 					initSize: [600, 400],
 					columns: [
 						{ id: "icon", title:"", valueMapper: function(i, v) { if (i.is_group == 1) return "<i class='icon-user'></i><i class='icon-user'></i>"; return "<i class='icon-user'></i>"; } },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUserDialogUsernameTitle') }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUserDialogUsernameTitle') }
 					],
 					list: selectable,
 					onSelect: function(sel, o) {
-						mollify.service.post("configuration/folders/"+f.id+"/users/", mollify.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
+						_m.service.post("configuration/folders/"+f.id+"/users/", _m.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
 					}
 				});
 			}
 
-			usersAndGroupsView = new mollify.view.ConfigListView($usersAndGroups, {
-				title: mollify.ui.texts.get('configAdminFolderUsersTitle'),
+			usersAndGroupsView = new _m.view.ConfigListView($usersAndGroups, {
+				title: _m.ui.texts.get('configAdminFolderUsersTitle'),
 				actions: [
 					{ id: "action-add", content:'<i class="icon-plus"></i>', callback: onAddUserGroup },
 					{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-						mollify.service.post("configuration/folders/"+f.id+"/remove_users/", mollify.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
+						_m.service.post("configuration/folders/"+f.id+"/remove_users/", _m.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
 					}}
 				],
 				table: {
@@ -1114,13 +1114,13 @@ window.mollify.modules.push(function($, mollify) {
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", valueMapper: function(i, v) { if (i.is_group == 1) return "<i class='icon-user'></i><i class='icon-user'></i>"; return "<i class='icon-user'></i>"; } },
-						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
-						{ id: "name", title: mollify.ui.texts.get('configAdminUserDialogUsernameTitle') },
-						{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
+						{ id: "id", title: _m.ui.texts.get('configAdminTableIdTitle') },
+						{ id: "name", title: _m.ui.texts.get('configAdminUserDialogUsernameTitle') },
+						{ id: "remove", title: _m.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
 					],
 					onRowAction: function(id, u) {
 						if (id == "remove") {
-							mollify.service.post("configuration/folders/"+f.id+"/remove_users/", [u.id]).done(updateUsersAndGroups);
+							_m.service.post("configuration/folders/"+f.id+"/remove_users/", [u.id]).done(updateUsersAndGroups);
 						}
 					}
 				}
@@ -1130,7 +1130,7 @@ window.mollify.modules.push(function($, mollify) {
 		}
 		
 		this._removeFolders = function(f) {
-			return mollify.service.del("configuration/folders", {ids: mollify.helpers.extractValue(f, "id")});
+			return _m.service.del("configuration/folders", {ids: _m.helpers.extractValue(f, "id")});
 		}
 		
 		this._isValidPath = function(p) {
@@ -1148,14 +1148,14 @@ window.mollify.modules.push(function($, mollify) {
 			var $name = false;
 			var $path = false;
 			
-			mollify.ui.dialogs.custom({
+			_m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [500, 300],
-				title: mollify.ui.texts.get(f ? 'configAdminFoldersFolderDialogEditTitle' : 'configAdminFoldersFolderDialogAddTitle'),
-				content: mollify.dom.template("mollify-tmpl-config-admin-folderdialog", {folder: f}),
+				title: _m.ui.texts.get(f ? 'configAdminFoldersFolderDialogEditTitle' : 'configAdminFoldersFolderDialogAddTitle'),
+				content: _m.dom.template("mollify-tmpl-config-admin-folderdialog", {folder: f}),
 				buttons: [
-					{ id: "yes", "title": mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": _m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": _m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -1185,19 +1185,19 @@ window.mollify.modules.push(function($, mollify) {
 						if (e.code == 105) {
 							this.handled = true;
 							
-							mollify.ui.dialogs.confirmation({title:mollify.ui.texts.get('configAdminFoldersFolderDialogAddTitle'), message: mollify.ui.texts.get('configAdminFoldersFolderDialogAddFolderDoesNotExist'), callback: function() {
+							_m.ui.dialogs.confirmation({title:_m.ui.texts.get('configAdminFoldersFolderDialogAddTitle'), message: _m.ui.texts.get('configAdminFoldersFolderDialogAddFolderDoesNotExist'), callback: function() {
 								folder.create = true;
 								if (!f)
-									mollify.service.post("configuration/folders", folder).done(d.close).done(cb);
+									_m.service.post("configuration/folders", folder).done(d.close).done(cb);
 								else
-									mollify.service.put("configuration/folders/"+f.id, folder).done(d.close).done(cb);
+									_m.service.put("configuration/folders/"+f.id, folder).done(d.close).done(cb);
 							}});
 						}
 					};
 					if (f) {	
-						mollify.service.put("configuration/folders/"+f.id, folder).done(d.close).done(cb).fail(onFail);
+						_m.service.put("configuration/folders/"+f.id, folder).done(d.close).done(cb).fail(onFail);
 					} else {
-						mollify.service.post("configuration/folders", folder).done(d.close).done(cb).fail(onFail);
+						_m.service.post("configuration/folders", folder).done(d.close).done(cb).fail(onFail);
 					}
 				},
 				"on-show": function(h, $d) {

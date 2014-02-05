@@ -7,11 +7,11 @@
  * License: http://www.mollify.org/license.php
  */
  
-window.mollify.modules.push(function($, mollify) {
+window.mollify.modules.push(function($, _m) {
  
 	"use strict";
 
-	mollify.MollifyHTML5Uploader = function() {
+	_m.MollifyHTML5Uploader = function() {
 		var t = this;
 		
 		// prevent default file drag&drop		
@@ -21,8 +21,8 @@ window.mollify.modules.push(function($, mollify) {
 		});
 		
 		/*this.open = function(folder) {
-			var $d = mollify.dom.template("mollify-tmpl-uploader-dlg");
-			mollify.ui.dialogs.custom({
+			var $d = _m.dom.template("mollify-tmpl-uploader-dlg");
+			_m.ui.dialogs.custom({
 				element: $d,
 				"title-key": 'fileUploadDialogTitle',
 				buttons: [
@@ -45,7 +45,7 @@ window.mollify.modules.push(function($, mollify) {
 				//if (this.files.length == 1) alert(this.files[0].name);
 				//else alert(this.files.length);
 			}).fileupload({
-				url: mollify.service.url("filesystem/"+folder.id+'/files/'),
+				url: _m.service.url("filesystem/"+folder.id+'/files/'),
 				dataType: 'json',
 				dropZone: $d.find(".mollify-uploader").bind("dragover", function(e) { e.stopPropagation(); }),
 				drop: function (e, data) {
@@ -62,7 +62,7 @@ window.mollify.modules.push(function($, mollify) {
 		};*/
 		
 		this._getUploaderSettings = function() {
-			return mollify.settings["html5-uploader"] || {};	
+			return _m.settings["html5-uploader"] || {};	
 		};
 		
 		this._initDropZoneEffects = function($e) {
@@ -89,8 +89,8 @@ window.mollify.modules.push(function($, mollify) {
 		};
 		
 		this.initWidget = function($e, o) {
-			var $d = mollify.dom.template("mollify-tmpl-uploader-widget").appendTo($e);
-			mollify.ui.handlers.localize($e);
+			var $d = _m.dom.template("mollify-tmpl-uploader-widget").appendTo($e);
+			_m.ui.handlers.localize($e);
 			var $dropZone = o.dropElement || $e;
 			var started = false;
 			var rejected = false;
@@ -166,7 +166,7 @@ window.mollify.modules.push(function($, mollify) {
 		
 		return {
 			initUploadWidget : function($e, o) {
-				mollify.templates.load("mollify-uploader", mollify.templates.url("uploader.html")).done(function() {
+				_m.templates.load("mollify-uploader", _m.templates.url("uploader.html")).done(function() {
 					t.initWidget($e, o);
 				});
 			},

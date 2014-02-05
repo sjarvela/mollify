@@ -7,42 +7,42 @@
  * License: http://www.mollify.org/license.php
  */
  
-!function($, global_mollify) {
+!function($, _gm) {
 
 	"use strict";
 		
-	global_mollify.plugins.Core = function() {
+	_gm.plugins.Core = function() {
 		var that = this;
 								
 		return {
 			id: "plugin-core",
-			initialize : function(mollify) {
-				that.mollify = mollify;
+			initialize : function(_m) {
+				that._m = _m;
 			},
 			itemContextHandler : function(item, ctx, data) {
 				var root = item.id == item.root_id;
-				var writable = !root && that.mollify.filesystem.hasPermission(item, "filesystem_item_access", "rw");
-				var deletable = !root && that.mollify.filesystem.hasPermission(item, "filesystem_item_access", "rwd");
-				var parentWritable = !root && that.mollify.filesystem.hasPermission(item.parent_id, "filesystem_item_access", "rw");
+				var writable = !root && that._m.filesystem.hasPermission(item, "filesystem_item_access", "rw");
+				var deletable = !root && that._m.filesystem.hasPermission(item, "filesystem_item_access", "rwd");
+				var parentWritable = !root && that._m.filesystem.hasPermission(item.parent_id, "filesystem_item_access", "rw");
 
 				var actions = [];				
 				if (item.is_file ) {
-					actions.push({ 'title-key': 'actionDownloadItem', icon: 'download', type:"primary", group:"download", callback: function() { mollify.ui.download(mollify.filesystem.getDownloadUrl(item)); } });
+					actions.push({ 'title-key': 'actionDownloadItem', icon: 'download', type:"primary", group:"download", callback: function() { _m.ui.download(_m.filesystem.getDownloadUrl(item)); } });
 					actions.push({ title: '-' });
 				}
 				
-				actions.push({ 'title-key': 'actionCopyItem', icon: 'copy', callback: function() { return that.mollify.filesystem.copy(item); }});
+				actions.push({ 'title-key': 'actionCopyItem', icon: 'copy', callback: function() { return that._m.filesystem.copy(item); }});
 				if (parentWritable)
-					actions.push({ 'title-key': 'actionCopyItemHere', icon: 'copy', callback: function() { return that.mollify.filesystem.copyHere(item); } });
+					actions.push({ 'title-key': 'actionCopyItemHere', icon: 'copy', callback: function() { return that._m.filesystem.copyHere(item); } });
 				
 				if (writable) {	
-					actions.push({ 'title-key': 'actionMoveItem', icon: 'mail-forward', callback: function() { return that.mollify.filesystem.move(item); } });
-					actions.push({ 'title-key': 'actionRenameItem', icon: 'pencil', callback: function() { return that.mollify.filesystem.rename(item); } });
+					actions.push({ 'title-key': 'actionMoveItem', icon: 'mail-forward', callback: function() { return that._m.filesystem.move(item); } });
+					actions.push({ 'title-key': 'actionRenameItem', icon: 'pencil', callback: function() { return that._m.filesystem.rename(item); } });
 					if (deletable)
-						actions.push({ 'title-key': 'actionDeleteItem', icon: 'trash', callback: function() { var df = $.Deferred(); that.mollify.ui.dialogs.confirmation({
-							title: item.is_file ? that.mollify.ui.texts.get("deleteFileConfirmationDialogTitle") : that.mollify.ui.texts.get("deleteFolderConfirmationDialogTitle"),
-							message: that.mollify.ui.texts.get(item.is_file ? "confirmFileDeleteMessage" : "confirmFolderDeleteMessage", [item.name]),
-							callback: function() { $.when(that.mollify.filesystem.del(item)).then(df.resolve, df.reject); }
+						actions.push({ 'title-key': 'actionDeleteItem', icon: 'trash', callback: function() { var df = $.Deferred(); that._m.ui.dialogs.confirmation({
+							title: item.is_file ? that._m.ui.texts.get("deleteFileConfirmationDialogTitle") : that._m.ui.texts.get("deleteFolderConfirmationDialogTitle"),
+							message: that._m.ui.texts.get(item.is_file ? "confirmFileDeleteMessage" : "confirmFolderDeleteMessage", [item.name]),
+							callback: function() { $.when(that._m.filesystem.del(item)).then(df.resolve, df.reject); }
 						});
 					return df.promise(); }});
 				}
@@ -59,11 +59,11 @@
 						return false;
 					}
 				});
-				var actions = [ { 'title-key': 'actionCopyMultiple', icon: 'copy', callback: function() { return that.mollify.filesystem.copy(items); } } ];
+				var actions = [ { 'title-key': 'actionCopyMultiple', icon: 'copy', callback: function() { return that._m.filesystem.copy(items); } } ];
 
 				if (!roots) {
-					actions.push({ 'title-key': 'actionMoveMultiple', icon: 'mail-forward', callback: function() { return that.mollify.filesystem.move(items); } });
-					actions.push({ 'title-key': 'actionDeleteMultiple', icon: 'trash', callback: function() { return that.mollify.filesystem.del(items); } });
+					actions.push({ 'title-key': 'actionMoveMultiple', icon: 'mail-forward', callback: function() { return that._m.filesystem.move(items); } });
+					actions.push({ 'title-key': 'actionDeleteMultiple', icon: 'trash', callback: function() { return that._m.filesystem.del(items); } });
 				}
 				
 				return {
@@ -76,15 +76,15 @@
 	/**
 	/* Item details plugin
 	/**/
-	global_mollify.plugins.ItemDetailsPlugin = function(conf, sp) {
+	_gm.plugins.ItemDetailsPlugin = function(conf, sp) {
 		var that = this;
 		that.formatters = {};
 		that.typeConfs = false;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
-			that.fileSizeFormatter = new mollify.ui.formatters.ByteSize(new mollify.ui.formatters.Number(2, false, mollify.ui.texts.get('decimalSeparator')));
-			that.timestampFormatter = new mollify.ui.formatters.Timestamp(mollify.ui.texts.get('shortDateTimeFormat'));
+		this.initialize = function(_m) {
+			that._m = _m;
+			that.fileSizeFormatter = new _m.ui.formatters.ByteSize(new _m.ui.formatters.Number(2, false, _m.ui.texts.get('decimalSeparator')));
+			that.timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
 			/*if (sp) {
 				for (var i=0; i<sp.length;i++)
 					that.addDetailsSpec(sp[i]);
@@ -121,7 +121,7 @@
 		
 		this.renderItemContextDetails = function(el, item, $content, data) {
 			$content.addClass("loading");
-			that.mollify.templates.load("itemdetails-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("ItemDetails", "content.html"))).done(function() {
+			that._m.templates.load("itemdetails-content", that._m.helpers.noncachedUrl(that._m.plugins.url("ItemDetails", "content.html"))).done(function() {
 				$content.removeClass("loading");
 				that.renderItemDetails(el, item, {element: $content.empty(), data: data});
 			});
@@ -149,7 +149,7 @@
 				
 				data.push({key:k, title:that.getTitle(k, rowSpec), value: that.formatData(k, rowData)});
 			}*/
-			that.mollify.dom.template("itemdetails-template", {groups: result}).appendTo(o.element);
+			that._m.dom.template("itemdetails-template", {groups: result}).appendTo(o.element);
 		};
 		
 		this.getGroups = function(s, d) {
@@ -172,10 +172,10 @@
 			if (that.formatters[g]) {
 				var f = that.formatters[g];
 				if (f.groupTitle) return f.groupTitle;
-				if (f["group-title-key"]) return that.mollify.ui.texts.get(f["group-title-key"]);
+				if (f["group-title-key"]) return that._m.ui.texts.get(f["group-title-key"]);
 			}
-			if (g == 'file') return that.mollify.ui.texts.get('fileItemDetailsGroupFile');
-			if (g == 'exif') return that.mollify.ui.texts.get('fileItemDetailsGroupExif');
+			if (g == 'file') return that._m.ui.texts.get('fileItemDetailsGroupFile');
+			if (g == 'exif') return that._m.ui.texts.get('fileItemDetailsGroupExif');
 			return '';
 		};
 		
@@ -203,27 +203,27 @@
 		
 		this.getFileRowTitle = function(dataKey, rowSpec) {
 			if (rowSpec.title) return rowSpec.title;
-			if (rowSpec["title-key"]) return that.mollify.ui.texts.get(rowSpec["title-key"]);
+			if (rowSpec["title-key"]) return that._m.ui.texts.get(rowSpec["title-key"]);
 	
-			if (dataKey == 'name') return that.mollify.ui.texts.get('fileItemContextDataName');
-			if (dataKey == 'size') return that.mollify.ui.texts.get('fileItemContextDataSize');
-			if (dataKey == 'path') return that.mollify.ui.texts.get('fileItemContextDataPath');
-			if (dataKey == 'extension') return that.mollify.ui.texts.get('fileItemContextDataExtension');
-			if (dataKey == 'last-modified') return that.mollify.ui.texts.get('fileItemContextDataLastModified');
-			if (dataKey == 'image-size') return that.mollify.ui.texts.get('fileItemContextDataImageSize');
+			if (dataKey == 'name') return that._m.ui.texts.get('fileItemContextDataName');
+			if (dataKey == 'size') return that._m.ui.texts.get('fileItemContextDataSize');
+			if (dataKey == 'path') return that._m.ui.texts.get('fileItemContextDataPath');
+			if (dataKey == 'extension') return that._m.ui.texts.get('fileItemContextDataExtension');
+			if (dataKey == 'last-modified') return that._m.ui.texts.get('fileItemContextDataLastModified');
+			if (dataKey == 'image-size') return that._m.ui.texts.get('fileItemContextDataImageSize');
 			
 			/*if (that.specs[dataKey]) {
 				var spec = that.specs[dataKey];
 				if (spec.title) return spec.title;
-				if (spec["title-key"]) return mollify.ui.texts.get(spec["title-key"]);
+				if (spec["title-key"]) return _m.ui.texts.get(spec["title-key"]);
 			}*/
 			return dataKey;
 		};
 		
 		this.formatFileData = function(key, data) {
 			if (key == 'size') return that.fileSizeFormatter.format(data);
-			if (key == 'last-modified') return that.timestampFormatter.format(that.mollify.helpers.parseInternalTime(data));
-			if (key == 'image-size') return that.mollify.ui.texts.get('fileItemContextDataImageSizePixels', [data]);
+			if (key == 'last-modified') return that.timestampFormatter.format(that._m.helpers.parseInternalTime(data));
+			if (key == 'image-size') return that._m.ui.texts.get('fileItemContextDataImageSizePixels', [data]);
 			
 			if (that.specs[key]) {
 				var spec = that.specs[key];
@@ -293,21 +293,21 @@
 	/**
 	*	Item collection plugin
 	**/
-	global_mollify.plugins.ItemCollectionPlugin = function() {
+	_gm.plugins.ItemCollectionPlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
+		this.initialize = function(_m) {
+			that._m = _m;
 		};
 		
 		this.onStore = function(items) {
 			var df = $.Deferred();
-			that.mollify.ui.dialogs.input({
-				title: that.mollify.ui.texts.get('pluginItemCollectionStoreDialogTitle'),
-				message: that.mollify.ui.texts.get('pluginItemCollectionStoreDialogMessage'),
+			that._m.ui.dialogs.input({
+				title: that._m.ui.texts.get('pluginItemCollectionStoreDialogTitle'),
+				message: that._m.ui.texts.get('pluginItemCollectionStoreDialogMessage'),
 				defaultValue: "",
-				yesTitle: that.mollify.ui.texts.get('pluginItemCollectionStoreDialogAction'),
-				noTitle: that.mollify.ui.texts.get('dialogCancel'),
+				yesTitle: that._m.ui.texts.get('pluginItemCollectionStoreDialogAction'),
+				noTitle: that._m.ui.texts.get('dialogCancel'),
 				handler: {
 					isAcceptable: function(n) { return (!!n && n.length > 0); },
 					onInput: function(n) { $.when(that._onStore(items, n)).then(df.resolve, df.reject); }
@@ -317,18 +317,18 @@
 		};
 		
 		this._onStore = function(items, name) {
-			return that.mollify.service.post("itemcollections", {items : items, name:name}).done(function(list) {
+			return that._m.service.post("itemcollections", {items : items, name:name}).done(function(list) {
 				//TODO show message
 				that._updateNavBar(list);
 			});
 		};
 		
 		this.onAddItems = function(ic, items) {
-			return that.mollify.service.post("itemcollections/"+ic.id, {items : window.isArray(items) ? items: [ items ]});
+			return that._m.service.post("itemcollections/"+ic.id, {items : window.isArray(items) ? items: [ items ]});
 		};
 		
 		this._removeCollectionItem = function(ic, items) {
-			return that.mollify.service.del("itemcollections/"+ic.id+"/items", {items : window.isArray(items) ? items: [ items ]});
+			return that._m.service.del("itemcollections/"+ic.id+"/items", {items : window.isArray(items) ? items: [ items ]});
 		};
 				
 		this._showCollection = function(ic) {
@@ -336,10 +336,10 @@
 		};
 		
 		this.editCollection = function(ic, done) {
-			that.mollify.service.get("itemcollections/"+ic.id).done(function(loaded){
-				that.mollify.ui.dialogs.tableView({
-					title: that.mollify.ui.texts.get('pluginItemCollectionsEditDialogTitle', ic.name),
-					buttons:[{id:"close", title:that.mollify.ui.texts.get('dialogClose')},{id:"remove", title:that.mollify.ui.texts.get("pluginItemCollectionsEditDialogRemove"), type:"secondary", cls:"btn-danger secondary"}],
+			that._m.service.get("itemcollections/"+ic.id).done(function(loaded){
+				that._m.ui.dialogs.tableView({
+					title: that._m.ui.texts.get('pluginItemCollectionsEditDialogTitle', ic.name),
+					buttons:[{id:"close", title:that._m.ui.texts.get('dialogClose')},{id:"remove", title:that._m.ui.texts.get("pluginItemCollectionsEditDialogRemove"), type:"secondary", cls:"btn-danger secondary"}],
 					onButton: function(btn, h) {
 						h.close();
 						if (btn.id == 'remove') that.removeCollection(ic);
@@ -351,7 +351,7 @@
 							{ id: "icon", title:"", renderer: function(i, v, $c) {
 								$c.html(i.is_file ? '<i class="icon-file"></i>' : '<i class="icon-folder-close-alt"></i>');
 							} },
-							{ id: "name", title: that.mollify.ui.texts.get('fileListColumnTitleName') },
+							{ id: "name", title: that._m.ui.texts.get('fileListColumnTitleName') },
 							{ id: "remove", title: "", type: "action", content: '<i class="icon-trash"></i>' }
 						]
 					},
@@ -387,12 +387,12 @@
 		}
 
 		this.removeCollection = function(ic) {
-			return that.mollify.service.del("itemcollections/"+ic.id).done(that._updateNavBar);
+			return that._m.service.del("itemcollections/"+ic.id).done(that._updateNavBar);
 		};
 
 		this._onShareNavItem = function(ic) {
-			if (!that.mollify.exists("plugin-share")) return;
-			that.mollify.get("plugin-share").openShares({ id: "ic_" + ic.id, "name": ic.name, shareTitle: that.mollify.ui.texts.get("pluginItemCollectionShareTitle") });
+			if (!that._m.exists("plugin-share")) return;
+			that._m.get("plugin-share").openShares({ id: "ic_" + ic.id, "name": ic.name, shareTitle: that._m.ui.texts.get("pluginItemCollectionShareTitle") });
 		};
 
 		this._getItemActions = function(ic) {
@@ -408,7 +408,7 @@
 				}},
 				{"title-key":"pluginItemCollectionsNavRemove", callback: function() { that._fileView.openInitialFolder(); that.removeCollection(ic); }}
 			];
-			if (that.mollify.exists("plugin-share")) items.push({"title-key":"pluginItemCollectionsNavShare", callback: function() { that._onShareNavItem(ic); }});
+			if (that._m.exists("plugin-share")) items.push({"title-key":"pluginItemCollectionsNavShare", callback: function() { that._onShareNavItem(ic); }});
 			return items;
 		}
 		
@@ -417,7 +417,7 @@
 			that._fileView.addCustomFolderType("ic", {		
 				onSelectFolder : function(id) {
 					var df = $.Deferred();
-					that.mollify.service.post("itemcollections/"+id+"/data", {rq_data: that._fileView.getDataRequest() }).done(function(r) {
+					that._m.service.post("itemcollections/"+id+"/data", {rq_data: that._fileView.getDataRequest() }).done(function(r) {
 						that._collectionsNav.setActive(r.ic);
 						
 						var fo = {
@@ -440,16 +440,16 @@
 				},
 		
 				onRenderFolderView : function(f, data, $h, $tb) {
-					that.mollify.dom.template("mollify-tmpl-fileview-header-custom", { folder: f }).appendTo($h);
+					that._m.dom.template("mollify-tmpl-fileview-header-custom", { folder: f }).appendTo($h);
 		
 					var opt = {
 						title: function() {
-							return this.data.title ? this.data.title : that.mollify.ui.texts.get(this.data['title-key']);
+							return this.data.title ? this.data.title : that._m.ui.texts.get(this.data['title-key']);
 						}
 					};
 					var $fa = $("#mollify-fileview-folder-actions");
-					var actionsElement = that.mollify.dom.template("mollify-tmpl-fileview-foldertools-action", { icon: 'icon-cog', dropdown: true }, opt).appendTo($fa);
-					that.mollify.ui.controls.dropdown({
+					var actionsElement = that._m.dom.template("mollify-tmpl-fileview-foldertools-action", { icon: 'icon-cog', dropdown: true }, opt).appendTo($fa);
+					that._m.ui.controls.dropdown({
 						element: actionsElement,
 						items: that._getItemActions(data.ic),
 						hideDelay: 0,
@@ -462,14 +462,14 @@
 		
 		this._onFileViewActivate = function($e, h) {
 			that._collectionsNav = h.addNavBar({
-				title: that.mollify.ui.texts.get("pluginItemCollectionsNavTitle"),
+				title: that._m.ui.texts.get("pluginItemCollectionsNavTitle"),
 				classes: "ic-navbar-item",
 				items: [],
 				dropdown: {
 					items: that._getItemActions
 				},
-				onRender: that.mollify.ui.draganddrop ? function($nb, $items, objs) {
-					that.mollify.ui.draganddrop.enableDrop($items, {
+				onRender: that._m.ui.draganddrop ? function($nb, $items, objs) {
+					that._m.ui.draganddrop.enableDrop($items, {
 						canDrop : function($e, e, obj) {
 							if (!obj || obj.type != 'filesystemitem') return false;
 							return true;
@@ -487,7 +487,7 @@
 					});
 				} : false
 			});
-			that.mollify.service.get("itemcollections").done(that._updateNavBar);
+			that._m.service.get("itemcollections").done(that._updateNavBar);
 		};
 
 		return {
@@ -511,11 +511,11 @@
 	/**
 	*	Archiver plugin
 	**/
-	global_mollify.plugins.ArchiverPlugin = function() {
+	_gm.plugins.ArchiverPlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
+		this.initialize = function(_m) {
+			that._m = _m;
 		};
 		
 		this.onCompress = function(i, f) {
@@ -523,7 +523,7 @@
 			
 			var defaultName = '';
 			var item = false;
-			var items = that.mollify.helpers.arrayize(i);
+			var items = that._m.helpers.arrayize(i);
 			if (items.length == 1) {
 				item = i[0];
 			}
@@ -532,12 +532,12 @@
 			var doCompress = function(folder) {
 				if (item) defaultName = item.name + ".zip";				
 	
-				that.mollify.ui.dialogs.input({
-					title: that.mollify.ui.texts.get('pluginArchiverCompressDialogTitle'),
-					message: that.mollify.ui.texts.get('pluginArchiverCompressDialogMessage'),
+				that._m.ui.dialogs.input({
+					title: that._m.ui.texts.get('pluginArchiverCompressDialogTitle'),
+					message: that._m.ui.texts.get('pluginArchiverCompressDialogMessage'),
 					defaultValue: defaultName,
-					yesTitle: that.mollify.ui.texts.get('pluginArchiverCompressDialogAction'),
-					noTitle: that.mollify.ui.texts.get('dialogCancel'),
+					yesTitle: that._m.ui.texts.get('pluginArchiverCompressDialogAction'),
+					noTitle: that._m.ui.texts.get('dialogCancel'),
 					handler: {
 						isAcceptable: function(n) { return (!!n && n.length > 0 && (!item || n != item.name)); },
 						onInput: function(n) { $.when(that._onCompress(items, folder, n)).then(df.resolve, df.reject); }
@@ -545,10 +545,10 @@
 				});
 			};
 			if (!f) {
-				that.mollify.ui.dialogs.folderSelector({
-					title: that.mollify.ui.texts.get('pluginArchiverCompressDialogTitle'),
-					message: that.mollify.ui.texts.get('pluginArchiverCompressSelectFolderDialogMessage'),
-					actionTitle: that.mollify.ui.texts.get('ok'),
+				that._m.ui.dialogs.folderSelector({
+					title: that._m.ui.texts.get('pluginArchiverCompressDialogTitle'),
+					message: that._m.ui.texts.get('pluginArchiverCompressSelectFolderDialogMessage'),
+					actionTitle: that._m.ui.texts.get('ok'),
 					handler: {
 						onSelect: function(folder) { doCompress(folder); },
 						canSelect: function(folder) { return true; }
@@ -563,23 +563,23 @@
 		
 		this.onDownloadCompressed = function(items) {
 			//TODO show progress
-			return that.mollify.service.post("archiver/download", {items : items}).done(function(r) {
+			return that._m.service.post("archiver/download", {items : items}).done(function(r) {
 				//TODO remove progress
-				that.mollify.ui.download(that.mollify.service.url('archiver/download/'+r.id, true));
+				that._m.ui.download(that._m.service.url('archiver/download/'+r.id, true));
 			});
 		};
 		
 		this._onCompress = function(items, folder, name) {
-			return that.mollify.service.post("archiver/compress", { 'items' : items, 'folder': folder, 'name': name}).done(function(r) {
-				that.mollify.events.dispatch('archiver/compress', { items: items, folder: folder, name: name });
-				that.mollify.events.dispatch('filesystem/update', { folder: folder });
+			return that._m.service.post("archiver/compress", { 'items' : items, 'folder': folder, 'name': name}).done(function(r) {
+				that._m.events.dispatch('archiver/compress', { items: items, folder: folder, name: name });
+				that._m.events.dispatch('filesystem/update', { folder: folder });
 			});
 		};
 		
 		this._onExtract = function(a, folder) {
-			return that.mollify.service.post("archiver/extract", { item : a, folder : folder }).done(function(r) {
-				that.mollify.events.dispatch('archiver/extract', { item : a, folder : folder });
-				that.mollify.events.dispatch('filesystem/update', { folder : folder });
+			return that._m.service.post("archiver/extract", { item : a, folder : folder }).done(function(r) {
+				that._m.events.dispatch('archiver/extract', { item : a, folder : folder });
+				that._m.events.dispatch('filesystem/update', { folder : folder });
 			});
 		};
 		
@@ -600,15 +600,15 @@
 				else if (i.length == 1) single = i[0];
 				
 				if (single)
-					return that.mollify.service.url("archiver/download?item="+single.id, true);
+					return that._m.service.url("archiver/download?item="+single.id, true);
 
 				return false;	//TODO enable downloading array of items?
 			},
 			itemContextHandler : function(item, ctx, data) {
 				var root = (item.id == item.root_id);
 
-				var writable = !root && that.mollify.filesystem.hasPermission(item, "filesystem_item_access", "rw");
-				var parentWritable = !root && that.mollify.filesystem.hasPermission(item.parent_id, "filesystem_item_access", "rw");
+				var writable = !root && that._m.filesystem.hasPermission(item, "filesystem_item_access", "rw");
+				var parentWritable = !root && that._m.filesystem.hasPermission(item.parent_id, "filesystem_item_access", "rw");
 				//TODO folder? is this ever something else than parent?
 				var folderWritable = !root && ctx.folder && ctx.folder_writable;
 
@@ -642,21 +642,21 @@
 	/**
 	/* File viewer editor plugin
 	/**/
-	global_mollify.plugins.FileViewerEditorPlugin = function() {
+	_gm.plugins.FileViewerEditorPlugin = function() {
 		var that = this;
 		
 		this.initialize = function() {
 		};
 		
 		this.onEdit = function(item, spec) {
-			that.mollify.ui.dialogs.custom({
+			that._m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 400],
-				title: that.mollify.ui.texts.get('fileViewerEditorViewEditDialogTitle'),
+				title: that._m.ui.texts.get('fileViewerEditorViewEditDialogTitle'),
 				content: '<div class="fileviewereditor-editor-content"></div>',
 				buttons: [
-					{ id: "yes", "title": that.mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": that.mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": that._m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": that._m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -759,7 +759,7 @@
 				});
 			};
 			
-			var $v = that.mollify.dom.template("mollify-tmpl-fileviewereditor-popup", {
+			var $v = that._m.dom.template("mollify-tmpl-fileviewereditor-popup", {
 				items : list
 			}, {
 				content: function(i) {
@@ -772,7 +772,7 @@
 			};
 			
 			$lb = $v.lightbox({backdrop: true, resizeToFit: false, show: false, onHide: onHide});
-			that.mollify.ui.process($lb, ["localize"]);
+			that._m.ui.process($lb, ["localize"]);
 			
 			$lb.find("button.close").click(function(){
 				$lb.lightbox('hide');
@@ -790,7 +790,7 @@
 			var $tools = $c.find(".mollify-fileviewereditor-viewer-tools");
 			$tools.find(".mollify-fileviewereditor-viewer-item-viewinnewwindow").click(function(){
 				$lb.lightbox('hide');
-				that.mollify.ui.window.open(activeItem.full);
+				that._m.ui.window.open(activeItem.full);
 			});
 			$tools.find(".mollify-fileviewereditor-viewer-item-edit").click(function(){
 				$lb.lightbox('hide');
@@ -851,13 +851,13 @@
 	/**
 	*	Comment plugin
 	**/
-	global_mollify.plugins.CommentPlugin = function() {
+	_gm.plugins.CommentPlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
-			that._timestampFormatter = new mollify.ui.formatters.Timestamp(mollify.ui.texts.get('shortDateTimeFormat'));
-			mollify.dom.importCss(mollify.plugins.url("Comment", "style.css"));
+		this.initialize = function(_m) {
+			that._m = _m;
+			that._timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
+			_m.dom.importCss(_m.plugins.url("Comment", "style.css"));
 		};
 		
 		this.getListCellContent = function(item, data) {
@@ -872,7 +872,7 @@
 		
 		this.renderItemContextDetails = function(el, item, ctx, $content, data) {
 			$content.addClass("loading");
-			that.mollify.templates.load("comments-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("Comment", "content.html"))).done(function() {
+			that._m.templates.load("comments-content", that._m.helpers.noncachedUrl(that._m.plugins.url("Comment", "content.html"))).done(function() {
 				$content.removeClass("loading");
 				if (data.count === 0) {
 					that.renderItemContextComments(el, item, ctx, [], {element: $content.empty(), contentTemplate: 'comments-template'});
@@ -885,8 +885,8 @@
 		};
 		
 		this.renderItemContextComments = function(el, item, ctx, comments, o) {
-			var canAdd = (that.mollify.session.user.admin || that.mollify.filesystem.hasPermission(item, "comment_item"));
-			var $c = that.mollify.dom.template(o.contentTemplate, {item: item, canAdd: canAdd}).appendTo(o.element);
+			var canAdd = (that._m.session.user.admin || that._m.filesystem.hasPermission(item, "comment_item"));
+			var $c = that._m.dom.template(o.contentTemplate, {item: item, canAdd: canAdd}).appendTo(o.element);
 
 			if (canAdd)			
 				$c.find(".comments-dialog-add").click(function() {
@@ -899,12 +899,12 @@
 		};
 		
 		this.showCommentsBubble = function(item, e, ctx) {
-			var bubble = that.mollify.ui.controls.dynamicBubble({element:e, title: item.name, container: ctx.container});
+			var bubble = that._m.ui.controls.dynamicBubble({element:e, title: item.name, container: ctx.container});
 			
-			that.mollify.templates.load("comments-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("Comment", "content.html"))).done(function() {
+			that._m.templates.load("comments-content", that._m.helpers.noncachedUrl(that._m.plugins.url("Comment", "content.html"))).done(function() {
 				that.loadComments(item, true, function(item, comments, permission) {
-					var canAdd = that.mollify.session.user.admin || permission == '1';
-					var $c = that.mollify.dom.template("comments-template", {item: item, canAdd: canAdd});
+					var canAdd = that._m.session.user.admin || permission == '1';
+					var $c = that._m.dom.template("comments-template", {item: item, canAdd: canAdd});
 					bubble.content($c);
 		
 					if (canAdd)
@@ -920,31 +920,31 @@
 		};
 		
 		this.loadComments = function(item, permission, cb) {
-			that.mollify.service.get("comment/"+item.id+(permission ? '?p=1' : '')).done(function(r) {
+			that._m.service.get("comment/"+item.id+(permission ? '?p=1' : '')).done(function(r) {
 				cb(item, that.processComments(permission ? r.comments : r), permission ? r.permission : undefined);
 			});
 		};
 		
 		this.processComments = function(comments) {
-			var userId = that.mollify.session.user_id;
+			var userId = that._m.session.user_id;
 			
 			for (var i=0,j=comments.length; i<j; i++) {
-				comments[i].time = that._timestampFormatter.format(that.mollify.helpers.parseInternalTime(comments[i].time));
+				comments[i].time = that._timestampFormatter.format(that._m.helpers.parseInternalTime(comments[i].time));
 				comments[i].comment = comments[i].comment.replace(new RegExp('\n', 'g'), '<br/>');
-				comments[i].remove = that.mollify.session.user.admin || (userId == comments[i].user_id);
+				comments[i].remove = that._m.session.user.admin || (userId == comments[i].user_id);
 			}
 			return comments;
 		};
 		
 		this.onAddComment = function(item, comment, cb) {
-			that.mollify.service.post("comment/"+item.id, { comment: comment }).done(function(result) {
+			that._m.service.post("comment/"+item.id, { comment: comment }).done(function(result) {
 				that.updateCommentCount(item, result.count);
 				if (cb) cb();
 			});
 		};
 		
 		this.onRemoveComment = function($list, item, id) {		
-			that.mollify.service.del("comment/"+item.id+"/"+id).done(function(result) {
+			that._m.service.del("comment/"+item.id+"/"+id).done(function(result) {
 				that.updateCommentCount(item, result.length);
 				that.updateComments($list, item, that.processComments(result));
 			});
@@ -967,11 +967,11 @@
 			$list.removeClass("loading");
 			
 			if (comments.length === 0) {
-				$list.html("<span class='message'>"+that.mollify.ui.texts.get("commentsDialogNoComments")+"</span>");
+				$list.html("<span class='message'>"+that._m.ui.texts.get("commentsDialogNoComments")+"</span>");
 				return;
 			}
 	
-			that.mollify.dom.template("comment-template", comments).appendTo($list.empty());
+			that._m.dom.template("comment-template", comments).appendTo($list.empty());
 			$list.find(".comment-content").hover(
 				function () { $(this).addClass("hover"); }, 
 				function () { $(this).removeClass("hover"); }
@@ -1015,31 +1015,31 @@
 	/**
 	*	Permission plugin
 	**/
-	global_mollify.plugins.PermissionsPlugin = function() {
+	_gm.plugins.PermissionsPlugin = function() {
 		var that = this;
 		this._permissionTypes = false;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
+		this.initialize = function(_m) {
+			that._m = _m;
 			
-			mollify.events.addEventHandler(function(e) {
-				if (!that._permissionTypes && mollify.session.user) that._permissionTypes = mollify.session.data.permission_types
+			_m.events.addEventHandler(function(e) {
+				if (!that._permissionTypes && _m.session.user) that._permissionTypes = _m.session.data.permission_types
 			}, "session/start");
-			that._pathFormatter = new mollify.ui.formatters.FilesystemItemPath();
+			that._pathFormatter = new _m.ui.formatters.FilesystemItemPath();
 		};
 		
 		this._formatPermissionName = function(p) {
-			var name = that.mollify.ui.texts.get('permission_'+p.name);
+			var name = that._m.ui.texts.get('permission_'+p.name);
 			if (p.subject == null && that._permissionTypes.filesystem[p.name])
-				return that.mollify.ui.texts.get('permission_default', name);
+				return that._m.ui.texts.get('permission_default', name);
 			return name;
 		};
 		
 		this._formatPermissionValue = function(name, val) {
 			var values = that._getPermissionValues(name);
 			if (values)
-				return that.mollify.ui.texts.get('permission_'+name+'_value_'+val);
-			return that.mollify.ui.texts.get('permission_value_'+val);
+				return that._m.ui.texts.get('permission_'+name+'_value_'+val);
+			return that._m.ui.texts.get('permission_value_'+val);
 		};
 		
 		this._getPermissionValues = function(name) {
@@ -1055,14 +1055,14 @@
 			var originalValues = [];
 			var $content = false;
 			
-			that.mollify.ui.dialogs.custom({
+			that._m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 400],
-				title: that.mollify.ui.texts.get('pluginPermissionsEditDialogTitle', item.name),
-				content: that.mollify.dom.template("mollify-tmpl-permission-editor", {item: item}),
+				title: that._m.ui.texts.get('pluginPermissionsEditDialogTitle', item.name),
+				content: that._m.dom.template("mollify-tmpl-permission-editor", {item: item}),
 				buttons: [
-					{ id: "yes", "title": that.mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": that.mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": that._m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": that._m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -1072,7 +1072,7 @@
 					if (modificationData["new"].length === 0 && modificationData.modified.length === 0 && modificationData.removed.length === 0)
 						return;
 					
-					that.mollify.service.put("permissions/list", modificationData).done(d.close).fail(d.close);
+					that._m.service.put("permissions/list", modificationData).done(d.close).fail(d.close);
 				},
 				"on-show": function(h, $d) {
 					$content = $d.find("#mollify-pluginpermissions-editor-content");
@@ -1083,12 +1083,12 @@
 					
 					h.center();
 					
-					that.mollify.service.get("configuration/users?g=1").done(function(l) {
+					that._m.service.get("configuration/users?g=1").done(function(l) {
 						var users = that.processUserData(l);
 						var names = that._permissionTypes.keys.filesystem;
 						var init = 'filesystem_item_access';
 						var onPermissionsModified = function() {
-							var info = (modificationData["new"].length > 0 || modificationData.modified.length > 0 || modificationData.removed.length > 0) ? "<i class='icon-exclamation-sign '/>&nbsp;" + that.mollify.ui.texts.get('pluginPermissionsEditDialogUnsaved') : false;
+							var info = (modificationData["new"].length > 0 || modificationData.modified.length > 0 || modificationData.removed.length > 0) ? "<i class='icon-exclamation-sign '/>&nbsp;" + that._m.ui.texts.get('pluginPermissionsEditDialogUnsaved') : false;
 							h.setInfo(info);
 						};
 						var getPermissionKey = function(p) { return p.user_id+":"+p.subject+":"+p.name; };
@@ -1204,10 +1204,10 @@
 							activateTab(activeTab);
 						};
 						
-						that.mollify.ui.controls.select("mollify-pluginpermissions-editor-permission-name", {
+						that._m.ui.controls.select("mollify-pluginpermissions-editor-permission-name", {
 							onChange: onChangePermission,
 							formatter: function(name) {
-								return that.mollify.ui.texts.get('permission_'+name);
+								return that._m.ui.texts.get('permission_'+name);
 							},
 							values: names,
 							value: init
@@ -1243,12 +1243,12 @@
 								if (!sel) return;
 								
 								if (sel.user_type == 'a') {
-									$("#mollify-pluginpermissions-editor-user-permissions-description").html(that.mollify.ui.texts.get("pluginPermissionsUserPermissionsAdmin"));
+									$("#mollify-pluginpermissions-editor-user-permissions-description").html(that._m.ui.texts.get("pluginPermissionsUserPermissionsAdmin"));
 									return;
 								}
 								$sc.addClass("loading");
 								
-								that.mollify.service.get("permissions/user/"+sel.id+"?e=1&subject="+item.id+"&name="+selectedPermission).done(function(p) {
+								that._m.service.get("permissions/user/"+sel.id+"?e=1&subject="+item.id+"&name="+selectedPermission).done(function(p) {
 									$sc.removeClass("loading");
 									
 									var permissions = p.permissions.slice(0);
@@ -1258,9 +1258,9 @@
 								}).fail(h.close);								
 							};
 							
-							that.mollify.ui.controls.select("mollify-pluginpermissions-editor-permission-user", {
+							that._m.ui.controls.select("mollify-pluginpermissions-editor-permission-user", {
 								onChange: onChangeUser,
-								none: that.mollify.ui.texts.get("pluginPermissionsEditNoUser"),
+								none: that._m.ui.texts.get("pluginPermissionsEditNoUser"),
 								values: users.users,
 								title: "name"
 							});			
@@ -1295,7 +1295,7 @@
 		};
 		
 		this.loadPermissions = function(item, name, users) {
-			return that.mollify.service.get("permissions/list?subject="+item.id+(name ? "&name="+name : "")+(users?"&u=1":""));
+			return that._m.service.get("permissions/list?subject="+item.id+(name ? "&name="+name : "")+(users?"&u=1":""));
 		};
 
 		this.initUserPermissionInspector = function(changes, user, item, permissionName, relatedPermissions, items, userData) {
@@ -1303,11 +1303,11 @@
 				var ep = false;
 				if (relatedPermissions.length > 0) ep = relatedPermissions[0].value;
 				if (ep) {
-					$("#mollify-pluginpermissions-editor-user-permissions-description").html(that.mollify.ui.texts.get('pluginPermissionsEffectiveUserPermission', that._formatPermissionValue(permissionName, ep)));
+					$("#mollify-pluginpermissions-editor-user-permissions-description").html(that._m.ui.texts.get('pluginPermissionsEffectiveUserPermission', that._formatPermissionValue(permissionName, ep)));
 					$("#mollify-pluginpermissions-editor-user-related-permissions").show();
 				} else {
 					var values = that._getPermissionValues(permissionName);
-					$("#mollify-pluginpermissions-editor-user-permissions-description").html(that.mollify.ui.texts.get('pluginPermissionsNoEffectiveUserPermission', that._formatPermissionValue(permissionName, values ? values[0] : '0')));
+					$("#mollify-pluginpermissions-editor-user-permissions-description").html(that._m.ui.texts.get('pluginPermissionsNoEffectiveUserPermission', that._formatPermissionValue(permissionName, values ? values[0] : '0')));
 				}
 			}
 			updateEffectivePermission();
@@ -1322,17 +1322,17 @@
 				updateEffectivePermission();
 			};
 			
-			var $list = that.mollify.ui.controls.table("mollify-pluginpermissions-editor-user-permission-list", {
+			var $list = that._m.ui.controls.table("mollify-pluginpermissions-editor-user-permission-list", {
 				key: "user_id",
 				onRow: function($r, i) { if (isGroup(i.user_id)) $r.addClass("group"); },
 				columns: [
 					{
 						id: "user_id",
-						title: that.mollify.ui.texts.get('pluginPermissionsEditColUser'),
+						title: that._m.ui.texts.get('pluginPermissionsEditColUser'),
 						renderer: function(i, v, $c) {
 							if (v == '0' && i.subject === '') return;
 							if (v == '0') {
-								$c.html("<em>"+that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermission')+"</em>");
+								$c.html("<em>"+that._m.ui.texts.get('pluginPermissionsEditDefaultPermission')+"</em>");
 								return;
 							}
 							$c.html(userData.usersById[v].name).addClass("user");
@@ -1340,29 +1340,29 @@
 					},
 					{
 						id: "value",
-						title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'),
+						title: that._m.ui.texts.get('pluginPermissionsPermissionValue'),
 						formatter: function(item, k) {
 							return that._formatPermissionValue(permissionName, k);
 						}
 					},
 					{
 						id: "subject",
-						title: that.mollify.ui.texts.get('pluginPermissionsEditColSource'),
+						title: that._m.ui.texts.get('pluginPermissionsEditColSource'),
 						renderer: function(i, s, $c) {
 							var subject = items[s];
 							if (!subject) {
-								var n = that.mollify.ui.texts.get("permission_system_default");
+								var n = that._m.ui.texts.get("permission_system_default");
 								if (i.user_id != '0') {
 									var user = userData.usersById[i.user_id];
-									n = that.mollify.ui.texts.get((user.is_group == '1' ? "permission_group_default" : "permission_user_default"));
+									n = that._m.ui.texts.get((user.is_group == '1' ? "permission_group_default" : "permission_user_default"));
 								}
 								$c.html("<em>"+n+"</em>");
 							} else {
 								if (subject.id == item.id) {
-									$c.html('<i class="icon-file-alt"/>&nbsp;' + that.mollify.ui.texts.get('pluginPermissionsEditColItemCurrent'));
+									$c.html('<i class="icon-file-alt"/>&nbsp;' + that._m.ui.texts.get('pluginPermissionsEditColItemCurrent'));
 								} else {
 									var level = Math.max(item.path.count("/"), item.path.count("\\")) - Math.max(subject.path.count("/"), subject.path.count("\\")) + 1;
-									$c.html('<i class="icon-file-alt"/>&nbsp;' + that.mollify.ui.texts.get('pluginPermissionsEditColItemParent', level));
+									$c.html('<i class="icon-file-alt"/>&nbsp;' + that._m.ui.texts.get('pluginPermissionsEditColItemParent', level));
 								}
 								$c.tooltip({
 									placement: "bottom",
@@ -1374,7 +1374,7 @@
 							}
 						}
 					},
-					{ id: "remove", title: "", type:"action", content: that.mollify.dom.template("mollify-tmpl-permission-editor-listremove").html() }
+					{ id: "remove", title: "", type:"action", content: that._m.dom.template("mollify-tmpl-permission-editor-listremove").html() }
 				],
 				onRowAction: function(id, permission) {
 					changes.remove(permission);
@@ -1414,17 +1414,17 @@
 				}					
 			};
 			
-			$list = that.mollify.ui.controls.table("mollify-pluginpermissions-editor-permission-list", {
+			$list = that._m.ui.controls.table("mollify-pluginpermissions-editor-permission-list", {
 				key: "user_id",
 				onRow: function($r, i) { if (isGroup(i.user_id)) $r.addClass("group"); },
 				columns: [
-					{ id: "user_id", title: that.mollify.ui.texts.get('pluginPermissionsEditColUser'), renderer: function(i, v, $c){
-						var name = (v != '0' ? userData.usersById[v].name : that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermission'));
+					{ id: "user_id", title: that._m.ui.texts.get('pluginPermissionsEditColUser'), renderer: function(i, v, $c){
+						var name = (v != '0' ? userData.usersById[v].name : that._m.ui.texts.get('pluginPermissionsEditDefaultPermission'));
 						$c.html(name).addClass("user");
 					} },
 					{
 						id: "value",
-						title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'),
+						title: that._m.ui.texts.get('pluginPermissionsPermissionValue'),
 						type: "select",
 						options: permissionValues || ['0', '1'],
 						formatter: function(item, k) {
@@ -1433,7 +1433,7 @@
 						onChange: function(item, p) {
 							changes.update(item, p);
 						}, cellClass: "permission" },
-					{ id: "remove", title: "", type:"action", content: that.mollify.dom.template("mollify-tmpl-permission-editor-listremove").html() }
+					{ id: "remove", title: "", type:"action", content: that._m.dom.template("mollify-tmpl-permission-editor-listremove").html() }
 				],
 				onRowAction: function(id, permission) {
 					changes.remove(permission);
@@ -1442,18 +1442,18 @@
 			});
 			
 			$list.add(permissions);
-			var $newUser = that.mollify.ui.controls.select("mollify-pluginpermissions-editor-new-user", {
-				none: that.mollify.ui.texts.get('pluginPermissionsEditNoUser'),
+			var $newUser = that._m.ui.controls.select("mollify-pluginpermissions-editor-new-user", {
+				none: that._m.ui.texts.get('pluginPermissionsEditNoUser'),
 				title : "name",
 				onCreate : function($o, i) { if (isGroup(i.id)) $o.addClass("group"); }
 			});
-			$newUser.add({ name: that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermission'), id: 0, is_group: 0 });
+			$newUser.add({ name: that._m.ui.texts.get('pluginPermissionsEditDefaultPermission'), id: 0, is_group: 0 });
 			$newUser.add(userData.users);
 			$newUser.add(userData.groups);
 			
-			var $newPermission = that.mollify.ui.controls.select("mollify-pluginpermissions-editor-new-permission", {
+			var $newPermission = that._m.ui.controls.select("mollify-pluginpermissions-editor-new-permission", {
 				values: permissionValues || ['0', '1'],
-				none: that.mollify.ui.texts.get('pluginPermissionsEditNoPermission'),
+				none: that._m.ui.texts.get('pluginPermissionsEditNoPermission'),
 				formatter : function(p) {
 					return that._formatPermissionValue(permissionName, p);
 				}
@@ -1477,21 +1477,21 @@
 		};
 		
 		this.renderItemContextDetails = function(el, item, $content) {
-			that.mollify.dom.template("mollify-tmpl-permission-context").appendTo($content);
-			that.mollify.ui.process($content, ["localize"]);
+			that._m.dom.template("mollify-tmpl-permission-context").appendTo($content);
+			that._m.ui.process($content, ["localize"]);
 						
 			that.loadPermissions(item, "filesystem_item_access", true).done(function(p) {
 				var userData = that.processUserData(p.users);
 				
 				$("#mollify-pluginpermissions-context-content").removeClass("loading");
 				
-				var $list = that.mollify.ui.controls.table("mollify-pluginpermissions-context-permission-list", {
+				var $list = that._m.ui.controls.table("mollify-pluginpermissions-context-permission-list", {
 					key: "user_id",
 					columns: [
-						{ id: "user_id", title: that.mollify.ui.texts.get('pluginPermissionsEditColUser'), formatter: function(i, v){
-							return (v != '0' ? userData.usersById[v].name : that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermission'));
+						{ id: "user_id", title: that._m.ui.texts.get('pluginPermissionsEditColUser'), formatter: function(i, v){
+							return (v != '0' ? userData.usersById[v].name : that._m.ui.texts.get('pluginPermissionsEditDefaultPermission'));
 						} },
-						{ id: "value", title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'), formatter: function(i, v){
+						{ id: "value", title: that._m.ui.texts.get('pluginPermissionsPermissionValue'), formatter: function(i, v){
 							return that._formatPermissionValue(i.name, v);
 						}}
 					]
@@ -1507,7 +1507,7 @@
 		};
 		
 		this.onActivateConfigView = function($c, cv) {
-			that.mollify.service.get("configuration/users?g=1").done(function(l) {
+			that._m.service.get("configuration/users?g=1").done(function(l) {
 				var users = that.processUserData(l);
 				
 				var allTypeKeys = that._permissionTypes.keys.all;
@@ -1544,19 +1544,19 @@
 				};
 				
 				var removePermissions = function(list) {
-					return that.mollify.service.del("permissions/list/", { list: list });
+					return that._m.service.del("permissions/list/", { list: list });
 				}
 	
-				var listView = new that.mollify.view.ConfigListView($c, {
+				var listView = new that._m.view.ConfigListView($c, {
 					actions: [
 						{ id: "action-remove", content:'<i class="icon-trash"></i>', cls:"btn-danger", depends: "table-selection", callback: function(sel) {
-							that.mollify.ui.dialogs.confirmation({
-								title: that.mollify.ui.texts.get("configAdminPermissionsRemoveConfirmationTitle"),
-								message: that.mollify.ui.texts.get("configAdminPermissionsRemoveConfirmationMessage", [sel.length]),
+							that._m.ui.dialogs.confirmation({
+								title: that._m.ui.texts.get("configAdminPermissionsRemoveConfirmationTitle"),
+								message: that._m.ui.texts.get("configAdminPermissionsRemoveConfirmationMessage", [sel.length]),
 								callback: function() { removePermissions(sel).done(refresh); }
 							});
 						}},
-						{ id: "action-edit-generic", content:'<i class="icon-globe"></i>', tooltip: that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermissionsAction'), callback: function() { that.editGenericPermissions(); } },
+						{ id: "action-edit-generic", content:'<i class="icon-globe"></i>', tooltip: that._m.ui.texts.get('pluginPermissionsEditDefaultPermissionsAction'), callback: function() { that.editGenericPermissions(); } },
 						{ id: "action-refresh", content:'<i class="icon-refresh"></i>', callback: refresh }
 					],
 					table: {
@@ -1579,18 +1579,18 @@
 						defaultSort: { id: "time", asc: false },
 						columns: [
 							{ type:"selectrow" },
-							{ id: "name", title: that.mollify.ui.texts.get('pluginPermissionsPermissionName'), sortable: true, formatter: function(item, name) {
+							{ id: "name", title: that._m.ui.texts.get('pluginPermissionsPermissionName'), sortable: true, formatter: function(item, name) {
 								return that._formatPermissionName(item);
 							} },
-							{ id: "value", title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'), sortable: true, formatter: function(item, k) {
+							{ id: "value", title: that._m.ui.texts.get('pluginPermissionsPermissionValue'), sortable: true, formatter: function(item, k) {
 								return that._formatPermissionValue(item.name, k);
 							} },
-							{ id: "user_id", title: that.mollify.ui.texts.get('pluginPermissionsPermissionUser'), sortable: true, formatter: function(item, u) {
+							{ id: "user_id", title: that._m.ui.texts.get('pluginPermissionsPermissionUser'), sortable: true, formatter: function(item, u) {
 								if (!u || u == "0")
 									return "";
 								return users.usersById[u].name;
 							} },
-							{ id: "subject", title: that.mollify.ui.texts.get('pluginPermissionsPermissionSubject'), formatter: function(item, s) {
+							{ id: "subject", title: that._m.ui.texts.get('pluginPermissionsPermissionSubject'), formatter: function(item, s) {
 								if (!s) return "";
 								if ((that._permissionTypes.keys.filesystem.indexOf(item.name) >= 0) && queryItems[s]) {
 									var itm = queryItems[s];
@@ -1598,27 +1598,27 @@
 								}
 								return s;
 							} },
-							{ id: "remove", title: "", type:"action", content: that.mollify.dom.template("mollify-tmpl-permission-editor-listremove").html() }
+							{ id: "remove", title: "", type:"action", content: that._m.dom.template("mollify-tmpl-permission-editor-listremove").html() }
 						],
 						onRowAction: function(id, permission) { removePermissions([permission]).done(refresh); }
 					}
 				});
 				var $options = $c.find(".mollify-configlistview-options");
-				that.mollify.dom.template("mollify-tmpl-permission-admin-options").appendTo($options);				
-				that.mollify.ui.process($options, ["localize"]);
+				that._m.dom.template("mollify-tmpl-permission-admin-options").appendTo($options);				
+				that._m.ui.process($options, ["localize"]);
 				
 				$("#permissions-subject-any").attr('checked', true);
 
-				$optionName = that.mollify.ui.controls.select("permissions-name", {
+				$optionName = that._m.ui.controls.select("permissions-name", {
 					values: allTypeKeys,
-					formatter: function(t) { return that.mollify.ui.texts.get('permission_'+t); },
-					none: that.mollify.ui.texts.get('pluginPermissionsAdminAny')
+					formatter: function(t) { return that._m.ui.texts.get('permission_'+t); },
+					none: that._m.ui.texts.get('pluginPermissionsAdminAny')
 				});
 				
-				$optionUser = that.mollify.ui.controls.select("permissions-user", {
+				$optionUser = that._m.ui.controls.select("permissions-user", {
 					values: users.all,
 					title: "name",
-					none: that.mollify.ui.texts.get('pluginPermissionsAdminAny')
+					none: that._m.ui.texts.get('pluginPermissionsAdminAny')
 				});
 				
 				var $subjectItemSelector = $("#permissions-subject-filesystem-item-selector");
@@ -1630,20 +1630,20 @@
 				};
 				$("#permissions-subject-filesystem-item-select").click(function(e) {
 					if ($optionSubject.get() == 'filesystem_item') {
-						that.mollify.ui.dialogs.itemSelector({
-							title: that.mollify.ui.texts.get('pluginPermissionsSelectItemTitle'),
-							message: that.mollify.ui.texts.get('pluginPermissionsSelectItemMsg'),
-							actionTitle: that.mollify.ui.texts.get('ok'),
+						that._m.ui.dialogs.itemSelector({
+							title: that._m.ui.texts.get('pluginPermissionsSelectItemTitle'),
+							message: that._m.ui.texts.get('pluginPermissionsSelectItemMsg'),
+							actionTitle: that._m.ui.texts.get('ok'),
 							handler: {
 								onSelect: onSelectItem,
 								canSelect: function(f) { return true; }
 							}
 						});
 					} else {
-						that.mollify.ui.dialogs.folderSelector({
-							title: that.mollify.ui.texts.get('pluginPermissionsSelectFolderTitle'),
-							message: that.mollify.ui.texts.get('pluginPermissionsSelectFolderMsg'),
-							actionTitle: that.mollify.ui.texts.get('ok'),
+						that._m.ui.dialogs.folderSelector({
+							title: that._m.ui.texts.get('pluginPermissionsSelectFolderTitle'),
+							message: that._m.ui.texts.get('pluginPermissionsSelectFolderMsg'),
+							actionTitle: that._m.ui.texts.get('ok'),
 							handler: {
 								onSelect: onSelectItem,
 								canSelect: function(f) { return true; }
@@ -1652,10 +1652,10 @@
 					}
 					return false;
 				});
-				$optionSubject = that.mollify.ui.controls.select("permissions-subject", {
+				$optionSubject = that._m.ui.controls.select("permissions-subject", {
 					values: ['none', 'filesystem_item', 'filesystem_child'],
-					formatter: function(s) { return that.mollify.ui.texts.get('pluginPermissionsAdminOptionSubject_'+s); },
-					none: that.mollify.ui.texts.get('pluginPermissionsAdminAny'),
+					formatter: function(s) { return that._m.ui.texts.get('pluginPermissionsAdminOptionSubject_'+s); },
+					none: that._m.ui.texts.get('pluginPermissionsAdminAny'),
 					onChange: function(s) {
 						if (s == 'filesystem_item' || s == 'filesystem_child') {
 							selectedSubjectItem = false;
@@ -1678,14 +1678,14 @@
 			};
 			var $content = false;
 			
-			that.mollify.ui.dialogs.custom({
+			that._m.ui.dialogs.custom({
 				resizable: true,
 				initSize: [600, 400],
-				title: user ? that.mollify.ui.texts.get('pluginPermissionsEditDialogTitle', user.name) : that.mollify.ui.texts.get('pluginPermissionsEditDefaultDialogTitle'),
-				content: that.mollify.dom.template("mollify-tmpl-permission-generic-editor", {user: user}),
+				title: user ? that._m.ui.texts.get('pluginPermissionsEditDialogTitle', user.name) : that._m.ui.texts.get('pluginPermissionsEditDefaultDialogTitle'),
+				content: that._m.dom.template("mollify-tmpl-permission-generic-editor", {user: user}),
 				buttons: [
-					{ id: "yes", "title": that.mollify.ui.texts.get('dialogSave') },
-					{ id: "no", "title": that.mollify.ui.texts.get('dialogCancel') }
+					{ id: "yes", "title": that._m.ui.texts.get('dialogSave') },
+					{ id: "no", "title": that._m.ui.texts.get('dialogCancel') }
 				],
 				"on-button": function(btn, d) {
 					if (btn.id == 'no') {
@@ -1696,20 +1696,20 @@
 						return;
 					
 					$content.addClass("loading");
-					that.mollify.service.put("permissions/list", permissionData).done(function() { d.close(); if (changeCallback) changeCallback(); }).fail(d.close);
+					that._m.service.put("permissions/list", permissionData).done(function() { d.close(); if (changeCallback) changeCallback(); }).fail(d.close);
 				},
 				"on-show": function(h, $d) {
 					$content = $d.find("#mollify-pluginpermissions-editor-generic-content");
 					h.center();
 					var $list = false;
 					
-					that.mollify.service.get("permissions/user/"+(user ? user.id : '0')+"/generic/").done(function(r) {
+					that._m.service.get("permissions/user/"+(user ? user.id : '0')+"/generic/").done(function(r) {
 						var done = function(dp) {
 							$content.removeClass("loading");
 							
 							var allTypeKeys = that._permissionTypes.keys.all;
-							var values = that.mollify.helpers.mapByKey(r.permissions, "name", "value");
-							var defaultPermissions = dp ? that.mollify.helpers.mapByKey(dp.permissions, "name", "value") : {};
+							var values = that._m.helpers.mapByKey(r.permissions, "name", "value");
+							var defaultPermissions = dp ? that._m.helpers.mapByKey(dp.permissions, "name", "value") : {};
 													
 							var permissions = [];
 							
@@ -1720,23 +1720,23 @@
 							});
 							
 							var cols = [
-								{ id: "name", title: that.mollify.ui.texts.get('pluginPermissionsPermissionName'), formatter: function(item, name) {
+								{ id: "name", title: that._m.ui.texts.get('pluginPermissionsPermissionName'), formatter: function(item, name) {
 									if (that._permissionTypes.keys.filesystem.indexOf(name) >= 0) {
-										if (!user) return that._formatPermissionName(item) + " (" + that.mollify.ui.texts.get('permission_system_default') + ")";
-										return that._formatPermissionName(item) + " (" + that.mollify.ui.texts.get(user.is_group == '1' ? 'permission_group_default' : 'permission_user_default') + ")";
+										if (!user) return that._formatPermissionName(item) + " (" + that._m.ui.texts.get('permission_system_default') + ")";
+										return that._formatPermissionName(item) + " (" + that._m.ui.texts.get(user.is_group == '1' ? 'permission_group_default' : 'permission_user_default') + ")";
 									}
 									return that._formatPermissionName(item);
 								} },
 								{
 									id: "value",
-									title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'),
+									title: that._m.ui.texts.get('pluginPermissionsPermissionValue'),
 									type: "select",
 									options: function(item) {
 										var itemValues = that._permissionTypes.values[item.name];
 										if (itemValues) return itemValues;
 										return ["0", "1"];
 									},
-									none:  that.mollify.ui.texts.get('permission_value_undefined'),
+									none:  that._m.ui.texts.get('permission_value_undefined'),
 									formatter: function(item, k) {
 										return that._formatPermissionValue(item.name, k);
 									},
@@ -1759,7 +1759,7 @@
 							if (user) {
 								cols.push({
 									id: "default",
-									title: that.mollify.ui.texts.get('permission_system_default'),
+									title: that._m.ui.texts.get('permission_system_default'),
 									formatter: function(p) {
 										if (!(p.name in defaultPermissions) || defaultPermissions[p.name] === undefined) return "";
 										return that._formatPermissionValue(p.name, defaultPermissions[p.name]);								
@@ -1767,13 +1767,13 @@
 								});
 							}
 							
-							$list = that.mollify.ui.controls.table("mollify-pluginpermissions-editor-generic-permission-list", {
+							$list = that._m.ui.controls.table("mollify-pluginpermissions-editor-generic-permission-list", {
 								key: "name",
 								columns: cols
 							});
 							$list.add(permissions);
 						};
-						if (user) that.mollify.service.get("permissions/user/0/generic/").done(done);
+						if (user) that._m.service.get("permissions/user/0/generic/").done(done);
 						else done();
 					}).fail(h.close);
 				}
@@ -1787,13 +1787,13 @@
 			
 			var refresh = function() {
 				$c.addClass("loading");
-				that.mollify.service.get("permissions/user/"+u.id+"/generic/").done(function(l) {
-					that.mollify.service.get("permissions/user/0/generic/").done(function(d){
+				that._m.service.get("permissions/user/"+u.id+"/generic/").done(function(l) {
+					that._m.service.get("permissions/user/0/generic/").done(function(d){
 						$c.removeClass("loading");
 						
-						defaultPermissions = that.mollify.helpers.mapByKey(d.permissions, "name", "value");
+						defaultPermissions = that._m.helpers.mapByKey(d.permissions, "name", "value");
 						
-						var values = that.mollify.helpers.mapByKey(l.permissions, "name");												
+						var values = that._m.helpers.mapByKey(l.permissions, "name");												
 						permissions = [];
 						
 						$.each(that._permissionTypes.keys.all, function(i, t) {
@@ -1807,27 +1807,27 @@
 				});
 			};
 
-			permissionsView = new that.mollify.view.ConfigListView($c, {
+			permissionsView = new that._m.view.ConfigListView($c, {
 				title: title,
 				actions: [
-					{ id: "action-edit", content:'<i class="icon-user"></i>', tooltip: that.mollify.ui.texts.get(u.is_group == '1' ? 'pluginPermissionsEditGroupPermissionsAction' : 'pluginPermissionsEditUserPermissionsAction'), callback: function() { that.editGenericPermissions(u, refresh); } },
-					{ id: "action-edit-defaults", content:'<i class="icon-globe"></i>', tooltip: that.mollify.ui.texts.get('pluginPermissionsEditDefaultPermissionsAction'), callback: function() { that.editGenericPermissions(false, refresh); } }
+					{ id: "action-edit", content:'<i class="icon-user"></i>', tooltip: that._m.ui.texts.get(u.is_group == '1' ? 'pluginPermissionsEditGroupPermissionsAction' : 'pluginPermissionsEditUserPermissionsAction'), callback: function() { that.editGenericPermissions(u, refresh); } },
+					{ id: "action-edit-defaults", content:'<i class="icon-globe"></i>', tooltip: that._m.ui.texts.get('pluginPermissionsEditDefaultPermissionsAction'), callback: function() { that.editGenericPermissions(false, refresh); } }
 				],
 				table: {
 					id: "config-admin-userpermissions",
 					key: "id",
 					narrow: true,
 					columns: [
-						{ id: "name", title: that.mollify.ui.texts.get('pluginPermissionsPermissionName'), formatter: function(p, v) {
+						{ id: "name", title: that._m.ui.texts.get('pluginPermissionsPermissionName'), formatter: function(p, v) {
 							if (v in that._permissionTypes.keys.filesystem)
-								return that.mollify.ui.texts.get('permission_default_'+v);
-							return that.mollify.ui.texts.get('permission_'+v);
+								return that._m.ui.texts.get('permission_default_'+v);
+							return that._m.ui.texts.get('permission_'+v);
 						} },
-						{ id: "value", title: that.mollify.ui.texts.get('pluginPermissionsPermissionValue'), formatter: function(p, v) {
+						{ id: "value", title: that._m.ui.texts.get('pluginPermissionsPermissionValue'), formatter: function(p, v) {
 							if (v === undefined) return "";
 							return that._formatPermissionValue(p.name, v);
 						} },
-						{ id: "default", title: that.mollify.ui.texts.get('permission_system_default'), formatter: function(p) {
+						{ id: "default", title: that._m.ui.texts.get('permission_system_default'), formatter: function(p) {
 							if (!(p.name in defaultPermissions) || defaultPermissions[p.name] === undefined) return "";
 							return that._formatPermissionValue(p.name, defaultPermissions[p.name]);
 						} }
@@ -1847,7 +1847,7 @@
 			id: "plugin-permissions",
 			initialize: that.initialize,
 			itemContextHandler : function(item, ctx, data) {
-				if (!that.mollify.session.user.admin) return false;
+				if (!that._m.session.user.admin) return false;
 				
 				return {
 					details: {
@@ -1866,7 +1866,7 @@
 					return [{
 						viewId: "permissions",
 						admin: true,
-						title: that.mollify.ui.texts.get("pluginPermissionsConfigViewNavTitle"),
+						title: that._m.ui.texts.get("pluginPermissionsConfigViewNavTitle"),
 						onActivate: that.onActivateConfigView
 					}];
 				}
@@ -1879,25 +1879,25 @@
 	/**
 	*	Dropbox plugin
 	**/
-	global_mollify.plugins.DropboxPlugin = function() {
+	_gm.plugins.DropboxPlugin = function() {
 		var that = this;
 		that.w = 0;
 		that.$dbE = false;
 		that.items = [];
 		that.itemsByKey = {};
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
-			that._pathFormatter = new mollify.ui.formatters.FilesystemItemPath();
-			that.itemContext = new mollify.ui.itemContext();
-			mollify.events.addEventHandler(function(e) {
-				if (e.type == 'filesystem/delete') that.onRemoveItems(mollify.helpers.extractValue(e.payload.items, "id"));
-				//TODO else if (e.type == 'filesystem/rename') that.updateItems(mollify.helpers.extractValue(e.payload.items));
+		this.initialize = function(_m) {
+			that._m = _m;
+			that._pathFormatter = new _m.ui.formatters.FilesystemItemPath();
+			that.itemContext = new _m.ui.itemContext();
+			_m.events.addEventHandler(function(e) {
+				if (e.type == 'filesystem/delete') that.onRemoveItems(_m.helpers.extractValue(e.payload.items, "id"));
+				//TODO else if (e.type == 'filesystem/rename') that.updateItems(_m.helpers.extractValue(e.payload.items));
 			});
 		};
 		
 		this.onFileViewActivate = function($container) {
-			that.mollify.dom.template("mollify-tmpl-mainview-dropbox").appendTo($container);
+			that._m.dom.template("mollify-tmpl-mainview-dropbox").appendTo($container);
 			$("#mollify-dropbox-handle").click(function() {
 				that.openDropbox();
 			});
@@ -1912,7 +1912,7 @@
 			$(window).resize(onResize);
 			onResize();
 			
-			if (that.mollify.ui.draganddrop) {
+			if (that._m.ui.draganddrop) {
 				var dnd = {
 					canDrop : function($e, e, obj) {
 						if (!obj || obj.type != 'filesystemitem') return false;
@@ -1929,11 +1929,11 @@
 						that.onAddItem(item);
 					}
 				};
-				that.mollify.ui.draganddrop.enableDrop($("#mollify-dropbox-list"), dnd);
-				that.mollify.ui.draganddrop.enableDrop($("#mollify-dropbox-handle"), dnd);
+				that._m.ui.draganddrop.enableDrop($("#mollify-dropbox-list"), dnd);
+				that._m.ui.draganddrop.enableDrop($("#mollify-dropbox-handle"), dnd);
 			}
 			
-			var ab = that.mollify.ui.controls.dropdown({
+			var ab = that._m.ui.controls.dropdown({
 				element: $("#mollify-dropbox-actions"),
 				container: $("body"),
 				hideDelay: 0,
@@ -1968,10 +1968,10 @@
 				cb([]);
 				return;
 			}
-			var actions = that.mollify.helpers.getPluginActions(that.mollify.getItemCollectionPlugins(that.items, {src: "dropbox"}));
+			var actions = that._m.helpers.getPluginActions(that._m.getItemCollectionPlugins(that.items, {src: "dropbox"}));
 			actions.push({title:"-"});
 			actions.push({"title-key":"dropboxEmpty"});
-			cb(that.mollify.helpers.cleanupActions(actions));
+			cb(that._m.helpers.cleanupActions(actions));
 		};
 		
 		this.openDropbox = function(o) {
@@ -2030,7 +2030,7 @@
 		};
 		
 		this.refreshList = function() {
-			$("#mollify-dropbox-list").empty().append(that.mollify.dom.template("mollify-tmpl-mainview-dropbox-item", that.items));
+			$("#mollify-dropbox-list").empty().append(that._m.dom.template("mollify-tmpl-mainview-dropbox-item", that.items));
 			var $items = $("#mollify-dropbox-list .mollify-dropbox-list-item");
 			$items.click(function(e) {
 				e.preventDefault();
@@ -2041,8 +2041,8 @@
 				that.itemContext.open({
 					item: item,
 					element: $i,
-					container: that.mollify.App.getElement(),
-					viewport: that.mollify.App.getElement()
+					container: that._m.App.getElement(),
+					viewport: that._m.App.getElement()
 				});
 				return false;
 			}).each(function() {
@@ -2055,8 +2055,8 @@
 					trigger: "hover"
 				});
 			});
-			if (that.mollify.ui.draganddrop) {
-				that.mollify.ui.draganddrop.enableDrag($items, {
+			if (that._m.ui.draganddrop) {
+				that._m.ui.draganddrop.enableDrag($items, {
 					onDragStart : function($e, e) {
 						var item = $e.tmplItem().data;
 						return {type:'filesystemitem', payload: item};
@@ -2064,7 +2064,7 @@
 				});
 			}
 			$("#mollify-dropbox-list .mollify-dropbox-list-item > a.item-remove").click(function() {
-				that.mollify.ui.hideActivePopup();
+				that._m.ui.hideActivePopup();
 				var $t = $(this);
 				that.onRemoveItem($t.tmplItem().data);
 			});
@@ -2106,27 +2106,27 @@
 	/**
 	*	Share plugin
 	**/
-	global_mollify.plugins.SharePlugin = function() {
+	_gm.plugins.SharePlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
-			that._timestampFormatter = new mollify.ui.formatters.Timestamp(mollify.ui.texts.get('shortDateTimeFormat'));
+		this.initialize = function(_m) {
+			that._m = _m;
+			that._timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
 			
-			mollify.App.registerView("share", {
+			_m.App.registerView("share", {
 				getView : function(rqParts, urlParams) {					
 					if (rqParts.length != 2) return false;
 					var df = $.Deferred();
 					
 					var shareId = rqParts[1];
-					mollify.service.get("public/"+shareId+"/info/").done(function(result) {
+					_m.service.get("public/"+shareId+"/info/").done(function(result) {
 						if (!result || !result.type || (["download", "upload", "prepared_download"].indexOf(result.type) < 0)) {
-							df.resolve(new mollify.ui.FullErrorView(mollify.ui.texts.get('shareViewInvalidRequest')));
+							df.resolve(new _m.ui.FullErrorView(_m.ui.texts.get('shareViewInvalidRequest')));
 							return;
 						}
 						
 						if (result.restriction == "private") {
-							if (!mollify.session || !mollify.session.authenticated) {
+							if (!_m.session || !_m.session.authenticated) {
 								df.resolve(false);
 								return;
 							}
@@ -2137,7 +2137,7 @@
 						
 						df.resolve(that._getShareView(shareId, result));
 					}).fail(function() {
-						df.resolve(new mollify.ui.FullErrorView(mollify.ui.texts.get('shareViewInvalidRequest')));
+						df.resolve(new _m.ui.FullErrorView(_m.ui.texts.get('shareViewInvalidRequest')));
 					});
 					return df.promise();
 				}
@@ -2145,13 +2145,13 @@
 		};
 		
 		this._getShareView = function(id, info) {
-			var serviceUrl = that.mollify.service.url("public/"+id, true);			
+			var serviceUrl = that._m.service.url("public/"+id, true);			
 			var urlProvider = {
 				get : function(path, param) {
 					var url = serviceUrl;
 					if (path) url = url + path;
-					if (param) url = that.mollify.helpers.urlWithParam(url, param);
-					return that.mollify.helpers.noncachedUrl(url);
+					if (param) url = that._m.helpers.urlWithParam(url, param);
+					return that._m.helpers.noncachedUrl(url);
 				}
 			}
 			
@@ -2162,7 +2162,7 @@
 			} else {
 				return new that.ShareUploadView(id, urlProvider, info.name);
 			}
-			return new that.mollify.ui.FullErrorView(that.mollify.ui.texts.get('shareViewInvalidRequest'));
+			return new that._m.ui.FullErrorView(that._m.ui.texts.get('shareViewInvalidRequest'));
 		};
 
 		this.ShareAccessPasswordView = function(shareId, info) {
@@ -2171,7 +2171,7 @@
 			this.init = function($c) {
 				vt._$c = $c;
 				
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Share", "public_share_access_password.html"), function() {
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Share", "public_share_access_password.html"), function() {
 					$("#mollify-share-access-button").click(vt._onAccess);
 					$("#mollify-share-access-password").focus();
 					$("#mollify-share-access-password").bind('keypress', function(e) {
@@ -2185,10 +2185,10 @@
 				if (!pw || pw.length === 0) return;
 				var key = window.Base64.encode(pw);
 				
-				that.mollify.service.post("public/"+shareId+"/key/", { key: key }).done(function(r) {
+				that._m.service.post("public/"+shareId+"/key/", { key: key }).done(function(r) {
 					if (!r.result) {
-						that.mollify.ui.dialogs.notification({
-							message: that.mollify.ui.texts.get('shareAccessPasswordFailed')
+						that._m.ui.dialogs.notification({
+							message: that._m.ui.texts.get('shareAccessPasswordFailed')
 						});
 						$("#mollify-share-access-password").focus();
 						return;
@@ -2203,10 +2203,10 @@
 			var vt = this;
 			
 			this.init = function($c) {
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Share", "public_share_download.html"), function() {
-					$("#mollify-share-title").text(that.mollify.ui.texts.get("shareViewDownloadTitle", shareName));
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Share", "public_share_download.html"), function() {
+					$("#mollify-share-title").text(that._m.ui.texts.get("shareViewDownloadTitle", shareName));
 					
-					setTimeout(function() { that.mollify.ui.download(u.get()); }, 1000);
+					setTimeout(function() { that._m.ui.download(u.get()); }, 1000);
 				}, ['localize']);
 			};
 		};
@@ -2215,15 +2215,15 @@
 			var vt = this;
 			
 			this.init = function($c) {
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Share", "public_share_prepared_download.html"), function() {
-					$("#mollify-share-download-prepare").text(that.mollify.ui.texts.get("shareViewPreparedDownloadPreparingTitle", shareName));
-					$("#mollify-share-download").text(that.mollify.ui.texts.get("shareViewPreparedDownloadDownloadingTitle", shareName));
-					$("#mollify-share-download-error").text(that.mollify.ui.texts.get("shareViewPreparedDownloadErrorTitle", shareName));
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Share", "public_share_prepared_download.html"), function() {
+					$("#mollify-share-download-prepare").text(that._m.ui.texts.get("shareViewPreparedDownloadPreparingTitle", shareName));
+					$("#mollify-share-download").text(that._m.ui.texts.get("shareViewPreparedDownloadDownloadingTitle", shareName));
+					$("#mollify-share-download-error").text(that._m.ui.texts.get("shareViewPreparedDownloadErrorTitle", shareName));
 					
-					that.mollify.service.get(u.get("/prepare")).done(function(r) {
+					that._m.service.get(u.get("/prepare")).done(function(r) {
 						$("#mollify-share-download-prepare").hide();
 						$("#mollify-share-download").show();
-						that.mollify.ui.download(u.get(false, "key="+r.key));
+						that._m.ui.download(u.get(false, "key="+r.key));
 					}).fail(function() {
 						this.handled = true;
 						$("#mollify-share-download-prepare").hide();
@@ -2237,18 +2237,18 @@
 			var vt = this;
 			
 			this.init = function($c) {
-				var uploadSpeedFormatter = new that.mollify.ui.formatters.Number(1, that.mollify.ui.texts.get('dataRateKbps'), that.mollify.ui.texts.get('decimalSeparator'));
+				var uploadSpeedFormatter = new that._m.ui.formatters.Number(1, that._m.ui.texts.get('dataRateKbps'), that._m.ui.texts.get('decimalSeparator'));
 				
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Share", "public_share_upload.html"), function() {
-					$("#mollify-share-title").text(that.mollify.ui.texts.get("shareViewUploadTitle", shareName));
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Share", "public_share_upload.html"), function() {
+					$("#mollify-share-title").text(that._m.ui.texts.get("shareViewUploadTitle", shareName));
 					vt._uploadProgress = new that.PublicUploaderProgress($("#mollify-share-public-upload-progress"));
 					
-					that.mollify.ui.uploader.initUploadWidget($("#mollify-share-public-uploader"), {
+					that._m.ui.uploader.initUploadWidget($("#mollify-share-public-uploader"), {
 						url: u.get(false, "format=binary"),
 						dropElement: $("#mollify-share-public"),
 						handler: {
 							start: function(files, ready) {							
-								vt._uploadProgress.start(that.mollify.ui.texts.get(files.length > 1 ? "mainviewUploadProgressManyMessage" : "mainviewUploadProgressOneMessage", files.length));
+								vt._uploadProgress.start(that._m.ui.texts.get(files.length > 1 ? "mainviewUploadProgressManyMessage" : "mainviewUploadProgressOneMessage", files.length));
 								ready();
 							},
 							progress: function(pr, br) {
@@ -2257,13 +2257,13 @@
 								vt._uploadProgress.update(pr, speed);
 							},
 							finished: function() {
-								setTimeout(function() { vt._uploadProgress.success(that.mollify.ui.texts.get('mainviewFileUploadComplete')); }, 1000);
+								setTimeout(function() { vt._uploadProgress.success(that._m.ui.texts.get('mainviewFileUploadComplete')); }, 1000);
 							},
 							failed: function(e) {
 								if (e && e.code == 216) {
-									vt._uploadProgress.failure(that.mollify.ui.texts.get('mainviewFileUploadNotAllowed'));
+									vt._uploadProgress.failure(that._m.ui.texts.get('mainviewFileUploadNotAllowed'));
 								} else {
-									vt._uploadProgress.failure(that.mollify.ui.texts.get('mainviewFileUploadFailed'));
+									vt._uploadProgress.failure(that._m.ui.texts.get('mainviewFileUploadFailed'));
 								}
 							}
 						}
@@ -2306,9 +2306,9 @@
 		
 		this.renderItemContextDetails = function(el, item, $content, data) {
 			$content.addClass("loading");
-			that.mollify.templates.load("shares-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("Share", "content.html"))).done(function() {
+			that._m.templates.load("shares-content", that._m.helpers.noncachedUrl(that._m.plugins.url("Share", "content.html"))).done(function() {
 				$content.removeClass("loading");
-				that.mollify.dom.template("mollify-tmpl-shares", {item: item}).appendTo($content);
+				that._m.dom.template("mollify-tmpl-shares", {item: item}).appendTo($content);
 				that.loadShares(item).done(function(shares) {
 					that.initContent(item, shares, $content);
 				});
@@ -2316,8 +2316,8 @@
 		};
 		
 		this.loadShares = function(item) {
-			if (!item) return that.mollify.service.get("share/all/");
-			return that.mollify.service.get("share/items/"+item.id).done(function(result) {
+			if (!item) return that._m.service.get("share/all/");
+			return that._m.service.get("share/items/"+item.id).done(function(result) {
 				that.refreshShares(result);
 			});
 		};
@@ -2335,25 +2335,25 @@
 		}
 		
 		this.initContent = function(item, shares, $c) {
-			var title = item.shareTitle ? item.shareTitle : that.mollify.ui.texts.get(item.is_file ? 'shareDialogShareFileTitle' : 'shareDialogShareFolderTitle');
+			var title = item.shareTitle ? item.shareTitle : that._m.ui.texts.get(item.is_file ? 'shareDialogShareFileTitle' : 'shareDialogShareFolderTitle');
 			$("#share-item-title").html(title);
 			$("#share-item-name").html(item.name);
 			$("#share-dialog-content").removeClass("loading");
 			$("#share-new").click(function() { that.onAddShare(item); } );
-			that._context = that.mollify.ui.controls.slidePanel($("#share-list"), { relative: true });
+			that._context = that._m.ui.controls.slidePanel($("#share-list"), { relative: true });
 			
 			that.updateShareList(item);
 		};
 		
 		this.getShareLink = function(share) {
-			return that.mollify.App.getPageUrl("share/"+share.id);
+			return that._m.App.getPageUrl("share/"+share.id);
 		};
 		
 		this.updateShareList = function(item) {
 			$("#share-items").empty();
 			
 			if (that.shares.length === 0) {
-				$("#share-items").html('<div class="no-share-items">'+that.mollify.ui.texts.get("shareDialogNoShares")+'</div>');
+				$("#share-items").html('<div class="no-share-items">'+that._m.ui.texts.get("shareDialogNoShares")+'</div>');
 				return;
 			}
 			
@@ -2371,9 +2371,9 @@
 				}
 			};
 			
-			that.mollify.dom.template("share-template", that.shares, opt).appendTo("#share-items");
-			that.mollify.ui.process($("#share-list"), ["localize"]);
-			if (!that.mollify.ui.clipboard) {
+			that._m.dom.template("share-template", that.shares, opt).appendTo("#share-items");
+			that._m.ui.process($("#share-list"), ["localize"]);
+			if (!that._m.ui.clipboard) {
 				$(".share-link-copy").hide();
 			} else {
 				var h = {
@@ -2382,7 +2382,7 @@
 				}
 				$.each($(".share-link-copy"), function(i, e) {
 					var share = $(e).tmplItem().data;
-					that.mollify.ui.clipboard.enableCopy($(e), that.getShareLink(share), h);
+					that._m.ui.clipboard.enableCopy($(e), that.getShareLink(share), h);
 				});
 			}
 	
@@ -2421,10 +2421,10 @@
 			/*var $c = $("#share-context").empty();*/
 			var $c = that._context.getContentElement().empty();
 			
-			that.mollify.dom.template(contentTemplateId, tmplData).appendTo($c);
-			that.mollify.ui.process($c, ["localize"]);
-			that.mollify.ui.controls.datepicker("share-validity-expirationdate-value", {
-				format: that.mollify.ui.texts.get('shortDateTimeFormat'),
+			that._m.dom.template(contentTemplateId, tmplData).appendTo($c);
+			that._m.ui.process($c, ["localize"]);
+			that._m.ui.controls.datepicker("share-validity-expirationdate-value", {
+				format: that._m.ui.texts.get('shortDateTimeFormat'),
 				time: true
 			});
 			that._context.show(false, 280);
@@ -2445,7 +2445,7 @@
 			$("#share-general-name").val('');
 			$('#share-general-active').attr('checked', true);
 			$("#share-access-norestriction").attr('checked', true);
-			$("#share-access-public-password-value").attr("placeholder", that.mollify.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
+			$("#share-access-public-password-value").attr("placeholder", that._m.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
 			
 			$("#share-addedit-btn-ok").click(function() {
 				$("#share-access-public-password-value").removeClass("error");
@@ -2490,10 +2490,10 @@
 				$("#share-access-norestriction").attr('checked', true);
 			
 			if (share.expiration)
-				$("#share-validity-expirationdate-value").data("mollify-datepicker").set(that.mollify.helpers.parseInternalTime(share.expiration));
+				$("#share-validity-expirationdate-value").data("mollify-datepicker").set(that._m.helpers.parseInternalTime(share.expiration));
 			
-			if (oldRestrictionPw) $("#share-access-public-password-value").attr("placeholder", that.mollify.ui.texts.get("shareDialogShareAccessChangePwTitle"));
-			else $("#share-access-public-password-value").attr("placeholder", that.mollify.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
+			if (oldRestrictionPw) $("#share-access-public-password-value").attr("placeholder", that._m.ui.texts.get("shareDialogShareAccessChangePwTitle"));
+			else $("#share-access-public-password-value").attr("placeholder", that._m.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
 						
 			$("#share-addedit-btn-ok").click(function() {
 				var name = $("#share-general-name").val();
@@ -2522,14 +2522,14 @@
 		}
 		
 		this.onOpenShares = function(item) {
-			that.mollify.templates.load("shares-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("Share", "content.html"))).done(function() {
-				that.mollify.ui.dialogs.custom({
+			that._m.templates.load("shares-content", that._m.helpers.noncachedUrl(that._m.plugins.url("Share", "content.html"))).done(function() {
+				that._m.ui.dialogs.custom({
 					resizable: true,
 					initSize: [600, 470],
-					title: item.shareTitle ? item.shareTitle : that.mollify.ui.texts.get(item.is_file ? 'shareDialogShareFileTitle' : 'shareDialogShareFolderTitle'),
-					content: that.mollify.dom.template("mollify-tmpl-shares", {item: item, bubble: false}),
+					title: item.shareTitle ? item.shareTitle : that._m.ui.texts.get(item.is_file ? 'shareDialogShareFileTitle' : 'shareDialogShareFolderTitle'),
+					content: that._m.dom.template("mollify-tmpl-shares", {item: item, bubble: false}),
 					buttons: [
-						{ id: "no", "title": that.mollify.ui.texts.get('dialogClose') }
+						{ id: "no", "title": that._m.ui.texts.get('dialogClose') }
 					],
 					"on-button": function(btn, d) {
 						d.close();
@@ -2544,25 +2544,25 @@
 		};
 		
 		this.addShare = function(item, name, expiration, active, restriction) {
-			return that.mollify.service.post("share/", { item: item.id, name: name, expiration: that.mollify.helpers.formatInternalTime(expiration), active: active, restriction: restriction }).done(function(result) {
+			return that._m.service.post("share/", { item: item.id, name: name, expiration: that._m.helpers.formatInternalTime(expiration), active: active, restriction: restriction }).done(function(result) {
 				that.refreshShares(result);
 				that.updateShareList(item);
 			}).fail(that.d.close);
 		}
 	
 		this.editShare = function(item, id, name, expiration, active, restriction) {
-			return that.mollify.service.put("share/"+id, { id: id, name: name, expiration: that.mollify.helpers.formatInternalTime(expiration), active: active, restriction: restriction }).done(function(result) {
+			return that._m.service.put("share/"+id, { id: id, name: name, expiration: that._m.helpers.formatInternalTime(expiration), active: active, restriction: restriction }).done(function(result) {
 				var share = that.getShare(id);
 				share.name = name;
 				share.active = active;
-				share.expiration = that.mollify.helpers.formatInternalTime(expiration);
+				share.expiration = that._m.helpers.formatInternalTime(expiration);
 				share.restriction = restriction ? restriction.type : false;
 				that.updateShareList(item);
 			}).fail(that.d.close);
 		}
 		
 		this.removeShare = function(item, share) {
-			return that.mollify.service.del("share/"+share.id).done(function(result) {
+			return that._m.service.del("share/"+share.id).done(function(result) {
 				var i = that.shareIds.indexOf(share.id);
 				that.shareIds.splice(i, 1);
 				that.shares.splice(i, 1);
@@ -2571,15 +2571,15 @@
 		}
 
 		this.removeAllItemShares = function(item) {
-			return that.mollify.service.del("share/items/"+item.id);
+			return that._m.service.del("share/items/"+item.id);
 		}
 		
 		this.getActionValidationMessages = function(action, items, validationData) {
 			var messages = [];
 			$.each(items, function(i, itm) {
 				var msg;
-				if (itm.reason == 'item_shared') msg = that.mollify.ui.texts.get("pluginShareActionValidationDeleteShared", itm.item.name);
-				else if (itm.reason == 'item_shared_others') msg = that.mollify.ui.texts.get("pluginShareActionValidationDeleteSharedOthers", itm.item.name);
+				if (itm.reason == 'item_shared') msg = that._m.ui.texts.get("pluginShareActionValidationDeleteShared", itm.item.name);
+				else if (itm.reason == 'item_shared_others') msg = that._m.ui.texts.get("pluginShareActionValidationDeleteSharedOthers", itm.item.name);
 				else return;
 
 				messages.push({
@@ -2597,17 +2597,17 @@
 			if (!itemData) return "<div id='item-share-info-"+item.id+"' class='filelist-item-share-info empty'></div>";
 			if (itemData.own > 0)
 				return "<div id='item-share-info-"+item.id+"' class='filelist-item-share-info'><i class='icon-external-link'></i>&nbsp;"+itemData.own+"</div>";
-			return "<div id='item-share-info-"+item.id+"' class='filelist-item-share-info others' title='"+that.mollify.ui.texts.get("pluginShareFilelistColOtherShared")+"'><i class='icon-external-link'></i></div>";
+			return "<div id='item-share-info-"+item.id+"' class='filelist-item-share-info others' title='"+that._m.ui.texts.get("pluginShareFilelistColOtherShared")+"'><i class='icon-external-link'></i></div>";
 		};
 
 		this._updateListCellContent = function(item, data) {
 		};
 		
 		this.showShareBubble = function(item, cell) {
-			that.d = that.mollify.ui.controls.dynamicBubble({element:cell, title: item.name, container: $("#mollify-filelist-main-items")});
+			that.d = that._m.ui.controls.dynamicBubble({element:cell, title: item.name, container: $("#mollify-filelist-main-items")});
 			
-			that.mollify.templates.load("shares-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.url("Share", "content.html"))).done(function() {
-				that.d.content(that.mollify.dom.template("mollify-tmpl-shares", {item: item, bubble: true}));
+			that._m.templates.load("shares-content", that._m.helpers.noncachedUrl(that._m.plugins.url("Share", "content.html"))).done(function() {
+				that.d.content(that._m.dom.template("mollify-tmpl-shares", {item: item, bubble: true}));
 				that.loadShares(item).done(function(shares) {
 					that.initContent(item, shares, that.d.element());
 					that.d.position();
@@ -2625,7 +2625,7 @@
 				cv.showLoading(true);
 				
 				that.loadShares().done(function(l) {
-					shares = l.shares[that.mollify.session.user.id];
+					shares = l.shares[that._m.session.user.id];
 					items = l.items;
 					invalid = l.invalid;
 					listView.table.set(items);
@@ -2638,15 +2638,15 @@
 				return (invalid.indexOf(i.id) < 0);
 			};
 
-			listView = new that.mollify.view.ConfigListView($c, {
+			listView = new that._m.view.ConfigListView($c, {
 				table: {
 					key: "id",
 					columns: [
 						{ id: "icon", title:"", valueMapper: function(item) {
 							return isValid(item) ? '<i class="icon-file"></i>' : '<i class="icon-exclamation"></i>';
 						} },
-						{ id: "name", title: that.mollify.ui.texts.get('fileListColumnTitleName') },
-						{ id: "count", title: that.mollify.ui.texts.get('pluginShareConfigViewCountTitle'), formatter: function(item) {
+						{ id: "name", title: that._m.ui.texts.get('fileListColumnTitleName') },
+						{ id: "count", title: that._m.ui.texts.get('pluginShareConfigViewCountTitle'), formatter: function(item) {
 							return shares[item.id].length;
 						} },
 						{ id: "edit", title: "", type: "action", formatter: function(item) {
@@ -2681,7 +2681,7 @@
 				views : function() {
 					return [{
 						viewId: "shares",
-						title: that.mollify.ui.texts.get("pluginShareConfigViewNavTitle"),
+						title: that._m.ui.texts.get("pluginShareConfigViewNavTitle"),
 						onActivate: that.onActivateConfigView
 					}];
 				}
@@ -2727,11 +2727,11 @@
 	/**
 	*	Send via email -plugin
 	**/
-	global_mollify.plugins.SendViaEmailPlugin = function() {
+	_gm.plugins.SendViaEmailPlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
+		this.initialize = function(_m) {
+			that._m = _m;
 		}
 		
 		return {
@@ -2763,13 +2763,13 @@
 	/**
 	*	Registration -plugin
 	**/
-	global_mollify.plugins.RegistrationPlugin = function() {
+	_gm.plugins.RegistrationPlugin = function() {
 		var that = this;
 		
-		this.initialize = function(mollify) {
-			that.mollify = mollify;
+		this.initialize = function(_m) {
+			that._m = _m;
 			
-			mollify.App.registerView("registration", {
+			_m.App.registerView("registration", {
 				getView : function(rqParts, urlParams) {
 					if (rqParts.length != 2) return false;
 					
@@ -2787,7 +2787,7 @@
 			var vt = this;
 			
 			this.init = function($c) {
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Registration", "registration_create.html"), function() {
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Registration", "registration_create.html"), function() {
 					$("#register-new-button").click(vt.onRegister);
 					$("#registration-new-name").focus();
 				}, ['localize']);
@@ -2826,16 +2826,16 @@
 					return;
 				}
 				
-				that.mollify.service.post("registration/create", {name:name, password:window.Base64.encode(pw), email:email, data: null}).done(function() {
+				that._m.service.post("registration/create", {name:name, password:window.Base64.encode(pw), email:email, data: null}).done(function() {
 					$("#mollify-registration-form").hide();
 					$("#mollify-registration-main").addClass("wide");
 					$("#mollify-registration-success").show();
 				}).fail(function(er) {
 					this.handled = true;
 					if (er.code == 301)
-						that.mollify.ui.dialogs.error({message: that.mollify.ui.texts.get('registrationFailedDuplicateNameOrEmail')});
+						that._m.ui.dialogs.error({message: that._m.ui.texts.get('registrationFailedDuplicateNameOrEmail')});
 					else
-						that.mollify.ui.dialogs.error({message: that.mollify.ui.texts.get('registrationFailed')});
+						that._m.ui.dialogs.error({message: that._m.ui.texts.get('registrationFailed')});
 				});
 			}
 		};
@@ -2844,9 +2844,9 @@
 			var vt = this;
 			
 			this.init = function($c) {				
-				that.mollify.dom.loadContentInto($c, that.mollify.plugins.url("Registration", "registration_confirm.html"), function() {
+				that._m.dom.loadContentInto($c, that._m.plugins.url("Registration", "registration_confirm.html"), function() {
 					if (!urlParams.email || urlParams.email.length === 0) {
-							$("#mollify-registration-main").addClass("complete").empty().append(that.mollify.dom.template("mollify-tmpl-registration-errormessage", {message: that.mollify.ui.texts.get('registrationInvalidConfirm')}));
+							$("#mollify-registration-main").addClass("complete").empty().append(that._m.dom.template("mollify-tmpl-registration-errormessage", {message: that._m.ui.texts.get('registrationInvalidConfirm')}));
 						return;
 					}
 					vt._email = urlParams.email;
@@ -2878,7 +2878,7 @@
 			
 			this._confirm = function(email, key, fromForm) {
 				$("#mollify-registration-main").addClass("loading");
-				that.mollify.service.post("registration/confirm", {email:email, key:key}).done(function(r) {
+				that._m.service.post("registration/confirm", {email:email, key:key}).done(function(r) {
 					$("#mollify-registration-confirm-form").hide();
 					$("#mollify-registration-main").removeClass("loading").addClass("wide");
 					
@@ -2890,9 +2890,9 @@
 					$("#mollify-registration-main").removeClass("loading");
 					this.handled = true;
 					if (fromForm)
-						that.mollify.ui.dialogs.error({message: that.mollify.ui.texts.get('registrationConfirmFailed')});
+						that._m.ui.dialogs.error({message: that._m.ui.texts.get('registrationConfirmFailed')});
 					else {
-						$("#mollify-registration-main").addClass("wide").empty().append(that.mollify.dom.template("mollify-tmpl-registration-errormessage", {message: that.mollify.ui.texts.get('registrationConfirmFailed')}));
+						$("#mollify-registration-main").addClass("wide").empty().append(that._m.dom.template("mollify-tmpl-registration-errormessage", {message: that._m.ui.texts.get('registrationConfirmFailed')}));
 					}
 				});
 			};
@@ -2903,7 +2903,7 @@
 			initialize: that.initialize,
 
 			show : function() {
-				that.mollify.App.openPage('registration/new');
+				that._m.App.openPage('registration/new');
 			}
 		};
 	}

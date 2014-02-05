@@ -7,22 +7,22 @@
  * License: http://www.mollify.org/license.php
  */
 
-window.mollify.modules.push(function($, mollify) {
+window.mollify.modules.push(function($, _m) {
 
 	"use strict";
 	
-	mollify.view.LoginView = function(){
+	_m.view.LoginView = function(){
 		var that = this;
 		
 		that.init = function($c) {
-			return mollify.dom.loadContentInto($c, mollify.templates.url("loginview.html"), that, ['localize', 'bubble']);
+			return _m.dom.loadContentInto($c, _m.templates.url("loginview.html"), that, ['localize', 'bubble']);
 		}
 		
 		that.onLoad = function() {
-			if (mollify.features.hasFeature('lost_password')) $("#mollify-login-forgot-password").show();
-			if (mollify.features.hasFeature('registration') && mollify.plugins.exists("plugin-registration")) {
+			if (_m.features.hasFeature('lost_password')) $("#mollify-login-forgot-password").show();
+			if (_m.features.hasFeature('registration') && _m.plugins.exists("plugin-registration")) {
 				$("#mollify-login-register").click(function() {
-					mollify.plugins.get("plugin-registration").show();
+					_m.plugins.get("plugin-registration").show();
 				}).show();
 			}
 
@@ -43,7 +43,7 @@ window.mollify.modules.push(function($, mollify) {
 					if (!email) return;
 					
 					bubble.hide();
-					that.wait = mollify.ui.dialogs.wait({target: "mollify-login-main"});
+					that.wait = _m.ui.dialogs.wait({target: "mollify-login-main"});
 					that.onResetPassword(email);
 				});
 
@@ -64,9 +64,9 @@ window.mollify.modules.push(function($, mollify) {
 				$("#mollify-login-password").focus();
 				return;
 			}
-			that.wait = mollify.ui.dialogs.wait({target: "mollify-login-main"});
-			mollify.service.post("session/authenticate/", {username: username, password: window.Base64.encode(password), remember: remember}).done(function(s) {
-				mollify.events.dispatch('session/start', s);
+			that.wait = _m.ui.dialogs.wait({target: "mollify-login-main"});
+			_m.service.post("session/authenticate/", {username: username, password: window.Base64.encode(password), remember: remember}).done(function(s) {
+				_m.events.dispatch('session/start', s);
 			}).fail(function(e) {
 				if (e.code == 107) this.handled = true;
 				that.showLoginError();
@@ -74,18 +74,18 @@ window.mollify.modules.push(function($, mollify) {
 		}
 		
 		that.onResetPassword = function(email) {
-			mollify.service.post("lostpassword", {"email": email}).done(function(r) {
+			_m.service.post("lostpassword", {"email": email}).done(function(r) {
 				that.wait.close();
 				
-				mollify.ui.dialogs.notification({
-					message: mollify.ui.texts.get('resetPasswordPopupResetSuccess')
+				_m.ui.dialogs.notification({
+					message: _m.ui.texts.get('resetPasswordPopupResetSuccess')
 				});
 			}).fail(function(e) {
 				this.handled = true;
 				that.wait.close();
 				
-				mollify.ui.dialogs.info({
-					message: mollify.ui.texts.get('resetPasswordPopupResetFailed')
+				_m.ui.dialogs.info({
+					message: _m.ui.texts.get('resetPasswordPopupResetFailed')
 				});
 			});
 		}
@@ -93,8 +93,8 @@ window.mollify.modules.push(function($, mollify) {
 		that.showLoginError = function() {
 			that.wait.close();
 			
-			mollify.ui.dialogs.notification({
-				message: mollify.ui.texts.get('loginDialogLoginFailedMessage')
+			_m.ui.dialogs.notification({
+				message: _m.ui.texts.get('loginDialogLoginFailedMessage')
 			});
 		}
 	};
