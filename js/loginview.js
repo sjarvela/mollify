@@ -6,8 +6,8 @@
  *
  * License: http://www.mollify.org/license.php
  */
- 
-!function($, mollify) {
+
+window.mollify.modules.push(function($, mollify) {
 
 	"use strict";
 	
@@ -98,4 +98,4 @@
 			});
 		}
 	};
-}(window.jQuery, window.mollify);
+});

@@ -7,8 +7,8 @@
  * License: http://www.mollify.org/license.php
  */
  
-!function($, mollify) {
-
+window.mollify.modules.push(function($, mollify) {
+ 
 	"use strict";
 
 	mollify.MollifyHTML5Uploader = function() {
@@ -259,4 +259,4 @@
 			}
 		};
 	}
-}(window.jQuery, window.mollify);
+});

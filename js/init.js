@@ -6,113 +6,128 @@
  *
  * License: http://www.mollify.org/license.php
  */
- 
-var mollifyDefaults = {
-	"language": {
-		"default": "en",
-		"options": ["en"]	
-	},
-	"view-url" : false,
-	"app-element-id" : "mollify",
-	"service-path": "backend/",
-	"limited-http-methods" : false,
-	"file-view" : {
-		"default-view-mode" : false,
-		"list-view-columns": {
-			"name": { width: 250 },
-			"size": {},
-			"file-modified": { width: 150 }
-		},
-		"actions": false
-	},
-	"html5-uploader": {
-		maxChunkSize: 0
-	},
-	dnd : {
-		dragimages : {
-			"filesystemitem-file" : "css/images/mimetypes64/empty.png",
-			"filesystemitem-folder" : "css/images/mimetypes64/folder.png",
-			"filesystemitem-many" : "css/images/mimetypes64/application_x_cpio.png"
-		}
-	}
-};
+
 
 !function($) {
 
 	"use strict";
 	
-	var mollify = {
-		App : {},
-		view : {},
-		ui : {},
-		events : {},
-		service : {},
-		filesystem : {},
-		plugins : {},
-		features : {},
-		dom : {},
-		templates : {}
+	var mollifyDefaults = {
+		"language": {
+			"default": "en",
+			"options": ["en"]	
+		},
+		"view-url" : false,
+		"app-element-id" : "mollify",
+		"service-path": "backend/",
+		"limited-http-methods" : false,
+		"file-view" : {
+			"default-view-mode" : false,
+			"list-view-columns": {
+				"name": { width: 250 },
+				"size": {},
+				"file-modified": { width: 150 }
+			},
+			"actions": false
+		},
+		"html5-uploader": {
+			maxChunkSize: 0
+		},
+		dnd : {
+			dragimages : {
+				"filesystemitem-file" : "css/images/mimetypes64/empty.png",
+				"filesystemitem-folder" : "css/images/mimetypes64/folder.png",
+				"filesystemitem-many" : "css/images/mimetypes64/application_x_cpio.png"
+			}
+		}
 	};
 	
-	mollify._time = new Date().getTime();
-	mollify._hiddenInd = 0;
-	mollify.settings = false;
-	mollify.session = false;
-		
-	/* APP */
-
-	mollify.App.init = function(s, p) {
-		mollify.App._initDf = $.Deferred();
-		window.Modernizr.testProp("touch");
-		
-		mollify.App._initialized = false;
-		mollify.App._views = {};
-		mollify.App.pageUrl = mollify.request.getBaseUrl(window.location.href);
-		mollify.App.pageParams = mollify.request.getParams(window.location.href);
-		mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-		
-		mollify.settings = $.extend(true, {}, mollifyDefaults, s);
-		mollify.service.init(mollify.settings["limited-http-methods"]);
-		
-		mollify.plugins.register(new mollify.plugin.Core());
-		mollify.plugins.register(new mollify.plugin.PermissionsPlugin());
-		if (p) {
-			for (var i=0, j=p.length; i < j; i++)
-				mollify.plugins.register(p[i]);
-		}
-		
-		mollify.events.addEventHandler(function(e) {
-			if (e.type == 'session/start') {
-				mollify.App._onSessionStart(e.payload);
-			} else if (e.type == 'session/end') {
-				mollify.session = {};
-				mollify.filesystem.init([]);
-				start();
-			}
-		});
-		
-		var start = function() {
-			mollify.service.get("session/info/").fail(function() {
-				new mollify.ui.FullErrorView('Failed to initialize Mollify').show();
-			}).done(function(s) {
-				mollify.events.dispatch('session/start', s);
-			});
-		};
-		
-		var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); if (mollify.App._initDf.state() == "pending") mollify.App._initDf.reject(); };
-		mollify.ui.initialize().done(function() {
-			mollify.plugins.initialize().done(function() {
-				mollify.App._initialized = true;
-				start();
-			}).fail(onError);
-		}).fail(onError);
-		
-		if (mollify.settings["view-url"])
-			window.onpopstate = function(event) {
-				mollify.App.onRestoreState(document.location.href, event.state);
+	window.mollify = {
+		modules : [],
+		plugins : {},
+		admin : {
+			loaded : {},
+			plugins : {}
+		},
+		init : function(s, p) {
+			// instance
+			var _mollify = {
+				App : {},
+				view : {},
+				ui : {},
+				events : {},
+				service : {},
+				filesystem : {},
+				plugins : {},
+				features : {},
+				dom : {},
+				templates : {}
 			};
-		return mollify.App._initDf;
-	};
+			
+			_mollify._time = new Date().getTime();
+			_mollify._hiddenInd = 0;
+			_mollify.settings = false;
+			_mollify.session = false;
+			
+			$.each(window.mollify.modules, function(i, m) { m($, _mollify); });
+			
+			_mollify._initDf = $.Deferred();
+			//window.Modernizr.testProp("touch");
+			
+			_mollify.App._initialized = false;
+			_mollify.App._views = {};
+			_mollify.App.pageUrl = _mollify.request.getBaseUrl(window.location.href);
+			_mollify.App.pageParams = _mollify.request.getParams(window.location.href);
+			_mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+			
+			_mollify.settings = $.extend(true, {}, mollifyDefaults, s);
+			_mollify.service.init(_mollify.settings["limited-http-methods"]);
+			
+			_mollify.plugins.register(new window.mollify.plugins.Core());
+			_mollify.plugins.register(new window.mollify.plugins.PermissionsPlugin());
+			if (p) {
+				for (var i=0, j=p.length; i < j; i++)
+					_mollify.plugins.register(p[i]);
+			}
+			
+			_mollify.events.addEventHandler(function(e) {
+				if (e.type == 'session/start') {
+					_mollify.App._onSessionStart(e.payload);
+				} else if (e.type == 'session/end') {
+					_mollify.session = {};
+					_mollify.filesystem.init([]);
+					start();
+				}
+			});
+			
+			var start = function() {
+				_mollify.service.get("session/info/").fail(function() {
+					new _mollify.ui.FullErrorView('Failed to initialize Mollify').show();
+				}).done(function(s) {
+					_mollify.events.dispatch('session/start', s);
+				});
+			};
+			
+			var onError = function() { new mollify.ui.FullErrorView('Failed to initialize Mollify').show(); if (_mollify._initDf.state() == "pending") _mollify._initDf.reject(); };
+			_mollify.ui.initialize().done(function() {
+				_mollify.plugins.initialize().done(function() {
+					_mollify.App._initialized = true;
+					start();
+				}).fail(onError);
+			}).fail(onError);
+			
+			if (_mollify.settings["view-url"])
+				window.onpopstate = function(event) {
+					_mollify.App.onRestoreState(document.location.href, event.state);
+				};
+			
+			return _mollify._initDf;
+		}		
+	}
+
+// core
+window.mollify.modules.push(function($, mollify) {
+	/* APP */
 	
 	mollify.App.getElement = function() { return $("#"+mollify.settings["app-element-id"]); };
 	
@@ -163,7 +178,7 @@ var mollifyDefaults = {
 			}
 			
 			mollify.App.activeView.init(mollify.App.getElement(), id).done(function() {
-				if (mollify.App._initDf.state() == "pending") mollify.App._initDf.resolve();
+				if (mollify._initDf.state() == "pending") mollify._initDf.resolve();
 			});
 		};
 		
@@ -750,7 +765,7 @@ var mollifyDefaults = {
 		var l = [];
 		for (var id in pl._list) {
 			var p = pl._list[id];
-			if (p.initialize) p.initialize();
+			if (p.initialize) p.initialize(mollify);
 			if (p.resources) {
 				var pid = p.backendPluginId || id;
 				if (p.resources.texts) {
@@ -1180,8 +1195,7 @@ var mollifyDefaults = {
 			return a;
 		}
 	};
-
-	window.mollify = mollify;
+});
 
 	/* Common */
 	

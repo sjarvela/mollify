@@ -7,7 +7,7 @@
  * License: http://www.mollify.org/license.php
  */
  
-!function($, mollify) {
+window.mollify.modules.push(function($, mollify) {
 
 	"use strict";
 
@@ -94,7 +94,12 @@
 			var l = [];
 			l.push(mollify.service.get("configuration/settings").done(function(s) { that._settings = s; }));			
 			for (var i=0,j=ids.length;i<j;i++) {
-				l.push(mollify.dom.importScript(mollify.plugins.url(ids[i], "plugin.js", true)));
+				if (window.mollify.admin.loaded[ids[i]]) continue;
+				(function(pid) {
+					l.push(mollify.dom.importScript(mollify.plugins.url(pid, "plugin.js", true)).done(function(){
+						window.mollify.admin.loaded[pid] = true;
+					}));
+				})(ids[i]);
 			}
 			
 			$.when.apply($, l).done(function() {
@@ -103,8 +108,8 @@
 				var addView = function(i, v) {
 					that._adminViews.push(v);
 				};
-				for (var pk in mollify.admin.plugins) {
-					var p = mollify.admin.plugins[pk];
+				for (var pk in window.mollify.admin.plugins) {
+					var p = window.mollify.admin.plugins[pk];
 					if (!p || !p.views) continue;
 
 					if (p.resources && p.resources.texts)
@@ -119,7 +124,7 @@
 
 		this._initAdminViews = function(h) {
 			$.each(that._adminViews, function(i, v) {
-				if (v.init) v.init(that._settings, that);
+				if (v.init) v.init(mollify, that._settings, that);
 			});
 
 			var navBarItems = [];
@@ -266,7 +271,7 @@
 		var that = this;
 		this.viewId = "users";
 		
-		this.init = function(opt, cv) {
+		this.init = function(m, opt, cv) {
 			that._cv = cv;
 			that.title = mollify.ui.texts.get("configAdminUsersNavTitle");
 	
@@ -693,7 +698,7 @@
 		var that = this;
 		this.viewId = "groups";
 		
-		this.init = function(s, cv) {
+		this.init = function(m, s, cv) {
 			that._cv = cv;
 			that.title = mollify.ui.texts.get("configAdminGroupsNavTitle");	
 		}
@@ -975,7 +980,7 @@
 		var that = this;
 		this.viewId = "folders";
 		
-		this.init = function(s, cv) {
+		this.init = function(m, s, cv) {
 			that._cv = cv;
 			that._settings = s;
 			that.title = mollify.ui.texts.get("configAdminFoldersNavTitle");
@@ -1212,4 +1217,4 @@
 		}
 	}
 
-}(window.jQuery, window.mollify);
+});

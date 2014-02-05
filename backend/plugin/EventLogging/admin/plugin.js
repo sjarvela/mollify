@@ -7,16 +7,17 @@
  * License: http://www.mollify.org/license.php
  */
 	 
-!function($, mollify) {
+!function($, global_mollify) {
 
 	"use strict"; // jshint ;_;
 
-	mollify.view.config.admin.EventLogging = {
+	var EventLogging = {
 		AllEventsView : function() {
 			var that = this;
 			this.viewId = "events";
 
-			this.init = function(s, cv) {
+			this.init = function(mollify, s, cv) {
+				that.mollify = mollify;
 				that._cv = cv;
 				that.title = mollify.ui.texts.get("pluginEventLoggingAdminNavTitle");
 				
@@ -33,9 +34,9 @@
 
 			this.onActivate = function($c) {
 				that._cv.showLoading(true);
-				that._details = mollify.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
+				that._details = that.mollify.ui.controls.slidePanel($("#mollify-mainview-viewcontent"), { resizable: true });
 				
-				mollify.service.get("configuration/users/").done(function(users) {
+				that.mollify.service.get("configuration/users/").done(function(users) {
 					that._cv.showLoading(false);
 
 					var listView = false;
@@ -53,8 +54,8 @@
 						var user = $optionUser.get();
 						
 						var params = {};
-						if (start) params.start_time = mollify.helpers.formatInternalTime(start);
-						if (end) params.end_time = mollify.helpers.formatInternalTime(end);
+						if (start) params.start_time = that.mollify.helpers.formatInternalTime(start);
+						if (end) params.end_time = that.mollify.helpers.formatInternalTime(end);
 						if (user) params.user = user.name;
 						if (tp) params.type = tp;
 						
@@ -66,7 +67,7 @@
 						listView.table.refresh().done(function(){ that._cv.showLoading(false); });
 					}
 		
-					listView = new mollify.view.ConfigListView($c, {
+					listView = new that.mollify.view.ConfigListView($c, {
 						actions: [
 							{ id: "action-refresh", content:'<i class="icon-refresh"></i>', callback: refresh }
 						],
@@ -84,11 +85,11 @@
 							defaultSort: { id: "time", asc: false },
 							columns: [
 								{ type:"selectrow" },	//TODO icon based on event type
-								{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle'), sortable: true },
-								{ id: "type", title: mollify.ui.texts.get('pluginEventLoggingEventTypeTitle'), sortable: true },
-								{ id: "user", title: mollify.ui.texts.get('pluginEventLoggingUserTitle'), sortable: true },
-								{ id: "time", title: mollify.ui.texts.get('pluginEventLoggingTimeTitle'), formatter: that._timestampFormatter, sortable: true },
-								{ id: "ip", title: mollify.ui.texts.get('pluginEventLoggingIPTitle'), sortable: true }
+								{ id: "id", title: that.mollify.ui.texts.get('configAdminTableIdTitle'), sortable: true },
+								{ id: "type", title: that.mollify.ui.texts.get('pluginEventLoggingEventTypeTitle'), sortable: true },
+								{ id: "user", title: that.mollify.ui.texts.get('pluginEventLoggingUserTitle'), sortable: true },
+								{ id: "time", title: that.mollify.ui.texts.get('pluginEventLoggingTimeTitle'), formatter: that._timestampFormatter, sortable: true },
+								{ id: "ip", title: that.mollify.ui.texts.get('pluginEventLoggingIPTitle'), sortable: true }
 							],
 							onHilight: function(e) {
 								if (e) {
@@ -101,17 +102,17 @@
 						}
 					});
 					var $options = $c.find(".mollify-configlistview-options");
-					mollify.templates.load("eventlogging-content", mollify.helpers.noncachedUrl(mollify.plugins.adminUrl("EventLogging", "content.html"))).done(function() {
-						mollify.dom.template("mollify-tmpl-eventlogging-options").appendTo($options);
-						mollify.ui.process($options, ["localize"]);
+					that.mollify.templates.load("eventlogging-content", that.mollify.helpers.noncachedUrl(that.mollify.plugins.adminUrl("EventLogging", "content.html"))).done(function() {
+						that.mollify.dom.template("mollify-tmpl-eventlogging-options").appendTo($options);
+						that.mollify.ui.process($options, ["localize"]);
 						
-						$optionType = mollify.ui.controls.select("eventlogging-event-type", {
+						$optionType = that.mollify.ui.controls.select("eventlogging-event-type", {
 							values: that._types.concat(["custom"]),
 							formatter: function(v) {
-								if (v == "custom") return mollify.ui.texts.get('pluginEventLoggingAdminEventTypeCustom');
+								if (v == "custom") return that.mollify.ui.texts.get('pluginEventLoggingAdminEventTypeCustom');
 								return that._typeTexts[v] + " ("+v+")";
 							},
-							none: mollify.ui.texts.get('pluginEventLoggingAdminAny'),
+							none: that.mollify.ui.texts.get('pluginEventLoggingAdminAny'),
 							onChange: function(t) {
 								if (t == "custom")
 									$("#eventlogging-event-type-custom").show().val("").focus();
@@ -119,17 +120,17 @@
 									$("#eventlogging-event-type-custom").hide();
 							}
 						});
-						$optionUser = mollify.ui.controls.select("eventlogging-user", {
+						$optionUser = that.mollify.ui.controls.select("eventlogging-user", {
 							values: users,
 							formatter: function(u) { return u.name; },
-							none: mollify.ui.texts.get('pluginEventLoggingAdminAny')
+							none: that.mollify.ui.texts.get('pluginEventLoggingAdminAny')
 						});
-						$optionStart = mollify.ui.controls.datepicker("eventlogging-start", {
-							format: mollify.ui.texts.get('shortDateTimeFormat'),
+						$optionStart = that.mollify.ui.controls.datepicker("eventlogging-start", {
+							format: that.mollify.ui.texts.get('shortDateTimeFormat'),
 							time: true
 						});
-						$optionEnd = mollify.ui.controls.datepicker("eventlogging-end", {
-							format: mollify.ui.texts.get('shortDateTimeFormat'),
+						$optionEnd = that.mollify.ui.controls.datepicker("eventlogging-end", {
+							format: that.mollify.ui.texts.get('shortDateTimeFormat'),
 							time: true
 						});
 						refresh();
@@ -146,21 +147,21 @@
 						d.push({title: p[0], value: p[1]});
 					});
 				}
-				mollify.dom.template("mollify-tmpl-config-eventlogging-eventdetails", {event: e, details: d}, {
+				that.mollify.dom.template("mollify-tmpl-config-eventlogging-eventdetails", {event: e, details: d}, {
 					formatTimestamp: that._timestampFormatter.format,
 					formatItem: function(e) { return e.item.replace(/,/g, "<br/>"); }
 				}).appendTo($e);
-				mollify.ui.process($e, ["localize"]);
+				that.mollify.ui.process($e, ["localize"]);
 			}
 		}
 	}
 
-	mollify.admin.plugins.EventLogging = {
+	global_mollify.admin.plugins.EventLogging = {
 		resources : {
 			texts: true
 		},
 		views: [
-			new mollify.view.config.admin.EventLogging.AllEventsView()
+			new EventLogging.AllEventsView()
 		]
 	};
 }(window.jQuery, window.mollify);
