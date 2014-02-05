@@ -83,7 +83,11 @@
 				});
 			};
 			
-			var onError = function() { new _m.ui.FullErrorView('Failed to initialize _m').show(); if (that._initDf.state() == "pending") that._initDf.reject(); };
+			var onError = function() {
+				new _m.ui.FullErrorView('Failed to initialize mollify').show();
+				if (that._initDf.state() == "pending")
+				that._initDf.reject();
+			};
 			_m.ui.initialize().done(function() {
 				_m.plugins.initialize().done(function() {
 					that._initialized = true;
@@ -129,7 +133,7 @@
 			
 			_m.filesystem.init(_m.session.data.folders, ((_m.session.user && _m.session.user.admin) ? _m.session.data.roots : false));
 			_m.ui.initializeLang().done(that._doStart).fail(function() {
-				new _m.ui.FullErrorView('Failed to initialize _m').show();
+				new _m.ui.FullErrorView('Failed to initialize mollify').show();
 			});
 		}
 		
@@ -363,9 +367,9 @@
 				dataType: 'json',
 				beforeSend: function(xhr) {
 					if (_m.session && _m.session.id)
-						xhr.setRequestHeader("_m-session-id", _m.session.id);
+						xhr.setRequestHeader("mollify-session-id", _m.session.id);
 					if (st._limitedHttpMethods || diffMethod)
-						xhr.setRequestHeader("_m-http-method", type);
+						xhr.setRequestHeader("mollify-http-method", type);
 				}
 			}).pipe(function(r) {			
 				if (!r) {
@@ -961,7 +965,7 @@
 				if (cb) cb();
 				return;
 			}
-			var id = '_m-tmp-'+(_m._hiddenInd++);
+			var id = 'mollify-tmp-'+(_m._hiddenInd++);
 			$('<div id="'+id+'" style="display:none"/>').appendTo($("body")).load(_m.helpers.noncachedUrl(u), function() {
 				md._hiddenLoaded.push(contentId);
 				if (cb) cb();

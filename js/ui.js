@@ -7,7 +7,7 @@
  * License: http://www.mollify.org/license.php
  */
 
-window.mollify.modules.push(function($, _m) {
+window.mollify.modules.push(function($, _m, _gm) {
 
 	"use strict";
 	
@@ -190,7 +190,7 @@ window.mollify.modules.push(function($, _m) {
 		list.push(_m.templates.load("dialogs.html"));
 		
 		if (!_m.ui.draganddrop) _m.ui.draganddrop = (window.Modernizr.draganddrop) ? new HTML5DragAndDrop() : new JQueryDragAndDrop();
-		if (!_m.ui.uploader) _m.ui.uploader = new _m.MollifyHTML5Uploader();
+		if (!_m.ui.uploader) _m.ui.uploader = new _gm.MollifyHTML5Uploader(_m);
 		if (!_m.ui.clipboard) new ZeroClipboard(function(cb) {
 			_m.ui.clipboard = cb;
 		});
@@ -1336,7 +1336,7 @@ window.mollify.modules.push(function($, _m) {
 			fmt = fmt.replace("tt", "PP");
 			var $dp = $e.datetimepicker({
 				format: fmt,
-				language: "_m",
+				language: "mollify",
 				pickTime: o.time || true,
 				pickSeconds: (fmt.indexOf('s') >= 0)
 			}).on("changeDate", function(ev) {
@@ -1469,7 +1469,7 @@ window.mollify.modules.push(function($, _m) {
 	var dh = _m.ui.dialogs;
 			
 	dh._dialogDefaults = {
-		title: "_m"
+		title: "Mollify"
 	};
 	
 	dh.closeActiveDialog = function() {

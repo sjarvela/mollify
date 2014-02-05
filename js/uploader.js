@@ -7,11 +7,11 @@
  * License: http://www.mollify.org/license.php
  */
  
-window.mollify.modules.push(function($, _m) {
+(function($, _gm) {
  
 	"use strict";
 
-	_m.MollifyHTML5Uploader = function() {
+	_gm.MollifyHTML5Uploader = function(_m) {
 		var t = this;
 		
 		// prevent default file drag&drop		
@@ -259,4 +259,4 @@ window.mollify.modules.push(function($, _m) {
 			}
 		};
 	}
-});
+})(window.jQuery, window.mollify);
