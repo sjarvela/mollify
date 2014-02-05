@@ -103,7 +103,12 @@
 							var password = $password.val();
 							if (!username || username.length === 0 || !password || password.length === 0) return;
 							
-							that.mollify.service.post("registration/create", {name:username, password:window.Base64.encode(password), email:email}).done(d.close).done(cb);
+							that.mollify.service.post("registration/create", {name:username, password:window.Base64.encode(password), email:email}).done(d.close).done(cb).fail(function(er) {
+								if (er.code == 301) {
+									this.handled = true;
+									that.mollify.ui.dialogs.error({message: that.mollify.ui.texts.get('registrationFailedDuplicateNameOrEmail')});
+								}
+							});
 						},
 						"on-show": function(h, $d) {
 							$content = $d.find("#mollify-registration-add-dialog");
