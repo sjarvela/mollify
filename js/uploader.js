@@ -11,7 +11,7 @@
  
 	"use strict";
 
-	_gm.MollifyHTML5Uploader = function(_m) {
+	_gm.ui.components.HTML5Uploader = function(_m) {
 		var t = this;
 		
 		// prevent default file drag&drop		

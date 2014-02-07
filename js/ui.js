@@ -11,543 +11,404 @@ window.mollify.modules.push(function($, _m, _gm) {
 
 	"use strict";
 	
-	//var t = _m;
-	
-	/* TEXTS */
-	_m.ui.texts = {};
-	var tt = _m.ui.texts;
-	
-	tt.locale = null;
-	tt._dict = {};
-	tt._pluginTextsLoaded = [];
-	
-	tt.load = function(id) {
-		var df = $.Deferred();
-		if (tt.locale) {
-			return df.resolve();
-		}
+});
 
-		return tt._load("localization/texts_"+(id || 'en')+".json", df);
-	};
-	
-	tt.clear = function() {
-		tt.locale = null;
-		tt._dict = {};
-		tt._pluginTextsLoaded = [];		
-	};
+!function($, _gm) {
 
-	tt.loadPlugin = function(pluginId) {
-		if (tt._pluginTextsLoaded.indexOf(pluginId) >= 0) return $.Deferred().resolve();
-		
-		return tt._load(_m.plugins.getLocalizationUrl(pluginId), $.Deferred()).done(function() {
-			tt._pluginTextsLoaded.push(pluginId);
-		});
-	};
+	/* UI */
 	
-	tt._load = function(u, df) {
-		var url = _m.resourceUrl(u);
-		if (!url) return df.resolve();
+	_gm.core.UI = function(_m) {
+		var that = this;
+		this._uploader = false;
+		this._draganddrop = false;
+		this._activePopup = false;
+		this._activeView = false;
+		this._activeViewId = false;
+		this._views = {};
 		
-		$.ajax({
-			type: "GET",
-			dataType: 'text',
-			url: url
-		}).done(function(r) {
-			if (!r || (typeof(r) != "string")) {
-				df.reject();
-				return;
-			}
-			var t = false;
-			try {
-				t = JSON.parse(r);
-			} catch (e) {
-				new _m.ui.FullErrorView('<b>Localization file syntax error</b> (<code>'+url+'</code>)', '<code>'+e.message+'</code>').show();
-				return;
-			}
-			if (!tt.locale)
-				tt.locale = t.locale;
-			else
-				if (tt.locale != t.locale) {
-					df.reject();
-					return;
-				}
-			tt.add(t.locale, t.texts);
-			df.resolve(t.locale);			
-		}).fail(function(e) {
-			if (e.status == 404) {
-				new _m.ui.FullErrorView('Localization file missing: <code>'+url+'</code>', 'Either create the file or use <a href="https://code.google.com/p/_m/wiki/ClientResourceMap">client resource map</a> to load it from different location, or to ignore it').show();
-				return;
-			}
-			df.reject();
-		});
-		return df;
-	};
+		this._element = $("#"+_m.settings["app-element-id"]);
+		this._pageUrl = _m.request.getBaseUrl(window.location.href);
+		this._pageParams = _m.request.getParams(window.location.href);
+		this._mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+		
+		this.initialize = function() {
+			var list = [];		
+			list.push(that.initializeLang());
 			
-	tt.add = function(locale, t) {
-		if (!locale || !t) return;
+			// add invisible download frame
+			$("body").append('<div style="width: 0px; height: 0px; overflow: hidden;"><iframe id="mollify-download-frame" src=""></iframe></div>');
+			
+			$(window).click(function(e) {
+				// hide popups when clicked outside
+				if (that._activePopup) {
+					if (e && e.toElement && that._activePopup.element) {
+						var popupElement = that._activePopup.element();
+						if (popupElement.has($(e.toElement)).length > 0) return;
+					}
+					that.hideActivePopup();
+				}
+			});
+			list.push(_m.templates.load("dialogs.html"));
+			
+			if (!that._draganddrop) that._draganddrop = (window.Modernizr.draganddrop) ? new _gm.ui.components.HTML5DragAndDrop(_m) : new _gm.ui.components.JQueryDragAndDrop(_m);
+			if (!that._uploader) that._uploader = new _gm.ui.components.HTML5Uploader(_m);
+			if (!that._clipboard) new _gm.ui.components.ZeroClipboard(_m, function(cb) {
+				that._clipboard = cb;
+			});
+			
+			var df = $.Deferred();
+			$.when.apply($, list).done(df.resolve).fail(df.reject);
+			return df;
+		};
 		
-		if (!tt.locale) tt.locale = locale;
-		else if (locale != tt.locale) return;
+		this.initializeLang = function() {
+			var df = $.Deferred();
+			var lang = (_m.session.user && _m.session.user.lang) ? _m.session.user.lang : (_m.settings.language["default"] || 'en');
+			
+			if (that.texts.locale && that.texts.locale == lang) return df.resolve();
+			
+			var pluginTextsLoaded = that.texts._pluginTextsLoaded;
+			if (that.texts.locale) {
+				that._element.removeClass("lang-"+that.texts.locale);
+				that.texts.clear();
+			}
+			
+			var list = [];
+			list.push(that.texts.load(lang).done(function(locale) {
+				$("html").attr("lang", locale);
+				that._element.addClass("lang-"+locale);
+			}));
+			
+			if (pluginTextsLoaded) {
+				$.each(pluginTextsLoaded, function(i, id) {
+					list.push(that.texts.loadPlugin(id));
+				});
+			}
+			$.when.apply($, list).done(df.resolve).fail(df.reject);
+			return df;
+		};
 		
-		for (var id in t) tt._dict[id] = t[id];
-	};
+		this._getView = function(id, cb) {
+			var h = that._views[id[0]];
+			if (h && h.getView) {
+				var view = h.getView(id, that._pageParams);
+				if (view && view.done) view.done(cb);
+				else cb(view);
+			} else cb(false);
+		};
+		
+		
+		this.openView = function(viewId) {
+			var id = viewId.split("/");
 	
-	tt.get = function(id, p) {
-		if (!id) return "";
-		var t = tt._dict[id];
-		if (!t) return "!"+tt.locale+":"+id;
-		if (p !== undefined) {
-			if (!window.isArray(p)) p = [p];
-			for (var i=0,j=p.length; i<j; i++)
-				t = t.replace("{" + i + "}", p[i]);
+			var onView = function(v) {
+				if (v) {
+					that._activeView = v;
+					that._activeViewId = id[0];
+				} else {
+					if (!_m.session.user) {
+						that._activeView = new _gm.ui.views.LoginView(_m);
+					} else {
+						that._activeView = new _gm.ui.views.MainView(_m);
+					}
+					that._activeViewId = that._activeView.id;
+				}
+				
+				that._activeView.init(that._element, id).done(function() {
+					//TODO if (that._initDf.state() == "pending") that._initDf.resolve();
+				});
+			};
+			
+			if (id) {
+				var custom = !!that._views[id[0]];
+				var isActiveView = (custom && that._activeViewId == id[0]) || (!custom && that._activeViewId == "main");
+				
+				if (isActiveView) that._activeView.onRestoreView(id);
+				else that._getView(id, onView);
+			} else onView();
+		};
+				
+		this.storeView = function(viewId) {
+			if (!_m.settings["view-url"]) return;
+			var obj = {
+				user_id : _m.session.user ? _m.session.user.id : null
+			};
+			if (window.history) window.history.pushState(obj, "", "?v="+viewId);	
+		};
+								
+		this.getPageUrl = function(pageUrl) {
+			return that._pageUrl + "?v="+pageUrl;
+		};
+		
+		this.activePopup = function(p) {
+			if (p===undefined) return that._activePopup;
+			if (that._activePopup) {
+				if (p.parentPopupId && that._activePopup.id == p.parentPopupId) return;
+				that._activePopup.hide();
+			}
+			that._activePopup = p;
+			if (!that._activePopup.id) that._activePopup.id = new Date().getTime();
+			return that._activePopup.id;
+		};
+		
+		this.isActivePopup = function(id) {
+			return (that._activePopup && that._activePopup.id == id);
+		};
+		
+		this.hideActivePopup = function() {
+			if (that._activePopup) that._activePopup.hide();
+			that._activePopup = false;
+		};
+		
+		this.removeActivePopup = function(id) {
+			if (!id || !that.isActivePopup(id)) return;
+			that._activePopup = false;
+		};
+		
+		/* TEXTS */
+	
+		this.texts = {
+			locale : null,
+			_dict : {},
+			_pluginTextsLoaded : [],
+			
+			load : function(id) {
+				var df = $.Deferred();
+				if (this.locale)
+					return df.resolve();
+		
+				return this._load("localization/texts_"+(id || 'en')+".json", df);
+			},
+			
+			clear : function() {
+				this.locale = null;
+				this._dict = {};
+				this._pluginTextsLoaded = [];		
+			},
+		
+			loadPlugin : function(pluginId) {
+				if (this._pluginTextsLoaded.indexOf(pluginId) >= 0) return $.Deferred().resolve();
+				
+				return this._load(_m.plugins.getLocalizationUrl(pluginId), $.Deferred()).done(function() {
+					this._pluginTextsLoaded.push(pluginId);
+				});
+			},
+			
+			_load : function(u, df) {
+				var url = _m.resourceUrl(u);
+				if (!url) return df.resolve();
+				
+				$.ajax({
+					type: "GET",
+					dataType: 'text',
+					url: url
+				}).done(function(r) {
+					if (!r || (typeof(r) != "string")) {
+						df.reject();
+						return;
+					}
+					var t = false;
+					try {
+						t = JSON.parse(r);
+					} catch (e) {
+						new _gm.ui.views.FullError('<b>Localization file syntax error</b> (<code>'+url+'</code>)', '<code>'+e.message+'</code>').show();
+						return;
+					}
+					if (!that.texts.locale)
+						that.texts.locale = t.locale;
+					else
+						if (that.texts.locale != t.locale) {
+							df.reject();
+							return;
+						}
+					that.texts.add(t.locale, t.texts);
+					df.resolve(t.locale);			
+				}).fail(function(e) {
+					if (e.status == 404) {
+						new _gm.ui.view.FullError('Localization file missing: <code>'+url+'</code>', 'Either create the file or use <a href="https://code.google.com/p/_m/wiki/ClientResourceMap">client resource map</a> to load it from different location, or to ignore it').show();
+						return;
+					}
+					df.reject();
+				});
+				return df;
+			},
+					
+			add : function(locale, t) {
+				if (!locale || !t) return;
+				
+				if (!this.locale) this.locale = locale;
+				else if (locale != this.locale) return;
+				
+				for (var id in t) this._dict[id] = t[id];
+			},
+			
+			get : function(id, p) {
+				if (!id) return "";
+				var t = this._dict[id];
+				if (!t) return "!"+this.locale+":"+id;
+				
+				if (p !== undefined) {
+					if (!window.isArray(p)) p = [p];
+					for (var i=0,j=p.length; i<j; i++)
+						t = t.replace("{" + i + "}", p[i]);
+				}
+				return t;
+			},
+			
+			has : function(id) {
+				return !!this._dict[id];	
+			}
+		};
+
+		return {
+			element : that._element,
+			
+			initialize : that.initialize,
+			initializeLang: that.initializeLang,
+			
+			open : function() {
+				that.openView(that._pageParams.v || "/files/");
+			},
+			
+			registerView : function(id, h) {
+				that._views[id] = h;
+			},
+			getActiveView : function() { return that._activeView; },
+			openView : that.openView,
+			
+			getPageUrl : that.getPageUrl,			
+			openPage : function(pageUrl) {
+				window.location = that.getPageUrl(pageUrl);
+			},
+			
+			activePopup : that.activePopup,
+			isActivePopup : that.isActivePopup,
+			hideActivePopup : that.hideActivePopup,			
+			removeActivePopup : that.removeActivePopup,
+			
+			texts: that.texts,
+			
+			download : function(url) {
+				if (that.mobile)
+					window.open(url);
+				else
+					$("#mollify-download-frame").attr("src", url);
+			}
+
 		}
-		return t;
 	};
 	
-	tt.has = function(id) {
-		return !!tt._dict[id];	
-	};
 	
 	/* FORMATTERS */
 	
-	_m.ui.formatters = {
-		ByteSize : function(nf) {			
-			this.format = function(b) {
-				if (!window.def(b)) return "";
-				
-				var bytes = b;
-				if (typeof(b) === "string") {
-					bytes = parseInt(bytes, 10);
-					if (isNaN(bytes)) return "";
-				} else if (typeof(b) !== "number") return "";
-				
-				if (bytes < 1024)
-					return (bytes == 1 ? _m.ui.texts.get('sizeOneByte') : _m.ui.texts.get('sizeInBytes', nf.format(bytes)));
-		
-				if (bytes < (1024 * 1024)) {
-					var kilobytes = bytes / 1024;
-					return (kilobytes == 1 ? _m.ui.texts.get('sizeOneKilobyte') : _m.ui.texts.get('sizeInKilobytes', nf.format(kilobytes)));
-				}
-		
-				if (bytes < (1024 * 1024 * 1024)) {
-					var megabytes = bytes / (1024 * 1024);
-					return _m.ui.texts.get('sizeInMegabytes', nf.format(megabytes));
-				}
-		
-				var gigabytes = bytes / (1024 * 1024 * 1024);
-				return _m.ui.texts.get('sizeInGigabytes', nf.format(gigabytes));
-			};
-		},
-		Timestamp : function(fmt) {
-			this.format = function(ts) {
-				if (ts == null) return "";
-				if (typeof(ts) === 'string') ts = _m.helpers.parseInternalTime(ts);
-				return ts.toString(fmt);
-			};
-		},
-		Number : function(precision, unit, ds) {
-			this.format = function(n) {
-				if (!window.def(n) || typeof(n) !== 'number') return "";
-				
-				var s = Math.pow(10, precision);
-				var v = Math.floor(n * s) / s;
-				var sv = v.toString();
-				if (ds) sv = sv.replace(".", ds);
-				if (unit) return sv + " " + unit;
-				return sv;
-			};
-		},
-		FilesystemItemPath: function() {
-			this.format = function(item) {
-				if (!item) return "";
-				return _m.filesystem.rootsById[item.root_id].name + (item.path.length > 0 ? ":&nbsp;" + item.path : "");
+	_gm.ui = {
+		views : {
+			main : {},
+			config : {
+				user: {},
+				admin: {}
 			}
-		}
-	};
-	
-	/* UI */
-	_m.ui.uploader = false;
-	_m.ui.draganddrop = false;
-	_m.ui._activePopup = false;
-	
-	_m.ui.initialize = function() {
-		var list = [];		
-		list.push(_m.ui.initializeLang());
-		
-		// add invisible download frame
-		$("body").append('<div style="width: 0px; height: 0px; overflow: hidden;"><iframe id="mollify-download-frame" src=""></iframe></div>');
-		
-		$(window).click(function(e) {
-			// hide popups when clicked outside
-			if (_m.ui._activePopup) {
-				if (e && e.toElement && _m.ui._activePopup.element) {
-					var popupElement = _m.ui._activePopup.element();
-					if (popupElement.has($(e.toElement)).length > 0) return;
-				}
-				_m.ui.hideActivePopup();
+		},
+		components : {},
+		window : {
+			open : function(url) {
+				window.open(url);
 			}
-		});
-		list.push(_m.templates.load("dialogs.html"));
-		
-		if (!_m.ui.draganddrop) _m.ui.draganddrop = (window.Modernizr.draganddrop) ? new HTML5DragAndDrop() : new JQueryDragAndDrop();
-		if (!_m.ui.uploader) _m.ui.uploader = new _gm.MollifyHTML5Uploader(_m);
-		if (!_m.ui.clipboard) new ZeroClipboard(function(cb) {
-			_m.ui.clipboard = cb;
-		});
-		
-		var df = $.Deferred();
-		$.when.apply($, list).done(df.resolve).fail(df.reject);
-		return df;
-	};
-	
-	_m.ui.initializeLang = function() {
-		var df = $.Deferred();
-		var lang = (_m.session.user && _m.session.user.lang) ? _m.session.user.lang : (_m.settings.language["default"] || 'en');
-		
-		if (_m.ui.texts.locale && _m.ui.texts.locale == lang) return df.resolve();
-		
-		var pluginTextsLoaded = _m.ui.texts._pluginTextsLoaded;
-		if (_m.ui.texts.locale) {
-			_m.App.element.removeClass("lang-"+_m.ui.texts.locale);
-			_m.ui.texts.clear();
-		}
-		
-		var list = [];
-		list.push(_m.ui.texts.load(lang).done(function(locale) {
-			$("html").attr("lang", locale);
-			_m.App.element.addClass("lang-"+locale);
-		}));
-		
-		if (pluginTextsLoaded) {
-			$.each(pluginTextsLoaded, function(i, id) {
-				list.push(_m.ui.texts.loadPlugin(id));
+		},
+		preloadImages : function(a) {
+			$.each(a, function(){
+				$('<img/>')[0].src = this;
 			});
-		}
-		$.when.apply($, list).done(df.resolve).fail(df.reject);
-		return df;
-	};
-	
-	_m.ui.hideActivePopup = function() {
-		if (_m.ui._activePopup) _m.ui._activePopup.hide();
-		_m.ui._activePopup = false;
-	};
-	
-	_m.ui.activePopup = function(p) {
-		if (p===undefined) return _m.ui._activePopup;
-		if (_m.ui._activePopup) {
-			if (p.parentPopupId && _m.ui._activePopup.id == p.parentPopupId) return;
-			_m.ui._activePopup.hide();
-		}
-		_m.ui._activePopup = p;
-		if (!_m.ui._activePopup.id) _m.ui._activePopup.id = new Date().getTime();
-		return _m.ui._activePopup.id;
-	};
-	
-	_m.ui.isActivePopup = function(id) {
-		return (_m.ui._activePopup && _m.ui._activePopup.id == id);
-	};
-	
-	_m.ui.removeActivePopup = function(id) {
-		if (!id || !_m.ui.isActivePopup(id)) return;
-		_m.ui._activePopup = false;
-	};
-	
-	_m.ui.download = function(url) {
-		if (_m.App.mobile)
-			window.open(url);
-		else
-			$("#mollify-download-frame").attr("src", url);
-	};
-		
-	_m.ui.itemContext = function(o) {
-		var ict = {};
-		ict._activeItemContext = false;
-		
-		ict.open = function(spec) {
-			var item = spec.item;
-			var $e = spec.element;
-			var $c = spec.viewport;
-			var $t = spec.container;
-			var folder = spec.folder;
-			
-			var popupId = "mainview-itemcontext-"+item.id;
-			if (_m.ui.isActivePopup(popupId)) {
-				return;
-			}
-			
-			var openedId = false;
-			if (ict._activeItemContext) {
-				openedId = ict._activeItemContext.item.id;
-				ict._activeItemContext.close();
-				ict._activeItemContext = false;
-			}
-			if (item.id == openedId) return;
-			
-			var $cont = $t || $e.parent();				
-			var html = _m.dom.template("mollify-tmpl-main-itemcontext", item, {})[0].outerHTML;
-			$e.popover({
-				title: item.name,
-				html: true,
-				placement: 'bottom',
-				trigger: 'manual',
-				template: '<div class="popover mollify-itemcontext-popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
-				content: html,
-				container: $cont
-			}).bind("shown", function(e) {
-				var api = { id: popupId, hide: function() { $e.popover('destroy'); } };
-				api.close = api.hide;					
-				_m.ui.activePopup(api);
-
-				var $el = $("#mollify-itemcontext-"+item.id);
-				var $pop = $el.closest(".popover");
-				var maxRight = $c.outerWidth();
-				var popLeft = $pop.offset().left - $cont.offset().left;
-				var popW = $pop.outerWidth();
-				if (popLeft < 0)						
-					popLeft = 0;
-				else if ((popLeft + popW) > maxRight)
-					popLeft = maxRight - popW - 10;
-				$pop.css("left", popLeft + "px");
-				
-				var arrowPos = ($e.offset().left - $cont.offset().left) + ($e.outerWidth() / 2);
-				arrowPos = Math.max(0, (arrowPos - popLeft));
-				$pop.find(".arrow").css("left", arrowPos + "px");
-				
-				$pop.find(".popover-title").append($('<button type="button" class="close">×</button>').click(api.close));
-				var $content = $el.find(".mollify-itemcontext-content");
-				
-				_m.filesystem.itemDetails(item, _m.plugins.getItemContextRequestData(item)).done(function(d) {
-					if (!d) {
-						$t.hide();
-						return;
-					}
+		},
+		formatters : {
+			ByteSize : function(_m, nf) {			
+				this.format = function(b) {
+					if (!window.def(b)) return "";
 					
-					var ctx = {
-						details: d,
-						hasPermission : function(name, required) { _m.helpers.hasPermission(d.permissions, name, required); },
-						hasParentPermission : function(name, required) { _m.helpers.hasPermission(d.parent_permissions, name, required); },
-						folder : spec.folder,
-						folder_writable : spec.folder_writable
-					};
-					ict.renderItemContext(api, $content, item, ctx);
-					//$e[0].scrollIntoView();
-				});
-			}).bind("hidden", function() {
-				$e.unbind("shown").unbind("hidden");
-				_m.ui.removeActivePopup(popupId);
-			});
-			$e.popover('show');
-		};
-		
-		ict.renderItemContext = function(cApi, $e, item, ctx) {
-			var descriptionEditable = _m.features.hasFeature("descriptions") && ctx.hasPermission("edit_description");
-			var showDescription = descriptionEditable || !!ctx.details.description;
-			
-			var plugins = _m.plugins.getItemContextPlugins(item, ctx);
-			var actions = _m.helpers.getPluginActions(plugins);
-			var primaryActions = _m.helpers.getPrimaryActions(actions);
-			var secondaryActions = _m.helpers.getSecondaryActions(actions);
-			
-			var o = {
-				item:item,
-				details:ctx.details,
-				showDescription: showDescription,
-				description: ctx.details.description || '',
-				session: _m.session,
-				plugins: plugins,
-				primaryActions : primaryActions
-			};
-			
-			$e.removeClass("loading").empty().append(_m.dom.template("mollify-tmpl-main-itemcontext-content", o, {
-				title: function(o) {
-					var a = o;
-					if (a.type == 'submenu') a = a.primary;
-					return a.title ? a.title : _m.ui.texts.get(a['title-key']);
-				}
-			}));
-			$e.click(function(e){
-				// prevent from closing the popup when clicking the popup itself
-				e.preventDefault();
-				return false;
-			});
-			_m.ui.process($e, ["localize"]);
-			
-			if (descriptionEditable) {
-				_m.ui.controls.editableLabel({element: $("#mollify-itemcontext-description"), hint: _m.ui.texts.get('itemcontextDescriptionHint'), onedit: function(desc) { _m.service.put("filesystem/"+item.id+"/description/", {description: desc}); }});
-			}
-			
-			if (primaryActions) {
-				var $pae = $e.find(".mollify-itemcontext-primary-action-button");
-				$pae.each(function(i, $b){
-					var a = primaryActions[i];
-					if (a.type == 'submenu') {
-						_m.ui.controls.dropdown({
-							element: $b,
-							items: a.items,
-							hideDelay: 0,
-							style: 'submenu',
-							parentPopupId: cApi.id,
-							onItem: function() {
-								cApi.hide();
-							},
-							onBlur: function(dd) {
-								dd.hide();
-							}
-						});
-					}
-				});
-				$pae.click(function(e) {
-					var i = $pae.index($(this));
-					var action = primaryActions[i];
-					if (action.type == 'submenu') return;
-					cApi.close();
-					action.callback();
-				});
-			}
-			
-			if (plugins) {
-				var $selectors = $("#mollify-itemcontext-details-selectors");
-				var $content = $("#mollify-itemcontext-details-content");
-				var contents = {};
-				var onSelectDetails = function(id) {
-					$(".mollify-itemcontext-details-selector").removeClass("active");
-					$("#mollify-itemcontext-details-selector-"+id).addClass("active");
-					$content.find(".mollify-itemcontext-plugin-content").hide();
+					var bytes = b;
+					if (typeof(b) === "string") {
+						bytes = parseInt(bytes, 10);
+						if (isNaN(bytes)) return "";
+					} else if (typeof(b) !== "number") return "";
 					
-					var $c = contents[id] ? contents[id] : false;
-					if (!$c) {
-						$c = $('<div class="mollify-itemcontext-plugin-content"></div>');
-						plugins[id].details["on-render"](cApi, $c, ctx);
-						contents[id] = $c;
-						$content.append($c);
+					if (bytes < 1024)
+						return (bytes == 1 ? _m.ui.texts.get('sizeOneByte') : _m.ui.texts.get('sizeInBytes', nf.format(bytes)));
+			
+					if (bytes < (1024 * 1024)) {
+						var kilobytes = bytes / 1024;
+						return (kilobytes == 1 ? _m.ui.texts.get('sizeOneKilobyte') : _m.ui.texts.get('sizeInKilobytes', nf.format(kilobytes)));
 					}
-											
-					$c.show();
+			
+					if (bytes < (1024 * 1024 * 1024)) {
+						var megabytes = bytes / (1024 * 1024);
+						return _m.ui.texts.get('sizeInMegabytes', nf.format(megabytes));
+					}
+			
+					var gigabytes = bytes / (1024 * 1024 * 1024);
+					return _m.ui.texts.get('sizeInGigabytes', nf.format(gigabytes));
 				};
-				var firstPlugin = false;
-				var selectorClick = function() {
-					var s = $(this).tmplItem().data;
-					onSelectDetails(s.id);
+			},
+			Timestamp : function(fmt) {
+				this.format = function(ts) {
+					if (ts == null) return "";
+					if (typeof(ts) === 'string') ts = _gm.helpers.parseInternalTime(ts);
+					return ts.toString(fmt);
 				};
-				for (var id in plugins) {
-					var plugin = plugins[id];
-					if (!plugin.details) continue;
+			},
+			Number : function(precision, unit, ds) {
+				this.format = function(n) {
+					if (!window.def(n) || typeof(n) !== 'number') return "";
 					
-					if (!firstPlugin) firstPlugin = id;
-
-					var title = plugin.details.title ? plugin.details.title : (plugin.details["title-key"] ? _m.ui.texts.get(plugin.details["title-key"]) : id);
-					var selector = _m.dom.template("mollify-tmpl-main-itemcontext-details-selector", {id: id, title:title, data: plugin}).appendTo($selectors).click(selectorClick);
+					var s = Math.pow(10, precision);
+					var v = Math.floor(n * s) / s;
+					var sv = v.toString();
+					if (ds) sv = sv.replace(".", ds);
+					if (unit) return sv + " " + unit;
+					return sv;
+				};
+			},
+			FilesystemItemPath: function(_m) {
+				this.format = function(item) {
+					if (!item) return "";
+					return _m.filesystem.rootsById[item.root_id].name + (item.path.length > 0 ? ":&nbsp;" + item.path : "");
 				}
-
-				if (firstPlugin) onSelectDetails(firstPlugin);
 			}
-			
-			_m.ui.controls.dropdown({
-				element: $e.find("#mollify-itemcontext-secondary-actions"),
-				items: secondaryActions,
-				hideDelay: 0,
-				style: 'submenu',
-				parentPopupId: cApi.id,
-				onItem: function() {
-					cApi.hide();
-				},
-				onBlur: function(dd) {
-					dd.hide();
-				}
-			});
-		}
-		
-		return {
-			open : ict.open
-		};
-	};
-	
-	/**/
-		
-	_m.ui.assign = function(h, id, c) {
-		if (!h || !id || !c) return;
-		if (!h.controls) h.controls = {};
-		h.controls[id] = c;
-	};
-		
-	_m.ui.process = function($e, ids, handler) {
-		$.each(ids, function(i, k) {
-			if (_m.ui.handlers[k]) _m.ui.handlers[k]($e, handler);
-		});
-	};
-				
-	_m.ui.handlers = {
-		localize : function(p, h) {
-			p.find(".localized").each(function() {
-				var $t = $(this);
-				var key = $t.attr('title-key');
-				if (key) {
-					$t.attr("title", _m.ui.texts.get(key));
-					$t.removeAttr('title-key');
-				}
-				
-				key = $t.attr('text-key');
-				if (key) {
-					$t.prepend(_m.ui.texts.get(key));
-					$t.removeAttr('text-key');
-				}
-			});
-			p.find("input.hintbox").each(function() {
-				var $this = $(this);
-				var hint = _m.ui.texts.get($this.attr('hint-key'));
-				$this.attr("placeholder", hint).removeAttr("hint-key");
-			});//.placeholder();
-		},
-			
-		center : function(p, h) {
-			p.find(".center").each(function() {
-				var $this = $(this);
-				var x = ($this.parent().width() - $this.outerWidth(true)) / 2;
-				$this.css({
-					position: "relative",
-					left: x
-				});
-			});
-		},
-		
-		hover: function(p) {
-			p.find(".hoverable").hover(function() {
-				$(this).addClass("hover");
-			}, function() {
-				$(this).removeClass("hover");
-			});
-		},
-		
-		bubble: function(p, h) {
-			p.find(".bubble-trigger").each(function() {
-				var $t = $(this);
-				var b = _m.ui.controls.bubble({element:$t, handler: h});
-				_m.ui.assign(h, $t.attr('id'), b);
-			});
-		},
-		
-		radio: function(p, h) {
-			p.find(".mollify-radio").each(function() {
-				var $t = $(this);
-				var r = _m.ui.controls.radio($t, h);
-				_m.ui.assign(h, $t.attr('id'), r);
-			});
-		}
-	};
-		
-	_m.ui.window = {
-		open : function(url) {
-			window.open(url);
 		}
 	};
 	
-	_m.ui.preloadImages = function(a) {
-		$.each(a, function(){
-			$('<img/>')[0].src = this;
-		});
+	/* VIEWS */
+	
+	_gm.ui.views.Base = function() {
+		
 	};
 	
-	_m.ui.FullErrorView = function(title, msg) {
+	_gm.ui.views.Base.prototype = {
+		constructor : _gm.ui.views.Base,
+		_init: function(id, _m) {
+			this.id = id;
+			this._m = _m;
+			this.getText = _m.ui.texts.get;
+		},
+		loadContent : function($c, url, process, listener) {
+			var that = this;
+			return this._m.dom.loadContentInto($c, this._m.templates.url(url)).done(function() {
+				if (process) _gm.ui.views.process(that._m, $c, process, listener);
+			});
+		},
+		showDialog : function(type) {
+			if (!type || !_gm.ui.dialogs[type]) return false;
+			var args = [this._m].concat(Array.prototype.slice.call(arguments, 1));
+			return _gm.ui.dialogs[type].call(args);
+		},
+		showNotification : function(msg, $t) {
+			return _gm.ui.dialogs.notification(this._m, {target: $t, message:msg});
+		},
+		showWait : function($t) {
+			return _gm.ui.dialogs.wait(this._m, {target: $t});
+		}
+	};
+	
+	_gm.ui.views.FullError = function(title, msg) {
 		this.show = function() {
 			this.init(_m.App.element);
 		};
@@ -562,47 +423,71 @@ window.mollify.modules.push(function($, _m, _gm) {
 		};
 	};
 	
-	/* CONTROLS */
+	_gm.ui.views.process = function(_m, $e, ids, l) {
+		$.each(ids, function(i, k) {
+			if (_gm.ui.views.processors[k]) _gm.ui.views.processors[k](_m, $e, l);
+		});
+	};
 	
-	var processPopupActions = function(l) {
-		$.each(l, function(i, item){
-			if (item.type == 'submenu') {
-				processPopupActions(item.items);
-				return;
-			}
-			if (item.title) return;
-			if (item["title-key"]) item.title = _m.ui.texts.get(item['title-key']);
-		});
-	};
-	var createPopupItems = function(itemList) {
-		var list = itemList||[];
-		processPopupActions(list);
-		return _m.dom.template("mollify-tmpl-popupmenu", {items:list});
-	};
-	var initPopupItems = function($p, l, onItem) {
-		$p.find(".dropdown-item").click(function() {
-			var $e = $(this);
-			var $top = $p.find(".dropdown-menu");
-			var path = [];
-			while (true) {
-				if (!$e.hasClass("dropdown-menu"))
-					path.push($e.index());
-				$e = $e.parent();
-				if ($e[0] == $top[0]) break;
-			}
-			var item = false;
-			var parent = l;
-			$.each(path.reverse(), function(i, ind) {
-				item = parent[ind];
-				if (item.type == 'submenu') parent = item.items;
+	_gm.ui.views.processors = {
+		localize : function(_m, $p) {
+			$p.find(".localized").each(function() {
+				var $t = $(this);
+				var key = $t.attr('title-key');
+				if (key) {
+					$t.attr("title", _m.ui.texts.get(key));
+					$t.removeAttr('title-key');
+				}
+				
+				key = $t.attr('text-key');
+				if (key) {
+					$t.prepend(_m.ui.texts.get(key));
+					$t.removeAttr('text-key');
+				}
 			});
-			if (onItem) onItem(item, item.callback ? item.callback() : null);
-			else if (item.callback) item.callback();
-			return false;
-		});
-	};
+			$p.find("input.hintbox").each(function() {
+				var $this = $(this);
+				var hint = _m.ui.texts.get($this.attr('hint-key'));
+				$this.attr("placeholder", hint).removeAttr("hint-key");
+			});//.placeholder();
+		},
 			
-	_m.ui.controls = {
+		center : function(_m, p) {
+			p.find(".center").each(function() {
+				var $this = $(this);
+				var x = ($this.parent().width() - $this.outerWidth(true)) / 2;
+				$this.css({
+					position: "relative",
+					left: x
+				});
+			});
+		},
+		
+		hover: function(_m, p) {
+			p.find(".hoverable").hover(function() {
+				$(this).addClass("hover");
+			}, function() {
+				$(this).removeClass("hover");
+			});
+		},
+		
+		bubble: function(_m, p, l) {
+			p.find(".bubble-trigger").each(function() {
+				var $t = $(this);
+				var b = _gm.ui.controls.bubble(_m, $t, {listener: l});
+			});
+		},
+		
+		radio: function(_m, p, l) {
+			p.find(".mollify-radio").each(function() {
+				var $t = $(this);
+				var r = _m.ui.controls.radio($t, h);
+				//_m.ui.assign(h, $t.attr('id'), r);
+			});
+		}
+	};
+	
+	_gm.ui.controls = 	_gm.ui.controls = {
 		dropdown : function(a) {
 			var $e = $(a.element);
 			var $mnu = false;
@@ -686,8 +571,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 			return api;
 		},
 		
-		bubble: function(o) {
-			var $e = o.element;
+		bubble: function(_m, $e, o) {
 			var actionId = $e.attr('id');
 			if (!actionId) return;
 			
@@ -716,15 +600,11 @@ window.mollify.modules.push(function($, _m, _gm) {
 			}).bind("shown", function(e) {
 				$tip = $el;
 				_m.ui.activePopup(api);
-				/*$tip.click(function(e) {
-					e.preventDefault();
-					return false;
-				});*/
 				if (!rendered) {
-					if (o.handler && o.handler.onRenderBubble) o.handler.onRenderBubble(actionId, api);
+					if (o.listener && o.listener.onRenderBubble) o.listener.onRenderBubble(actionId, api);
 					rendered = true;
 				}
-				if (o.handler && o.handler.onShowBubble) o.handler.onShowBubble(actionId, api);
+				if (o.listener && o.listener.onShowBubble) o.listener.onShowBubble(actionId, api);
 			}).bind("hidden", function() {
 				//$e.unbind("shown").unbind("hidden");
 				_m.ui.removeActivePopup(api.id);
@@ -864,13 +744,6 @@ window.mollify.modules.push(function($, _m, _gm) {
 					$p.append(getNrBtn(current));
 					if (current < (pages-2)) $p.append(getNrBtn(current+1));
 					if (current < (pages-1)) $p.append(getNrBtn(current+2));
-					
-					/*if (current > 4 && current < (pages-3)) {
-						$p.append("<li class='page-break'>...</li>");
-						$p.append(getNrBtn(mid-1));
-						$p.append(getNrBtn(mid));
-						$p.append(getNrBtn(mid+1));
-					}*/
 					
 					if (current < (pages-2)) $p.append("<li class='page-break'>...</li>");					
 					if (current < (pages-1)) $p.append(getNrBtn(pages-1));
@@ -1463,10 +1336,13 @@ window.mollify.modules.push(function($, _m, _gm) {
 		}
 	};
 	
+	/* CONTROLS */
+	
+	
 	/* DIALOGS */
 	
-	_m.ui.dialogs = {};
-	var dh = _m.ui.dialogs;
+	_gm.ui.dialogs = {};
+	var dh = _gm.ui.dialogs;
 			
 	dh._dialogDefaults = {
 		title: "Mollify"
@@ -1647,7 +1523,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 		});
 	};
 	
-	dh.wait = function(spec) {
+	dh.wait = function(_m, spec) {
 		var $trg = (spec && spec.target) ? $("#"+spec.target) : $("body");
 		var w = _m.dom.template("mollify-tmpl-wait", $.extend(spec, dh._dialogDefaults)).appendTo($trg).show();
 		return {
@@ -1878,10 +1754,10 @@ window.mollify.modules.push(function($, _m, _gm) {
 			}
 		});
 	};
-	
+		
 	/* DRAG&DROP */
 	
-	var HTML5DragAndDrop = function() {
+	_gm.ui.components.HTML5DragAndDrop = function(_m) {
 		var t = this;
 		t.dragObj = false;
 		t.dragEl = false;
@@ -1913,7 +1789,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 				if (dragImages.indexOf(img) >= 0) continue;
 				dragImages.push(img);
 			}
-			if (dragImages) _m.ui.preloadImages(dragImages);
+			if (dragImages) _gm.ui.preloadImages(dragImages);
 		}, 0);
 		
 		var api = {
@@ -2001,7 +1877,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 		return api;
 	};
 
-	var JQueryDragAndDrop = function() {
+	_gm.ui.components.JQueryDragAndDrop = function() {
 		return {
 			enableDragToDesktop: function (item, e) {
 				//not supported
@@ -2021,7 +1897,7 @@ window.mollify.modules.push(function($, _m, _gm) {
 		};
 	};
 	
-	var ZeroClipboard = function(cb) {
+	_gm.ui.components.ZeroClipboard = function(_m, cb) {
 		if (!cb || !window.ZeroClipboard) return false;
 		window.ZeroClipboard.setDefaults({
 			moviePath: 'js/lib/ZeroClipboard.swf',
@@ -2072,4 +1948,4 @@ window.mollify.modules.push(function($, _m, _gm) {
 			if (l && l.onCopy) l.onCopy($t, args.text);
 		});
 	};
-});
+}(window.jQuery, window.mollify);

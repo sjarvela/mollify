@@ -83,8 +83,8 @@
 		
 		this.initialize = function(_m) {
 			that._m = _m;
-			that.fileSizeFormatter = new _m.ui.formatters.ByteSize(new _m.ui.formatters.Number(2, false, _m.ui.texts.get('decimalSeparator')));
-			that.timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
+			that.fileSizeFormatter = new _gm.ui.formatters.ByteSize(_m, new _gm.ui.formatters.Number(2, false, _m.ui.texts.get('decimalSeparator')));
+			that.timestampFormatter = new _gm.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
 			/*if (sp) {
 				for (var i=0; i<sp.length;i++)
 					that.addDetailsSpec(sp[i]);
@@ -856,7 +856,7 @@
 		
 		this.initialize = function(_m) {
 			that._m = _m;
-			that._timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
+			that._timestampFormatter = new _gm.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
 			_m.dom.importCss(_m.plugins.url("Comment", "style.css"));
 		};
 		
@@ -1025,7 +1025,7 @@
 			_m.events.addEventHandler(function(e) {
 				if (!that._permissionTypes && _m.session.user) that._permissionTypes = _m.session.data.permission_types
 			}, "session/start");
-			that._pathFormatter = new _m.ui.formatters.FilesystemItemPath();
+			that._pathFormatter = new _gm.ui.formatters.FilesystemItemPath(_m);
 		};
 		
 		this._formatPermissionName = function(p) {
@@ -1888,8 +1888,8 @@
 		
 		this.initialize = function(_m) {
 			that._m = _m;
-			that._pathFormatter = new _m.ui.formatters.FilesystemItemPath();
-			that.itemContext = new _m.ui.itemContext();
+			that._pathFormatter = new _gm.ui.formatters.FilesystemItemPath();
+			that.itemContext = false;	//TODO new _gm.ui.components.ItemContext(_m);
 			_m.events.addEventHandler(function(e) {
 				if (e.type == 'filesystem/delete') that.onRemoveItems(_m.helpers.extractValue(e.payload.items, "id"));
 				//TODO else if (e.type == 'filesystem/rename') that.updateItems(_m.helpers.extractValue(e.payload.items));
@@ -2111,9 +2111,9 @@
 		
 		this.initialize = function(_m) {
 			that._m = _m;
-			that._timestampFormatter = new _m.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
+			that._timestampFormatter = new _gm.ui.formatters.Timestamp(_m.ui.texts.get('shortDateTimeFormat'));
 			
-			_m.App.registerView("share", {
+			_m.ui.registerView("share", {
 				getView : function(rqParts, urlParams) {					
 					if (rqParts.length != 2) return false;
 					var df = $.Deferred();
@@ -2237,7 +2237,7 @@
 			var vt = this;
 			
 			this.init = function($c) {
-				var uploadSpeedFormatter = new that._m.ui.formatters.Number(1, that._m.ui.texts.get('dataRateKbps'), that._m.ui.texts.get('decimalSeparator'));
+				var uploadSpeedFormatter = new that._gm.ui.formatters.Number(1, that._m.ui.texts.get('dataRateKbps'), that._m.ui.texts.get('decimalSeparator'));
 				
 				that._m.dom.loadContentInto($c, that._m.plugins.url("Share", "public_share_upload.html"), function() {
 					$("#mollify-share-title").text(that._m.ui.texts.get("shareViewUploadTitle", shareName));
@@ -2769,7 +2769,7 @@
 		this.initialize = function(_m) {
 			that._m = _m;
 			
-			_m.App.registerView("registration", {
+			_m.ui.registerView("registration", {
 				getView : function(rqParts, urlParams) {
 					if (rqParts.length != 2) return false;
 					

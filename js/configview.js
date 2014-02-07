@@ -11,7 +11,7 @@
 
 	"use strict";
 
-	_gm.views.main.ConfigView = function(_m) {
+	_gm.ui.views.main.ConfigView = function(_m) {
 		this.id = "admin";
 		
 		var that = this;
@@ -196,7 +196,7 @@
 		}
 	}
 
-	_gm.components.ConfigListView = function(_m, $e, o) {
+	_gm.ui.components.ConfigListView = function(_m, $e, o) {
 		_m.dom.template("mollify-tmpl-configlistview", {title: o.title, actions: o.actions || false}).appendTo($e);
 		var $table = $e.find(".mollify-configlistview-table");
 		var table = _m.ui.controls.table($table, o.table);
@@ -242,7 +242,7 @@
 	}
 
 	/* Account */
-	_gm.views.config.user.AccountView = function(_m, mv) {
+	_gm.ui.views.config.user.AccountView = function(_m, mv) {
 		this.id = "account";
 		var that = this;
 
@@ -256,7 +256,7 @@
 	}
 
 	/* Users */
-	_gm.views.config.admin.UsersView = function(_m) {
+	_gm.ui.views.config.admin.UsersView = function(_m) {
 		this.id = "users";
 		var that = this;
 		
@@ -683,7 +683,7 @@
 	}
 
 	/* Groups */
-	_gm.views.config.admin.GroupsView = function(_m) {
+	_gm.ui.views.config.admin.GroupsView = function(_m) {
 		this.id = "groups";
 		
 		var that = this;
@@ -966,7 +966,7 @@
 	}
 
 	/* Folders */
-	_gm.views.config.admin.FoldersView = function(_m) {
+	_gm.ui.views.config.admin.FoldersView = function(_m) {
 		this.id = "folders";
 		var that = this;
 		
