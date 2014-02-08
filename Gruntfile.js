@@ -70,6 +70,43 @@ module.exports = function (grunt) {
         src: []
       }
     },
+    
+    less: {
+      compileCore: {
+        options: {
+          strictMath: true,
+          //sourceMap: true,
+          outputSourceFiles: true,
+          //sourceMapURL: '<%= pkg.name %>.css.map',
+          //sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map'
+        },
+        files: {
+          'css/<%= pkg.name %>.css': 'less/mollify.less'
+        }
+      },
+      /*compileTheme: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          //sourceMapURL: '<%= pkg.name %>-theme.css.map',
+          //sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map'
+        },
+        files: {
+          'dist/css/<%= pkg.name %>-theme.css': 'less/theme.less'
+        }
+      },*/
+      minify: {
+        options: {
+          cleancss: true,
+          report: 'min'
+        },
+        files: {
+          'css/<%= pkg.name %>.min.css': 'css/<%= pkg.name %>.css',
+          //'dist/css/<%= pkg.name %>-theme.min.css': 'dist/css/<%= pkg.name %>-theme.css'
+        }
+      }
+    },
 
     concat: {
       options: {
@@ -247,7 +284,22 @@ module.exports = function (grunt) {
 	        //bootstrap: 'tests/php/phpunit.php',
 	        colors: true
 	    }
-	}
+	},
+	
+    watch: {
+      src: {
+        files: '<%= jshint.src.src %>',
+        tasks: ['jshint:src', 'qunit']
+      },
+      test: {
+        files: '<%= jshint.test.src %>',
+        tasks: ['jshint:test', 'qunit']
+      },
+      less: {
+        files: 'less/*.less',
+        tasks: 'less'
+      }
+    },
 
   });
 

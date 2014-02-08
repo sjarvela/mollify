@@ -1,25 +1,26 @@
-<div id="mollify-login-main" class="mollify-fullpage-form-bg">
-	<div id="mollify-login-data" class="container mollify-fullpage-form center">
+<div class>
+	<form id="mollify-login" class="container mollify-fullpage-form center">
 		<div class="mollify-logo"></div>
-		
-		<legend class="localized" text-key="loginDialogTitle"></legend>
+
+		{{t login.title tagName="legend"}}
 
 		<div class="control-group">
 			<div class="controls">
-				<input id="mollify-login-name" type="text" class="hintbox" hint-key="loginDialogUsername"></input>
+				{{input type="text" value=username placeholderTranslation="login.username"}}
 			</div>
 		</div>
 
 		<div class="control-group">
 			<div class="controls">
-				<input id="mollify-login-password" type="password" class="hintbox" hint-key="loginDialogPassword"></input>
+				{{input type="password" value=password placeholderTranslation="login.password"}}
 			</div>
 		</div>
-			
+
 		<div class="control-group">
 			<div class="controls">
 				<label id="mollify-login-remember" class="checkbox inline">
-					<input id="login-remember-cb" type="checkbox" /><span class="localized" text-key="loginDialogRememberMe"></span>
+					{{view Ember.Checkbox checkedBinding="model.remember"}}
+					{{t login.rememberme}}
 				</label>
 			</div>
 		</div>
@@ -29,8 +30,8 @@
 				<a id="mollify-login-button" class="localized btn btn-large btn-primary primary-action" text-key="loginDialogLoginButton"></a>
 			</div>
 		</div>
-		
-		<div id="mollify-login-links">
+
+		<!--div id="mollify-login-links">
 			<a href="javascript:void(0)" id="mollify-login-forgot-password" class="mollify-login-link link localized bubble-trigger" text-key="loginDialogResetPassword" style="display:none"></a>
 			<div id="mollify-login-forgot-password-bubble" style="display:none">
 				<div id="mollify-login-forgot-password-content" class="bubble-content">
@@ -39,8 +40,6 @@
 				</div>
 			</div>
 			<a href="javascript:void(0)" id="mollify-login-register" class="mollify-login-link link localized" text-key="loginDialogRegister" style="display:none"></a>
-		</div>
-	</div>
-	
-	<div id="mollify-notification-container" class="mollify-loginview-notification-container"></div>
+		</div-->
+	</form>
 </div>

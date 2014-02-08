@@ -1,5 +1,5 @@
 /**
- * loginview.js
+ * login.js
  *
  * Copyright 2008- Samuli Järvelä
  * Released under GPL License.
@@ -7,7 +7,47 @@
  * License: http://www.mollify.org/license.php
  */
 
-!function($, _gm) {
+window.mollify.registerModule({
+	name: 'login',
+	template: 'login',
+	model: function() {
+		return {
+			username: "",
+			password: "",
+			remember: false
+		};	
+	},
+	controller: Ember.ObjectController.extend({
+		actions: {
+			login: function() {
+				var previousTransition = this.get('previousTransition');
+				if (previousTransition) {
+					this.set('previousTransition', null);
+					previousTransition.retry();
+				} else {
+					this.transitionToRoute('index');
+				}
+			}
+		}
+	})
+});
+ 
+/*window.mollify.modules.push(function($, App) {
+	window.mollify.registerModule('login', function() {
+		
+	});
+	App.Router.map(function() {
+		this.route("login");
+	});
+	
+	App.LoginRoute = Ember.Route.extend({
+		model: function() {
+			return "foo";
+		}
+	})
+});*/
+
+/*!function($, _gm) {
 
 	"use strict";
 	
@@ -100,4 +140,4 @@
 			});
 		}
 	});
-}(window.jQuery, window.mollify);
+}(window.jQuery, window.mollify);*/
