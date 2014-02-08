@@ -49,7 +49,11 @@
 			var _m = new MollifyApp(config);
 			var templateLoader = new TemplateLoader(_m.settings['template-path']);
 
+			// Ember additions
 			Em.View.reopen(Em.I18n.TranslateableAttributes);
+			Ember.TextField.reopen({
+			    attributeBindings: ['accept', 'autocomplete', 'autofocus', 'name', 'required']
+			});
 
 			templateLoader.load('application').done(function() {
 				window.App = Ember.Application.create({
@@ -284,6 +288,7 @@
 		
 		this.init = function(_m) {
 			that._m = _m;
+			that.element = $("#"+_m.settings['app-element-id']);
 			
 			that.texts = {
 				locale : null,
@@ -389,14 +394,14 @@
 			
 			var pluginTextsLoaded = that.texts._pluginTextsLoaded;
 			if (that.texts.locale) {
-				that._element.removeClass("lang-"+that.texts.locale);
+				that.element.removeClass("lang-"+that.texts.locale);
 				that.texts.clear();
 			}
 			
 			var list = [];
 			list.push(that.texts.load(lang).done(function(locale) {
 				$("html").attr("lang", locale);
-				that._element.addClass("lang-"+locale);
+				that.element.addClass("lang-"+locale);
 			}));
 			
 			if (pluginTextsLoaded) {

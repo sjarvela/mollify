@@ -1,35 +1,20 @@
-<div class>
-	<form id="mollify-login" class="container mollify-fullpage-form center">
+<div class="container">
+	<form id="mollify-login" class="fullpage" role="form">
 		<div class="mollify-logo"></div>
 
 		{{t login.title tagName="legend"}}
 
-		<div class="control-group">
-			<div class="controls">
-				{{input type="text" value=username placeholderTranslation="login.username"}}
-			</div>
-		</div>
+		{{input type="text" value=username placeholderTranslation="login.username" class="form-control" required="1" autofocus="1"}}
+		{{input type="password" value=password placeholderTranslation="login.password" class="form-control" required="1"}}
 
-		<div class="control-group">
-			<div class="controls">
-				{{input type="password" value=password placeholderTranslation="login.password"}}
-			</div>
-		</div>
+		<label class="checkbox">
+			{{view Ember.Checkbox checkedBinding="model.remember"}}
+			{{t login.rememberme}}
+		</label>
 
-		<div class="control-group">
-			<div class="controls">
-				<label id="mollify-login-remember" class="checkbox inline">
-					{{view Ember.Checkbox checkedBinding="model.remember"}}
-					{{t login.rememberme}}
-				</label>
-			</div>
-		</div>
-
-		<div class="control-group">
-			<div class="controls">
-				<a id="mollify-login-button" class="localized btn btn-large btn-primary primary-action" text-key="loginDialogLoginButton"></a>
-			</div>
-		</div>
+		<button {{action "login"}} class="btn btn-lg btn-primary btn-block" type="submit">
+			{{t login.login-button}}
+		</button>
 
 		<!--div id="mollify-login-links">
 			<a href="javascript:void(0)" id="mollify-login-forgot-password" class="mollify-login-link link localized bubble-trigger" text-key="loginDialogResetPassword" style="display:none"></a>
