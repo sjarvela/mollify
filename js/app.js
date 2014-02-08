@@ -92,6 +92,8 @@
 						},
 						setupController : function(controller, model) {
 							controller.set('model', model);
+							controller.set('session', _m.session());
+							controller._m = _m;
 							if (m.setup) m.setup(controller, model);
 						},	
 						renderTemplate : function(controller, model){
@@ -252,7 +254,8 @@
 			settings : that._settings,
 			session : function() { return that._session; },
 			pageUrl : "foo",	//TODO
-			service : that._service
+			service : that._service,
+			events : that._events
 		};
 		return this._api;
 	};
@@ -263,12 +266,12 @@
 		var that = this;
 		
 		this._user = sd.authenticated ? {
-			id : s.user_id,
-			name : s.username,			
-			type: s.user_type,
-			lang: s.lang,
-			admin: s.user_type == 'a',
-			permissions: s.permissions
+			id : sd.user_id,
+			name : sd.username,			
+			type: sd.user_type,
+			lang: sd.lang,
+			admin: sd.user_type == 'a',
+			permissions: sd.permissions
 			//hasPermission : function(name, required) { return _gm.helpers.hasPermission(s.permissions, name, required); }
 		} : false;
 		
@@ -541,7 +544,7 @@
 		};
 		
 		this.setup = function(f, allRoots) {
-			if (f && _m.session().user) {
+			if (f && that._m.session().user) {
 				that.roots = f;
 				for (var i=0,j=f.length; i<j; i++)
 					that.rootsById[f[i].id] = f[i];
