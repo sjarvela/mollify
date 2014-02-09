@@ -7,16 +7,10 @@
  * License: http://www.mollify.org/license.php
  */
 
-window.mollify.registerModule({
-	name: 'main',
-	template: 'main',
-	model: function() {
-		return {
-			foo: "baz"
-		};	
-	},
-	requiresAuthentication: true,
-	controller: function() {
-		
-	}
-});
+!function($, mollify) {
+	window.mollify.registerModule({
+		name: 'main',
+		composite: true,
+		template: 'main'
+	});
+}(window.jQuery, window.mollify);
