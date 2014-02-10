@@ -1,10 +1,11 @@
 <script type="text/x-handlebars" data-template-name="files">
 files
+{{#each}}
 {{outlet}}
+{{/each}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="item">
 file {{id}}
-session {{session.id}}
-{{outlet}}
+session {{controller.session.id}}
 </script>

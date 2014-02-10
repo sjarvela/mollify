@@ -16,6 +16,9 @@
 				session: this.session()
 			};
 		},
-		template: 'main'
+		template: 'main',
+		controller: function() {
+			return Ember.ObjectController.extend({});
+		}
 	});
 }(window.jQuery, window.mollify);
