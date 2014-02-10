@@ -22,13 +22,16 @@
 			return Ember.ObjectController.extend({});
 		},
 		detailsModel: function(p) {
-			return [
-				{ id: p.id+"_1", name: "foo"+p.id, extension: "bar", size: 12 },
-				{ id: p.id+"_2", name: "foo"+p.id, extension: "baz", size: 14 }
-			];
+			return {
+				id: p.id,
+				items:[
+					{ id: p.id+"_1", name: "foo"+p.id, extension: "bar", size: 12 },
+					{ id: p.id+"_2", name: "foo"+p.id, extension: "baz", size: 14 }
+				]
+			};
 		},
 		detailsController: function() {
-			return Ember.ArrayController.extend({
+			return Ember.ObjectController.extend({
 				needs: 'main'
 			});			
 		}
