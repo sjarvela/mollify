@@ -42,12 +42,73 @@
 		}
 	};
 	
+	var setupModuleClasses = function(r, App, _m) {
+		var module = r.module;
+		
+		// register module route
+		var route = Ember.Route.extend({
+			model: $.proxy(module.model, _m),
+			beforeModel: r.is_parent ? undefined : function(transition) {
+				// prevent unauthorized access
+				if (module.requiresAuthentication && !_m.session().user) {
+					console.log("not authenticated, redirect to login");
+					var loginController = this.controllerFor('login');
+					loginController.set('previousTransition', transition);
+					this.transitionTo('login');
+					return;
+				}
+				var templates = [];
+				if (module.template) templates.push(module.template);
+				if (r.parent) {
+					var parentModule = r.parent.module;
+					if (parentModule.template) templates.push(parentModule.template);
+				}
+
+				if (!templates || _m.templateLoader.isLoaded(templates)) return;
+				
+				// load module template
+				transition.abort();	
+				_m.templateLoader.load(templates).done(function() { transition.retry(); });
+			},
+			setupController : function(controller, model) {
+				controller.set('model', model);
+				controller.set('session', _m.session());
+				controller._m = _m;
+				if (module.setup) module.setup(controller, model);
+			},	
+			renderTemplate : r.is_parent ? undefined : function(controller, model){
+				if (module.template) this.render(module.template);
+				else this._super(controller, model);
+			}
+		});
+		App[r.logicalName+"Route"] = route;
+		/*if (m.index) {
+			window.App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
+				model: m.index,
+				setupController : function(controller, model) {
+					controller.set('model', model);
+				},	
+				renderTemplate : function(controller, model){
+					this.render(m.template+".index");
+				}
+			});
+		}*/
+		if (module.controller) App[r.logicalName+"Controller"] = module.controller();
+		if (r.is_child && module.defaultModel) window.App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
+			beforeModel: function(transition) {
+				var defaultModel = module.defaultModel.apply(_m);
+				//TODO defaultModel == null?
+				if (defaultModel != null)
+					this.transitionTo(r.detailsName, defaultModel.id);
+			}
+		});
+	};
+	
 	window.mollify = {
 		modules : [],
 		init: function(config, plugins) {
 			// instance
 			var _m = new MollifyApp(config);
-			var templateLoader = new TemplateLoader(_m.settings['template-path']);
 
 			// Ember additions
 			Em.View.reopen(Em.I18n.TranslateableAttributes);
@@ -55,7 +116,7 @@
 			    attributeBindings: ['accept', 'autocomplete', 'autofocus', 'name', 'required']
 			});
 
-			templateLoader.load('application').done(function() {
+			_m.templateLoader.load('application').done(function() {
 				window.App = Ember.Application.create({
 					rootElement: '#'+_m.settings["app-element-id"],
 					LOG_ACTIVE_GENERATION: true,
@@ -63,8 +124,7 @@
 				});
 				window.App.deferReadiness();
 				
-				var registeredRoutes = {};
-				var tasks = [];
+				var routes = {};
 				
 				// init modules
 				$.each(window.mollify.modules, function(i, m) {
@@ -82,78 +142,50 @@
 					if (m.composite) {
 						r.is_parent = true;
 						r.children = {};
-						registeredRoutes[name] = r;
+						routes[name] = r;
 					} else {
 						if (childView) {
-							r.child = true;
+							r.is_child = true;
+							var subname = r.name.split(":");
+							if (subname.length > 1) {
+								r.name = subname[0];
+								r.logicalName = window.mollify.utils.firstLetterUp(r.name);
+								r.detailsName = subname[1];
+								name = r.name;
+							}
 							
 							var parent = nameParts[0];
-							r.parent = registeredRoutes[parent];
-							r.logicalName = window.mollify.utils.firstLetterUp(parent) + r.logicalName;
-							r.parent.children[name] = r;
+							r.parent = routes[parent];
+							r.parent.children[r.name] = r;
 						} else {
-							registeredRoutes[name] = r;
+							routes[name] = r;
 						}
-						
-						// register module route
-						var route = Ember.Route.extend({
-							data: r,
-							model: m.model,
-							beforeModel: m.composite ? undefined : function(transition) {
-								// prevent unauthorized access
-								if (m.requiresAuthentication && !_m.session().user) {
-									console.log("not authenticated, redirect to login");
-									var loginController = this.controllerFor('login');
-									loginController.set('previousTransition', transition);
-									this.transitionTo('login');
-									return;
-								}
-								var templates = [];
-								if (this.data.module.template) templates.push(this.data.module.template);
-								if (this.data.parent) {
-									var parentModule = this.data.parent.module;
-									if (parentModule.template) templates.push(parentModule.template);
-								}
-
-								if (!templates || templateLoader.isLoaded(templates)) return;
-								
-								// load module template
-								transition.abort();	
-								templateLoader.load(templates).done(function() { transition.retry(); });
-							},
-							setupController : function(controller, model) {
-								controller.set('model', model);
-								controller.set('session', _m.session());
-								controller._m = _m;
-								if (m.setup) m.setup(controller, model);
-							},	
-							renderTemplate : function(controller, model){
-								//if (childView) this.render('main');//this._super(controller, model);
-								if (m.template) this.render(m.template);
-								else this._super(controller, model);
-							}
-						});
-						window.App[r.logicalName+"Route"] = route;
 					}
-					if (m.controller) window.App[r.logicalName+"Controller"] = m.controller();
+					
+					setupModuleClasses(r, window.App, _m);
 				});
 
 				window.App.Router.map(function() {
 					var that = this;
 					
-					$.each(window.mollify.utils.getKeys(registeredRoutes), function(i, k) {
-						if (!registeredRoutes[k]) return;
-						var r = registeredRoutes[k];
+					$.each(window.mollify.utils.getKeys(routes), function(i, k) {
+						if (!routes[k]) return;
+						var r = routes[k];
+						
 						if (r.is_parent) {
 							that.resource(k, { path: '/' }, function() {
 								console.log(k+"/");
 								var st = this;
 								if (r.children) $.each(window.mollify.utils.getKeys(r.children), function(i, ck) {
 									var cr = r.children[ck];
-									var path = '/'+ck+'/';
-									if (cr.module.modelParam) path = path + ":id";
-									console.log("/"+ck + "[" + path + "]");
-									st.route(ck, { path: path });
+									
+									console.log("/"+ck);
+									st.resource(ck, { path: "/" + ck }, function() {
+										var path = undefined;
+										if (cr.module.modelParam) path = "/:id";
+										this.resource(cr.detailsName, { path: path });
+										console.log("/"+cr.detailsName+path);
+									});
 								});
 							});	
 						} else {
@@ -165,7 +197,10 @@
 				
 				/*window.App.Router.map(function() {
 					this.resource("main", { path: '/' }, function() {
-						this.route("files", { path: '/files/:id' });
+						this.resource("files", { path: '/files/' }, function() {
+							this.route("/");
+							this.route("/:id");
+						});
 					});
 				});*/
 				
@@ -186,9 +221,10 @@
 				
 				
 				// start
-				$.when.apply($, tasks).done(function() {
-					_m.start();
-				});
+				_m.start();
+				//$.when.apply($, tasks).done(function() {
+				//	_m.start();
+				//});
 			}).fail(function() {
 				$("body").html("Mollify could not be started");
 			});
@@ -197,70 +233,8 @@
 			window.mollify.modules.push(m);
 		}
 	};
-	
-	/**	
-	*	TemplateLoader, loads view templates dynamically
-	**/
-	var TemplateLoader = function(path) {
-		var that = this;
-		this._loaded = [];
 		
-		this.load = function(t) {
-			var df = $.Deferred();
-			if (this.isLoaded(t)) return df.resolve();
-			
-			var doLoad = function(name) {
-				return $.ajax({
-					url: path + name + ".html",
-					dataType: 'text',
-					success: function(html) {
-						that._loaded.push(name);
-						
-						if (!html || html.length === 0) {
-							df.reject();
-							return;
-						}
-	
-						if (html.indexOf('<script') >= 0) {
-							$(html).filter('script[type="text/x-handlebars"]').each(function() {
-								templateName = $(this).attr('data-template-name');
-								Ember.TEMPLATES[templateName] = Ember.Handlebars.compile($(this).html());
-							});
-						} else {
-							Ember.TEMPLATES[name] = Ember.Handlebars.compile(html);
-						}
-				   }
-				});
-				
-			}
-			var list = [];
-			if (window.isArray(t)) {
-				$.each(t, function(i, n) {
-					list.push(doLoad(n));
-				});
-			} else {
-				list.push(doLoad(t));
-			}
-			$.when.apply($, list).done(df.resolve).fail(df.reject);
-			return df;
-		};
-		
-		this.isLoaded = function(t) {
-			if (window.isArray(t)) {
-				var all = true;
-				$.each(t, function(i, n) {
-					if (that._loaded.indexOf(n) < 0) {
-						all = false;
-						return false;
-					}
-				});
-				return all;
-			}
-			return that._loaded.indexOf(name) >= 0;
-		};
-	};
-	
-	var MollifyApp = function(config) {
+	var MollifyApp = function(config, templateLoader) {
 		var that = this;		
 		
 		this._time = new Date().getTime(),
@@ -270,6 +244,7 @@
 		this._events = new EventHandler();
 		this._filesystem = new Filesystem();
 		this._ui = new UI();
+		this._templateLoader = new TemplateLoader(that._settings['template-path']);
 
 		this.init = function(fh, plugins) {
 			that._fh = fh;
@@ -335,9 +310,73 @@
 			session : function() { return that._session; },
 			pageUrl : "foo",	//TODO
 			service : that._service,
-			events : that._events
+			events : that._events,
+			filesystem : that._filesystem,
+			templateLoader : that._templateLoader
 		};
 		return this._api;
+	};
+	
+	/**	
+	*	TemplateLoader, loads view templates dynamically
+	**/
+	var TemplateLoader = function(path) {
+		var that = this;
+		this._loaded = [];
+		
+		this.load = function(t) {
+			var df = $.Deferred();
+			if (this.isLoaded(t)) return df.resolve();
+			
+			var doLoad = function(name) {
+				return $.ajax({
+					url: path + name + ".html",
+					dataType: 'text',
+					success: function(html) {
+						that._loaded.push(name);
+						
+						if (!html || html.length === 0) {
+							df.reject();
+							return;
+						}
+	
+						if (html.indexOf('<script') >= 0) {
+							$(html).filter('script[type="text/x-handlebars"]').each(function() {
+								var templateName = $(this).attr('data-template-name');
+								Ember.TEMPLATES[templateName] = Ember.Handlebars.compile($(this).html());
+							});
+						} else {
+							Ember.TEMPLATES[name] = Ember.Handlebars.compile(html);
+						}
+				   }
+				});
+				
+			}
+			var list = [];
+			if (window.isArray(t)) {
+				$.each(t, function(i, n) {
+					list.push(doLoad(n));
+				});
+			} else {
+				list.push(doLoad(t));
+			}
+			$.when.apply($, list).done(df.resolve).fail(df.reject);
+			return df;
+		};
+		
+		this.isLoaded = function(t) {
+			if (window.isArray(t)) {
+				var all = true;
+				$.each(t, function(i, n) {
+					if (that._loaded.indexOf(n) < 0) {
+						all = false;
+						return false;
+					}
+				});
+				return all;
+			}
+			return that._loaded.indexOf(name) >= 0;
+		};
 	};
 	
 	/* SESSION */

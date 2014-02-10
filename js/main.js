@@ -11,6 +11,11 @@
 	window.mollify.registerModule({
 		name: 'main',
 		composite: true,
+		model: function() {
+			return {
+				session: this.session()
+			};
+		},
 		template: 'main'
 	});
 }(window.jQuery, window.mollify);

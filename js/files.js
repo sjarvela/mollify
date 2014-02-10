@@ -9,18 +9,23 @@
 
 !function($, mollify) {
 	window.mollify.registerModule({
-		name: 'main/files',
+		name: 'main/files:item',
 		template: 'files',
 		modelParam : true,
 		model: function(p) {
-			return {
-				id: p,
+			if (!p.id) return this.filesystem.roots;
+			if (this.filesystem.rootsById[p.id]) return this.filesystem.rootsById[p.id];
+			return [{
+				id: p.id,
 				foo: "baz"
-			};	
+			}];
+		},
+		defaultModel: function() {
+			return this.filesystem.roots[0];
 		},
 		requiresAuthentication: true,
 		controller: function() {
-			return Ember.ObjectController.extend({});
+			return Ember.Controller.extend({});
 		}
 	});
 }(window.jQuery, window.mollify);
