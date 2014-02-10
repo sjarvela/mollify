@@ -82,17 +82,6 @@
 			}
 		});
 		App[r.logicalName+"Route"] = route;
-		/*if (m.index) {
-			window.App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
-				model: m.index,
-				setupController : function(controller, model) {
-					controller.set('model', model);
-				},	
-				renderTemplate : function(controller, model){
-					this.render(m.template+".index");
-				}
-			});
-		}*/
 		if (module.controller) App[r.logicalName+"Controller"] = module.controller.apply(_m);
 		if (module.view) App[r.logicalName+"View"] = module.view.apply(_m);
 		if (r.is_parent) {
@@ -104,10 +93,10 @@
 		} else if (r.is_child) {
 			App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
 				beforeModel: function(transition) {
-					var defaultModel = module.defaultModel ? module.defaultModel.apply(_m) : null;
+					var defaultChild = module.defaultChild ? module.defaultChild.apply(_m) : null;
 					//TODO defaultModel == null?
-					if (defaultModel != null)
-						this.transitionTo(r.detailsName, defaultModel.id);
+					if (defaultChild != null)
+						this.transitionTo(r.detailsName, defaultChild.id);
 				}
 			});
 			if (r.detailsName) {
@@ -197,12 +186,14 @@
 									var cr = r.children[ck];
 									
 									console.log("/"+ck);
-									st.resource(ck, { path: "/" + ck }, function() {
-										var path = undefined;
-										if (cr.module.modelParam) path = "/:id";
-										this.resource(cr.detailsName, { path: path });
-										console.log("/"+cr.detailsName+path);
-									});
+									
+									if (cr.detailsName)
+										st.resource(ck, { path: "/" + ck }, function() {
+											this.resource(cr.detailsName, { path: "/:id" });
+											console.log(" /:id");
+										});
+									else
+										st.route(ck, { path: "/" + ck });
 								});
 							});	
 						} else {

@@ -11,16 +11,10 @@
 	window.mollify.registerModule({
 		name: 'main/files:item',
 		template: 'files',
-		modelParam : true,
-		model: function(p) {
-			if (!p || !p.id) return { parent: null, children: this.filesystem.roots };
-			//if (this.filesystem.rootsById[p.id]) return this.filesystem.rootsById[p.id];
-			return { parent: { id: p.id}, children: [
-				{ id: p.id+"_1", name: "foo", extension: "bar", size: 12 },
-				{ id: p.id+"_2", name: "foo", extension: "baz", size: 14 }
-			]};
+		model: function() {
+			return {};
 		},
-		defaultModel: function() {
+		defaultChild: function() {
 			return this.filesystem.roots[0];
 		},
 		requiresAuthentication: true,
