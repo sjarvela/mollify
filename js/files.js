@@ -22,13 +22,15 @@
 			return Ember.ObjectController.extend({});
 		},
 		detailsModel: function(p) {
-			return {
-				id: p.id,
-				items:[
-					{ id: p.id+"_1", name: "foo"+p.id, extension: "bar", size: 12 },
-					{ id: p.id+"_2", name: "foo"+p.id, extension: "baz", size: 14 }
-				]
-			};
+			var df = $.Deferred();
+			this.filesystem.folderInfo(p.id, true, {}).done(function(r){
+				var result = {
+					id: p.id,
+					items: r.folders.concat(r.files)
+				};
+				df.resolve(result);
+			});	//TODO data
+			return df;
 		},
 		detailsController: function() {
 			return Ember.ObjectController.extend({

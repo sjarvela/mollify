@@ -203,15 +203,6 @@
 					});
 				});
 				
-				/*window.App.Router.map(function() {
-					this.resource("main", { path: '/' }, function() {
-						this.resource("files", { path: '/files/' }, function() {
-							this.route("/");
-							this.route("/:id");
-						});
-					});
-				});*/
-				
 				window.App.IndexRoute = Ember.Route.extend({
 					beforeModel: function() {
 						// defaults to "files"
@@ -695,39 +686,39 @@
 	
 		this.getUploadUrl = function(folder) {	
 			if (!folder || folder.is_file) return null;
-			return _m.service.url("filesystem/"+folder.id+'/files/') + "?format=binary";
+			return that._m.service.url("filesystem/"+folder.id+'/files/') + "?format=binary";
 		};
 		
 		this.itemDetails = function(item, data) {
-			return _m.service.post("filesystem/"+item.id+"/details/", { data : data }).done(function(r) {
-				_m.filesystem.permissionCache[item.id] = r.permissions;
-				if (item.parent_id && r.parent_permissions) _m.filesystem.permissionCache[item.parent_id] = r.parent_permissions;
+			return that._m.service.post("filesystem/"+item.id+"/details/", { data : data }).done(function(r) {
+				that._permissionCache[item.id] = r.permissions;
+				if (item.parent_id && r.parent_permissions) that._permissionCache[item.parent_id] = r.parent_permissions;
 			});
 		};
 		
 		this.folderInfo = function(id, hierarchy, data) {
-			return _m.service.post("filesystem/"+ (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), { data : data }).done(function(r) {
-				_m.filesystem.permissionCache[id] = r.permissions;
+			return that._m.service.post("filesystem/"+ (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), { data : data }).done(function(r) {
+				that._permissionCache[id] = r.permissions;
 			});
 		};
 	
 		this.findFolder = function(d, data) {
-			return _m.service.post("filesystem/find/", { folder: d, data : data });
+			return that._m.service.post("filesystem/find/", { folder: d, data : data });
 		};
 		
 		this.hasPermission = function(item, name, required) {
-			if (!_m.session.user) return false;
-			if (_m.session.user.admin) return true;
-			return _gm.helpers.hasPermission(_m.filesystem.permissionCache[((typeof(item) === "string") ? item : item.id)], name, required);
+			if (!that._m.session.user) return false;
+			if (that._m.session.user.admin) return true;
+			return false; //TODOwindow.mollify.utils.hasPermission(_m.filesystem.permissionCache[((typeof(item) === "string") ? item : item.id)], name, required);
 		};
 			
 		this.items = function(parent, files) {
 			if (parent == null) {
 				var df = $.Deferred();
-				df.resolve({ folders: mfs.roots , files: [] });
+				df.resolve({ folders: that.roots , files: [] });
 				return df.promise();
 			}
-			return _m.service.get("filesystem/"+parent.id+"/items/?files=" + (files ? '1' : '0'));
+			return that._m.service.get("filesystem/"+parent.id+"/items/?files=" + (files ? '1' : '0'));
 		};
 		
 		this.copy = function(i, to) {
@@ -737,17 +728,17 @@
 				if (!to) {
 					var df = $.Deferred();
 					_m.ui.dialogs.folderSelector({
-						title: _m.ui.texts.get('copyMultipleFileDialogTitle'),
-						message: _m.ui.texts.get('copyMultipleFileMessage', [i.length]),
-						actionTitle: _m.ui.texts.get('copyFileDialogAction'),
+						title: that._m.ui.texts.get('copyMultipleFileDialogTitle'),
+						message: that._m.ui.texts.get('copyMultipleFileMessage', [i.length]),
+						actionTitle: that._m.ui.texts.get('copyFileDialogAction'),
 						handler: {
-							onSelect: function(f) { $.when(mfs._copyMany(i, f)).then(df.resolve, df.reject); },
-							canSelect: function(f) { return mfs.canCopyTo(i, f); }
+							onSelect: function(f) { $.when(that._copyMany(i, f)).then(df.resolve, df.reject); },
+							canSelect: function(f) { return that.canCopyTo(i, f); }
 						}
 					});
 					return df.promise();
 				} else
-					return mfs._copyMany(i, to);
+					return that._copyMany(i, to);
 	
 				return;	
 			}
@@ -757,17 +748,17 @@
 			if (!to) {
 				var df2 = $.Deferred();
 				_m.ui.dialogs.folderSelector({
-					title: _m.ui.texts.get('copyFileDialogTitle'),
-					message: _m.ui.texts.get('copyFileMessage', [i.name]),
-					actionTitle: _m.ui.texts.get('copyFileDialogAction'),
+					title: that._m.ui.texts.get('copyFileDialogTitle'),
+					message: that._m.ui.texts.get('copyFileMessage', [i.name]),
+					actionTitle: that._m.ui.texts.get('copyFileDialogAction'),
 					handler: {
-						onSelect: function(f) { $.when(mfs._copy(i, f)).then(df2.resolve, df2.reject); },
-						canSelect: function(f) { return mfs.canCopyTo(i, f); }
+						onSelect: function(f) { $.when(that._copy(i, f)).then(df2.resolve, df2.reject); },
+						canSelect: function(f) { return that.canCopyTo(i, f); }
 					}
 				});
 				return df2.promise();
 			} else
-				return mfs._copy(i, to);
+				return that._copy(i, to);
 		};
 		
 		this.copyHere = function(item, name) {
@@ -775,20 +766,20 @@
 			
 			if (!name) {
 				var df = $.Deferred();
-				_m.ui.dialogs.input({
-					title: _m.ui.texts.get('copyHereDialogTitle'),
-					message: _m.ui.texts.get('copyHereDialogMessage'),
+				that._m.ui.dialogs.input({
+					title: that._m.ui.texts.get('copyHereDialogTitle'),
+					message: that._m.ui.texts.get('copyHereDialogMessage'),
 					defaultValue: item.name,
-					yesTitle: _m.ui.texts.get('copyFileDialogAction'),
-					noTitle: _m.ui.texts.get('dialogCancel'),
+					yesTitle: that._m.ui.texts.get('copyFileDialogAction'),
+					noTitle: that._m.ui.texts.get('dialogCancel'),
 					handler: {
 						isAcceptable: function(n) { return !!n && n.length > 0 && n != item.name; },
-						onInput: function(n) { $.when(mfs._copyHere(item, n)).then(df.resolve, df.reject); }
+						onInput: function(n) { $.when(that._copyHere(item, n)).then(df.resolve, df.reject); }
 					}
 				});
 				return df.promise();
 			} else {
-				return mfs._copyHere(item, name);
+				return that._copyHere(item, name);
 			}
 		};
 		
