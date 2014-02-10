@@ -8,3 +8,17 @@
   padding: 15px;
   margin: 0 auto;
 }
+#mollify .main-view .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: block;
+  padding: 70px 20px 20px;
+  background-color: #f5f5f5;
+  border-right: 1px solid #eee;
+}
+#mollify .main-view .row.main {
+  margin-top: 70px;
+}

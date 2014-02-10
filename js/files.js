@@ -13,22 +13,28 @@
 		template: 'files',
 		modelParam : true,
 		model: function(p) {
-			if (!p || !p.id) return this.filesystem.roots;
+			if (!p || !p.id) return { parent: null, children: this.filesystem.roots };
 			//if (this.filesystem.rootsById[p.id]) return this.filesystem.rootsById[p.id];
-			return [
-				{ id: p.id, foo: "baz" },
-				{ id: p.id+"2", foo: "baz2" }
-			];
+			return { parent: { id: p.id}, children: [
+				{ id: p.id+"_1", name: "foo", extension: "bar", size: 12 },
+				{ id: p.id+"_2", name: "foo", extension: "baz", size: 14 }
+			]};
 		},
 		defaultModel: function() {
 			return this.filesystem.roots[0];
 		},
 		requiresAuthentication: true,
 		controller: function(details) {
-			return Ember.ArrayController.extend({});
+			return Ember.ObjectController.extend({});
+		},
+		detailsModel: function(p) {
+			return [
+				{ id: p.id+"_1", name: "foo"+p.id, extension: "bar", size: 12 },
+				{ id: p.id+"_2", name: "foo"+p.id, extension: "baz", size: 14 }
+			];
 		},
 		detailsController: function() {
-			return Ember.ObjectController.extend({
+			return Ember.ArrayController.extend({
 				needs: 'main'
 			});			
 		}

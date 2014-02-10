@@ -1,11 +1,26 @@
 <script type="text/x-handlebars" data-template-name="files">
-files
-{{#each}}
-{{outlet}}
-{{/each}}
+	<h2>Files</h2>
+	
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Extension</th>
+				<th>Size</th>
+			</tr>
+		</thead>
+		<tbody>			
+			{{outlet}}
+		</tbody>
+	</table>
 </script>
 
 <script type="text/x-handlebars" data-template-name="item">
-file {{id}}
-session {{controllers.main.session.id}}
+	{{#each}}
+	<tr>
+	  <td>{{name}}</td>
+	  <td>{{extension}}</td>
+	  <td>{{size}}</td>
+	</tr>
+	{{/each}}
 </script>

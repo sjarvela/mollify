@@ -94,6 +94,7 @@
 			});
 		}*/
 		if (module.controller) App[r.logicalName+"Controller"] = module.controller.apply(_m);
+		if (module.view) App[r.logicalName+"View"] = module.view.apply(_m);
 		if (r.is_parent) {
 			App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
 				beforeModel: function(transition) {
@@ -109,8 +110,13 @@
 						this.transitionTo(r.detailsName, defaultModel.id);
 				}
 			});
-			if (r.detailsName && module.detailsController)
-				App[r.detailsLogicalName+"Controller"] = module.detailsController.apply(_m);
+			if (r.detailsName) {
+				App[r.detailsLogicalName+"Route"] = Ember.Route.extend({
+					model: $.proxy(module.detailsModel, _m),
+				});
+				if (module.detailsController)
+					App[r.detailsLogicalName+"Controller"] = module.detailsController.apply(_m);
+			}
 		}
 	};
 	
