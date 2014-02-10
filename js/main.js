@@ -10,15 +10,16 @@
 !function($, mollify) {
 	window.mollify.registerModule({
 		name: 'main',
+		template: 'main',
 		composite: true,
 		model: function() {
 			return {
 				session: this.session()
 			};
 		},
-		template: 'main',
 		controller: function() {
 			return Ember.ObjectController.extend({});
-		}
+		},
+		defaultChild: 'files'
 	});
 }(window.jQuery, window.mollify);

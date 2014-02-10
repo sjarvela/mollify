@@ -13,7 +13,7 @@
 		template: 'files',
 		modelParam : true,
 		model: function(p) {
-			if (!p.id) return this.filesystem.roots;
+			if (!p || !p.id) return this.filesystem.roots;
 			//if (this.filesystem.rootsById[p.id]) return this.filesystem.rootsById[p.id];
 			return [
 				{ id: p.id, foo: "baz" },
@@ -24,9 +24,13 @@
 			return this.filesystem.roots[0];
 		},
 		requiresAuthentication: true,
-		controller: function() {
-			return Ember.ArrayController.extend({
-			});
+		controller: function(details) {
+			return Ember.ArrayController.extend({});
+		},
+		detailsController: function() {
+			return Ember.ObjectController.extend({
+				needs: 'main'
+			});			
 		}
 	});
 }(window.jQuery, window.mollify);

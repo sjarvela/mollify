@@ -93,15 +93,25 @@
 				}
 			});
 		}*/
-		if (module.controller) App[r.logicalName+"Controller"] = module.controller();
-		if (r.is_child && module.defaultModel) window.App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
-			beforeModel: function(transition) {
-				var defaultModel = module.defaultModel.apply(_m);
-				//TODO defaultModel == null?
-				if (defaultModel != null)
-					this.transitionTo(r.detailsName, defaultModel.id);
-			}
-		});
+		if (module.controller) App[r.logicalName+"Controller"] = module.controller.apply(_m);
+		if (r.is_parent) {
+			App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
+				beforeModel: function(transition) {
+					this.transitionTo(module.defaultChild);
+				}
+			});
+		} else if (r.is_child) {
+			App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
+				beforeModel: function(transition) {
+					var defaultModel = module.defaultModel ? module.defaultModel.apply(_m) : null;
+					//TODO defaultModel == null?
+					if (defaultModel != null)
+						this.transitionTo(r.detailsName, defaultModel.id);
+				}
+			});
+			if (r.detailsName && module.detailsController)
+				App[r.detailsLogicalName+"Controller"] = module.detailsController.apply(_m);
+		}
 	};
 	
 	window.mollify = {
@@ -151,6 +161,7 @@
 								r.name = subname[0];
 								r.logicalName = window.mollify.utils.firstLetterUp(r.name);
 								r.detailsName = subname[1];
+								r.detailsLogicalName = window.mollify.utils.firstLetterUp(r.detailsName);
 								name = r.name;
 							}
 							
@@ -206,8 +217,8 @@
 				
 				window.App.IndexRoute = Ember.Route.extend({
 					beforeModel: function() {
-						// defaults to "main"
-						this.transitionTo('main.files');
+						// defaults to "files"
+						this.transitionTo('files');
 					}
 				});
 
