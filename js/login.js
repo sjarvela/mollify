@@ -8,19 +8,36 @@
  */
 
 !function($, mollify) {
-	window.mollify.registerModule({
+	mollify.registerModule({
 		name: 'login',
 		template: 'login',
 		model: function() {
 			return {
 				username: "",
 				password: "",
-				remember: false
-			};	
+				remember: false,
+				resetEmail: 'todo'
+			};
+		},
+		setup: function(App) {
+			App.LoginTestModalController = Ember.Controller.extend({
+				actions: {
+					close: function() {
+						return this.send('closeModal');
+					}
+				}
+			});
 		},
 		controller: function() {
-			return Ember.Controller.extend({
+			return Ember.ObjectController.extend({				
+				showReset : false,
 				actions: {
+					toggleReset: function(){
+				        this.toggleProperty("showReset");
+				    },
+				    reset: function() {
+						alert("reset");
+				    },
 					login: function() {
 						var that = this;
 		

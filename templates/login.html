@@ -1,3 +1,4 @@
+<script type="text/x-handlebars" data-template-name="login">
 <div class="container">
 	<form id="mollify-login" class="fullpage" role="form">
 		<div class="mollify-logo"></div>
@@ -8,13 +9,32 @@
 		{{input type="password" value=password placeholderTranslation="login.password" class="form-control" required="1"}}
 
 		<label class="checkbox">
-			{{view Ember.Checkbox checkedBinding="model.remember"}}
+			{{view Ember.Checkbox checkedBinding="remember"}}
 			{{t login.rememberme}}
 		</label>
 
 		<button {{action "login"}} class="btn btn-lg btn-primary btn-block" type="submit">
 			{{t login.login-button}}
 		</button>
+		
+		<div class="links">
+			<a id="toggle-reset" {{action "toggleReset"}}>{{t login.reset-password.show-action}}</a>
+			<!--#view App.Popover parentSelector="#toggle-reset"}}
+				{{t login.reset-password.message}}
+				{{input type="text" value=resetEmail class="form-control" required="1" autofocus="1"}}
+				<button {{action "reset"}} class="btn" type="submit">
+					{{t login.reset-password.reset-action}}
+				</button>
+			/view-->
+			<a {{action 'openModal' 'loginTestModal' model}}>Test</a>
+			<!--ui-bubble isVisibleBinding="showReset"}
+				{{t login.reset-password.message}}
+				{{input type="text" value=email class="form-control" required="1" autofocus="1"}}
+				<button {{action "reset"}} class="btn" type="submit">
+					{{t login.reset-password.reset-action}}
+				</button>
+			{/ui-bubble}-->
+		</div>
 
 		<!--div id="mollify-login-links">
 			<a href="javascript:void(0)" id="mollify-login-forgot-password" class="mollify-login-link link localized bubble-trigger" text-key="loginDialogResetPassword" style="display:none"></a>
@@ -28,3 +48,10 @@
 		</div-->
 	</form>
 </div>
+</script>
+
+<script type="text/x-handlebars" data-template-name="loginTestModal">
+{{#modal-dialog action="close"}}
+	test {{username}} test {{model.username}}test {{controller.username}}
+{{/modal-dialog}}
+</script>

@@ -74,7 +74,7 @@
 				controller.set('model', model);
 				controller.set('session', _m.session());
 				controller._m = _m;
-				if (module.setup) module.setup(controller, model);
+				if (module.setupController) module.setupController(controller, model);
 			},	
 			renderTemplate : r.is_parent ? undefined : function(controller, model){
 				if (module.template) this.render(module.template);
@@ -83,6 +83,8 @@
 		});
 		App[r.logicalName+"Route"] = route;
 		if (module.controller) App[r.logicalName+"Controller"] = module.controller.apply(_m);
+		if (module.setup) module.setup.apply(_m, [App]);
+
 		if (module.view) App[r.logicalName+"View"] = module.view.apply(_m);
 		if (r.is_parent) {
 			App[r.logicalName+"IndexRoute"] = Ember.Route.extend({
@@ -126,8 +128,28 @@
 					rootElement: '#'+_m.settings["app-element-id"],
 					LOG_ACTIVE_GENERATION: true,
 					LOG_TRANSITIONS_INTERNAL: true
-				});
+				});				
 				window.App.deferReadiness();
+				
+				window.App.ApplicationRoute = Ember.Route.extend({
+				  actions: {
+				    openModal: function(modalName, model) {
+				      this.controllerFor(modalName).set('model', model);
+				      return this.render(modalName, {
+				        into: 'application',
+				        outlet: 'modal'
+				      });
+				    },
+				    
+				    closeModal: function() {
+				      return this.disconnectOutlet({
+				        outlet: 'modal',
+				        parentView: 'application'
+				      });
+				    }
+				  }
+				});
+				setupEmberComponents(window.App);
 				
 				var routes = {};
 				
@@ -455,7 +477,7 @@
 						try {
 							t = JSON.parse(r);
 						} catch (e) {
-							console.log("error");
+							console.log("Localization file error: " + e);
 							//new _gm.ui.views.FullError('<b>Localization file syntax error</b> (<code>'+url+'</code>)', '<code>'+e.message+'</code>').show();
 							return;
 						}
@@ -470,7 +492,8 @@
 						df.resolve(t.locale);			
 					}).fail(function(e) {
 						if (e.status == 404) {
-							new _gm.ui.view.FullError('Localization file missing: <code>'+url+'</code>', 'Either create the file or use <a href="https://code.google.com/p/_m/wiki/ClientResourceMap">client resource map</a> to load it from different location, or to ignore it').show();
+							console.log("Localization file missing: " + url);
+							//new _gm.ui.view.FullError('Localization file missing: <code>'+url+'</code>', 'Either create the file or use <a href="https://code.google.com/p/_m/wiki/ClientResourceMap">client resource map</a> to load it from different location, or to ignore it').show();
 							return;
 						}
 						df.reject();
@@ -1129,6 +1152,36 @@
 			}
 			return a;
 		}
+	};
+	
+	var setupEmberComponents = function(App) {
+		App.Popover = Ember.View.extend({
+			layoutName: 'core/popover',
+			placement: 'auto bottom',
+	        triggerSelector: '',
+	        didInsertElement: function () {
+	            var self = this;
+	            $(self.parentSelector).popover({
+	                html: true,
+	                placement: self.placement,
+	                content: function() {
+	                    var $content = self.$();
+	                    return $content.html();
+	                }
+	            });
+	        }
+		});
+		
+		App.ModalDialogComponent = Ember.Component.extend({
+			actions: {
+				close: function() {
+					return this.sendAction();
+				}
+			},
+			didInsertElement: function(){
+				this.$().modal('show').find(".modal").show();
+			}
+		});
 	};
 
 	/* Common */
