@@ -8,6 +8,9 @@
   padding: 15px;
   margin: 0 auto;
 }
+#mollify .login-view .links .link {
+  display: inline-block;
+}
 #mollify .main-view .sidebar {
   position: fixed;
   top: 0;

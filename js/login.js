@@ -7,55 +7,61 @@
  * License: http://www.mollify.org/license.php
  */
 
-!function($, mollify) {
-	mollify.registerModule({
-		name: 'login',
-		template: 'login',
-		model: function() {
-			return {
-				username: "",
-				password: "",
-				remember: false,
-				resetEmail: 'todo',
-				showReset: false,
-			};
-		},
-		controller: function() {
-			return Ember.ObjectController.extend({
-				actions: {
-				    reset: function(c) {
-						alert("reset " + this.get('resetEmail') + " : " + c);
-						this.set('showReset', false);
-				    },
-					login: function() {
-						var that = this;
-		
-						//TODO validation
-						var username = this.get('username');
-						var password = this.get('password');
-						var remember = this.get('remember');
-						
-						this._m.service.post("session/authenticate/", {username: username, password: window.Base64.encode(password), remember: remember}).done(function(s) {
-							that._m.events.dispatch('session/start', s);
-	
-							// forward to next view						
-							var previousTransition = that.get('previousTransition');
-							if (previousTransition) {
-								that.set('previousTransition', null);
-								previousTransition.retry();
-							} else {
-								that.transitionToRoute('index');
-							}
-						}).fail(function(e) {
-							if (e.code == 107) this.handled = true;
-							console.log("error");
-							//that.showLoginError();
-						});
-					}
-				}
-			});
-		}
-	});
+! function($, mollify) {
+    mollify.registerModule({
+        name: 'login',
+        template: 'login',
+        model: function() {
+            return {
+                username: "",
+                password: "",
+                remember: false,
+                resetEmail: 'todo',
+                showReset: false
+            };
+        },
+        controller: function() {
+            return Ember.ObjectController.extend({
+                actions: {
+                    reset: function(c) {
+                        alert("reset " + this.get('resetEmail') + " : " + c);
+                        this.set('showReset', false);
+                    },
+                    login: function() {
+                        var that = this;
+
+                        //TODO validation
+                        var username = this.get('username');
+                        var password = this.get('password');
+                        var remember = this.get('remember');
+
+                        this._m.service.post("session/authenticate/", {
+                            username: username,
+                            password: window.Base64.encode(password),
+                            remember: remember
+                        }).done(function(s) {
+                            that._m.events.dispatch('session/start', s);
+
+                            // forward to next view						
+                            var previousTransition = that.get('previousTransition');
+                            if (previousTransition) {
+                                that.set('previousTransition', null);
+                                previousTransition.retry();
+                            } else {
+                                that.transitionToRoute('index');
+                            }
+                        }).fail(function(e) {
+                            if (e.code == 107) this.handled = true;
+                            console.log("error");
+                            Bootstrap.NM.push('Error!', 'warning')
+                            //that.set('showLoginError', true);
+                            //that.showLoginError();
+                        });
+                    }
+                }
+            });
+        }
+    });
 }(window.jQuery, window.mollify);
 
 /*window.mollify.modules.push(function($, App) {
