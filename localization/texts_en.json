@@ -55,14 +55,13 @@
 			"reset-password" : {
 				"show-action": "Forgot password?",
 				"message": "Enter your email address",
-				"reset-action": "Reset"
+				"reset-action": "Reset",
+				"success": "Your new password has been reset and sent to your email address.",
+				"failure": "Password reset failed"
 			},
 						
-			"loginDialogRegister": "Register",
-			"loginDialogLoginFailedMessage": "Login failed, user name or password was incorrect.",
-
-			"resetPasswordPopupResetSuccess": "Your new password has been reset and sent to your email address.",
-			"resetPasswordPopupResetFailed": "Password reset failed"
+			"register-action": "Register",
+			"failure": "Login failed, user name or password was incorrect."
 		},
 
 		"mainviewMenuTitle": "Files",

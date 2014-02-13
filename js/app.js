@@ -72,7 +72,7 @@
 			},
 			setupController : function(controller, model) {
 				controller.set('model', model);
-				controller.set('session', _m.session());
+				controller.set('session', _m.session);
 				controller._m = _m;
 				if (module.setupController) module.setupController(controller, model);
 			},	
@@ -256,40 +256,40 @@
 	};
 		
 	var MollifyApp = function(config, templateLoader) {
-		var that = this;		
+		var that = this;				
+		this._time = new Date().getTime();
 		
-		this._time = new Date().getTime(),
-		this._settings = $.extend(true, {}, DEFAULTS, config);
-		this._session = false;
-		this._service = new Service(this._settings["service-path"], this._settings['limited-http-methods']);
-		this._events = new EventHandler();
-		this._filesystem = new Filesystem();
-		this._ui = new UI();
-		this._templateLoader = new TemplateLoader(that._settings['template-path']);
+		this.settings = $.extend(true, {}, DEFAULTS, config);
+		this.session = false;
+		this.service = new Service(this, this.settings["service-path"], this.settings['limited-http-methods']);
+		this.events = new EventHandler(this);
+		this.filesystem = new Filesystem(this);
+		this.ui = new UI(this);
+		this.templateLoader = new TemplateLoader(that.settings['template-path']);
+		this.plugins = null;
 
 		this.init = function(fh, plugins) {
 			that._fh = fh;
-			that._service.init(that._api);
-			that._filesystem.init(that._api);
-			that._ui.init(that._api);
+			this.ui.init();
 			
-			that._events.addEventHandler(function(e) {
+			that.events.addEventHandler(function(e) {
 				if (e.type == 'session/start') {
 					that._onSessionStart(e.payload);
 				} else if (e.type == 'session/end') {
 					that._onSessionEnd();
 				}
 			});
+			that._clientPlugins = plugins;
 			//initialize plugins	
 		};
 		
 		this.resourceUrl = function(u) {
-			if (!that._settings["resource-map"]) return u;
+			if (!that.settings["resource-map"]) return u;
 			
 			var urlParts = window.mollify.utils.breakUrl(u);
 			if (!urlParts) return u;
 			
-			var mapped = that._settings["resource-map"][urlParts.path];
+			var mapped = that.settings["resource-map"][urlParts.path];
 			if (mapped === undefined) return u;
 			if (mapped === false) return false;
 			
@@ -297,22 +297,24 @@
 		};
 		
 		this._onSessionStart = function(session) {
-			that._session = new Session(session);
-			that._filesystem.setup(that._session.data.folders, ((that._session.user && that._session.user.admin) ? that._session.data.roots : false));
-			that._ui.initializeLang();
+			that.session = new Session(session);
+			that.plugins = new PluginManager(that._clientPlugins, session);
+			that.filesystem.setup(that.session.data.folders, ((that.session.user && that.session.user.admin) ? that.session.data.roots : false));
+			that.ui.initializeLang();
 		};
 		
 		this._onSessionEnd = function() {
-			that._session = new Session();
-			that._filesystem.setup([]);
+			that.session = new Session();
+			that.plugins = null;
+			that.filesystem.setup([]);
 		};
 		
 		this.start = function() {
-			that._service.get("session/info/").fail(function() {
+			that.service.get("session/info/").fail(function() {
 				console.log("error");
 				//new _m.ui.FullErrorView('Failed to initialize mollify').show();
 			}).done(function(s) {
-				that._events.dispatch('session/start', s);
+				that.events.dispatch('session/start', s);
 				that._fh.start();
 			});
 		};
@@ -322,7 +324,7 @@
 			//that._fh.openView(viewId);	
 		};
 
-		this._api = {
+		/*this._api = {
 			init: that.init,
 			start: that.start,
 			resourceUrl: that.resourceUrl,
@@ -333,9 +335,16 @@
 			service : that._service,
 			events : that._events,
 			filesystem : that._filesystem,
-			templateLoader : that._templateLoader
+			templateLoader : that._templateLoader,
+			plugins : that._plugins
 		};
-		return this._api;
+		return this._api;*/
+	};
+	
+	var PluginManager = function(clientPlugins, sessionData) {
+		var that = this;
+		
+		this.list = sessionData.plugins;		
 	};
 	
 	/**	
@@ -426,11 +435,10 @@
 	
 	/* UI */
 	
-	var UI = function() {
+	var UI = function(_m) {
 		var that = this;
 		
-		this.init = function(_m) {
-			that._m = _m;
+		this.init = function() {
 			that.element = $("#"+_m.settings['app-element-id']);
 			
 			that.texts = {
@@ -461,7 +469,7 @@
 				},*/
 				
 				_load : function(u, df) {
-					var url = that._m.resourceUrl(u);
+					var url = _m.resourceUrl(u);
 					if (!url) return df.resolve();
 					
 					$.ajax({
@@ -532,7 +540,7 @@
 		
 		this.initializeLang = function() {
 			var df = $.Deferred();
-			var lang = (that._m.session.user && that._m.session.user.lang) ? that._m.session.user.lang : (that._m.settings.language["default"] || 'en');
+			var lang = (_m.session.user && _m.session.user.lang) ? _m.session.user.lang : (_m.settings.language["default"] || 'en');
 			
 			if (that.texts.locale && that.texts.locale == lang) return df.resolve();
 			
@@ -560,14 +568,10 @@
 	
 	/* SERVICE */
 	
-	var Service = function(servicePath, limitedHttpMethods) {
+	var Service = function(_m, servicePath, limitedHttpMethods) {
 		var that = this;
 		this._servicePath = servicePath;
 		this._limitedHttpMethods = !!limitedHttpMethods;
-		
-		this.init = function(_m) {
-			that._m = _m;	
-		};
 		
 		this.url = function(u, full) {
 			if (u.startsWith('http')) return u;
@@ -605,7 +609,7 @@
 				contentType: 'application/json',
 				dataType: 'json',
 				beforeSend: function(xhr) {
-					var session = that._m.session();
+					var session = _m.session;
 					if (session && session.id)
 						xhr.setRequestHeader("mollify-session-id", session.id);
 					if (that._limitedHttpMethods || diffMethod)
@@ -617,7 +621,7 @@
 				}
 				return r.result;
 			}, function(xhr) {
-				var session = that._m.session();
+				var session = _m.session;
 				var df = $.Deferred();
 				
 				// if session has expired since starting request, ignore it
@@ -643,7 +647,7 @@
 					});
 				}, 0);
 				return df.rejectWith(failContext, [error]);
-			}).promise()}(that._m.session().id));
+			}).promise()}(_m.session.id));
 		};
 	};
 	
@@ -671,7 +675,7 @@
 
 	/* FILESYSTEM */
 		
-	var Filesystem = function() {
+	var Filesystem = function(_m) {
 		var that = this;
 		
 		this.roots = [];
@@ -680,12 +684,8 @@
 		
 		this._permissionCache = {};
 		
-		this.init = function(_m) {
-			that._m = _m;	
-		};
-		
 		this.setup = function(f, allRoots) {
-			if (f && that._m.session().user) {
+			if (f && _m.session.user) {
 				that.roots = f;
 				for (var i=0,j=f.length; i<j; i++)
 					that.rootsById[f[i].id] = f[i];
@@ -709,29 +709,29 @@
 	
 		this.getUploadUrl = function(folder) {	
 			if (!folder || folder.is_file) return null;
-			return that._m.service.url("filesystem/"+folder.id+'/files/') + "?format=binary";
+			return _m.service.url("filesystem/"+folder.id+'/files/') + "?format=binary";
 		};
 		
 		this.itemDetails = function(item, data) {
-			return that._m.service.post("filesystem/"+item.id+"/details/", { data : data }).done(function(r) {
+			return _m.service.post("filesystem/"+item.id+"/details/", { data : data }).done(function(r) {
 				that._permissionCache[item.id] = r.permissions;
 				if (item.parent_id && r.parent_permissions) that._permissionCache[item.parent_id] = r.parent_permissions;
 			});
 		};
 		
 		this.folderInfo = function(id, hierarchy, data) {
-			return that._m.service.post("filesystem/"+ (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), { data : data }).done(function(r) {
+			return _m.service.post("filesystem/"+ (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), { data : data }).done(function(r) {
 				that._permissionCache[id] = r.permissions;
 			});
 		};
 	
 		this.findFolder = function(d, data) {
-			return that._m.service.post("filesystem/find/", { folder: d, data : data });
+			return _m.service.post("filesystem/find/", { folder: d, data : data });
 		};
 		
 		this.hasPermission = function(item, name, required) {
-			if (!that._m.session.user) return false;
-			if (that._m.session.user.admin) return true;
+			if (!_m.session.user) return false;
+			if (_m.session.user.admin) return true;
 			return false; //TODOwindow.mollify.utils.hasPermission(_m.filesystem.permissionCache[((typeof(item) === "string") ? item : item.id)], name, required);
 		};
 			
@@ -741,7 +741,7 @@
 				df.resolve({ folders: that.roots , files: [] });
 				return df.promise();
 			}
-			return that._m.service.get("filesystem/"+parent.id+"/items/?files=" + (files ? '1' : '0'));
+			return _m.service.get("filesystem/"+parent.id+"/items/?files=" + (files ? '1' : '0'));
 		};
 		
 		this.copy = function(i, to) {
@@ -751,9 +751,9 @@
 				if (!to) {
 					var df = $.Deferred();
 					_m.ui.dialogs.folderSelector({
-						title: that._m.ui.texts.get('copyMultipleFileDialogTitle'),
-						message: that._m.ui.texts.get('copyMultipleFileMessage', [i.length]),
-						actionTitle: that._m.ui.texts.get('copyFileDialogAction'),
+						title: _m.ui.texts.get('copyMultipleFileDialogTitle'),
+						message: _m.ui.texts.get('copyMultipleFileMessage', [i.length]),
+						actionTitle: _m.ui.texts.get('copyFileDialogAction'),
 						handler: {
 							onSelect: function(f) { $.when(that._copyMany(i, f)).then(df.resolve, df.reject); },
 							canSelect: function(f) { return that.canCopyTo(i, f); }
@@ -771,9 +771,9 @@
 			if (!to) {
 				var df2 = $.Deferred();
 				_m.ui.dialogs.folderSelector({
-					title: that._m.ui.texts.get('copyFileDialogTitle'),
-					message: that._m.ui.texts.get('copyFileMessage', [i.name]),
-					actionTitle: that._m.ui.texts.get('copyFileDialogAction'),
+					title: _m.ui.texts.get('copyFileDialogTitle'),
+					message: _m.ui.texts.get('copyFileMessage', [i.name]),
+					actionTitle: _m.ui.texts.get('copyFileDialogAction'),
 					handler: {
 						onSelect: function(f) { $.when(that._copy(i, f)).then(df2.resolve, df2.reject); },
 						canSelect: function(f) { return that.canCopyTo(i, f); }
@@ -789,12 +789,12 @@
 			
 			if (!name) {
 				var df = $.Deferred();
-				that._m.ui.dialogs.input({
-					title: that._m.ui.texts.get('copyHereDialogTitle'),
-					message: that._m.ui.texts.get('copyHereDialogMessage'),
+				_m.ui.dialogs.input({
+					title: _m.ui.texts.get('copyHereDialogTitle'),
+					message: _m.ui.texts.get('copyHereDialogMessage'),
 					defaultValue: item.name,
-					yesTitle: that._m.ui.texts.get('copyFileDialogAction'),
-					noTitle: that._m.ui.texts.get('dialogCancel'),
+					yesTitle: _m.ui.texts.get('copyFileDialogAction'),
+					noTitle: _m.ui.texts.get('dialogCancel'),
 					handler: {
 						isAcceptable: function(n) { return !!n && n.length > 0 && n != item.name; },
 						onInput: function(n) { $.when(that._copyHere(item, n)).then(df.resolve, df.reject); }
@@ -1155,6 +1155,8 @@
 	};
 	
 	var setupEmberComponents = function(App) {
+		window.registerPopover(App);
+
 		App.Popover = Ember.View.extend({
 			layoutName: 'core/popover',
 			placement: 'auto bottom',
@@ -1171,7 +1173,28 @@
 	            });
 	        }
 		});
-		
+
+		App.UiPopoverComponent = Ember.Component.extend({
+			placement: 'auto bottom',
+			actions: {
+				close: function() {
+					return this.sendAction();
+				}
+			},
+			didInsertElement: function() {
+	            var self = this;
+                var $content = self.$();
+                var html = $content.html();
+                $content.remove();
+
+	            $(self.triggerSelector).popover({
+	                html: true,
+	                placement: self.placement,
+	                content: html
+	            });
+			}
+		});
+
 		App.ModalDialogComponent = Ember.Component.extend({
 			actions: {
 				close: function() {

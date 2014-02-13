@@ -16,27 +16,16 @@
 				username: "",
 				password: "",
 				remember: false,
-				resetEmail: 'todo'
+				resetEmail: 'todo',
+				showReset: false,
 			};
 		},
-		setup: function(App) {
-			App.LoginTestModalController = Ember.Controller.extend({
-				actions: {
-					close: function() {
-						return this.send('closeModal');
-					}
-				}
-			});
-		},
 		controller: function() {
-			return Ember.ObjectController.extend({				
-				showReset : false,
+			return Ember.ObjectController.extend({
 				actions: {
-					toggleReset: function(){
-				        this.toggleProperty("showReset");
-				    },
-				    reset: function() {
-						alert("reset");
+				    reset: function(c) {
+						alert("reset " + this.get('resetEmail') + " : " + c);
+						this.set('showReset', false);
 				    },
 					login: function() {
 						var that = this;

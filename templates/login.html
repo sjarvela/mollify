@@ -5,7 +5,7 @@
 
 		{{t login.title tagName="legend"}}
 
-		{{input type="text" value=username placeholderTranslation="login.username" class="form-control" required="1" autofocus="1"}}
+		{{input type="text" value=username placeholderTranslation="login.username" class="form-control" required="1"}}
 		{{input type="password" value=password placeholderTranslation="login.password" class="form-control" required="1"}}
 
 		<label class="checkbox">
@@ -18,24 +18,23 @@
 		</button>
 		
 		<div class="links">
-			<a id="toggle-reset" {{action "toggleReset"}}>{{t login.reset-password.show-action}}</a>
-			<!--#view App.Popover parentSelector="#toggle-reset"}}
+			<div class="link">
+			<a id="toggle-reset">{{t login.reset-password.show-action}}</a>
+	        {{#bs-popover triggers="click" placement="bottom" autofocus="login-reset-email" isVisibleBinding="showReset"}}
 				{{t login.reset-password.message}}
-				{{input type="text" value=resetEmail class="form-control" required="1" autofocus="1"}}
-				<button {{action "reset"}} class="btn" type="submit">
+				{{input id="login-reset-email" type="text" value=model.resetEmail class="form-control" required="1"}}
+				<button {{action "reset" controller}} class="btn" type="submit">
 					{{t login.reset-password.reset-action}}
 				</button>
-			/view-->
-			<a {{action 'openModal' 'loginTestModal' model}}>Test</a>
-			<!--ui-bubble isVisibleBinding="showReset"}
-				{{t login.reset-password.message}}
-				{{input type="text" value=email class="form-control" required="1" autofocus="1"}}
-				<button {{action "reset"}} class="btn" type="submit">
-					{{t login.reset-password.reset-action}}
-				</button>
-			{/ui-bubble}-->
-		</div>
+	        {{/bs-popover}}
+	        </div>
 
+	        <div class="link">
+	        {{#if controller._m.plugins.list.Registration}}
+	        	<a href="#/registration/new">{{t login.register-action}}</a>
+	        {{/if}}
+	        </div>
+		</div>
 		<!--div id="mollify-login-links">
 			<a href="javascript:void(0)" id="mollify-login-forgot-password" class="mollify-login-link link localized bubble-trigger" text-key="loginDialogResetPassword" style="display:none"></a>
 			<div id="mollify-login-forgot-password-bubble" style="display:none">
@@ -52,6 +51,6 @@
 
 <script type="text/x-handlebars" data-template-name="loginTestModal">
 {{#modal-dialog action="close"}}
-	test {{username}} test {{model.username}}test {{controller.username}}
+	test {{model.username}}
 {{/modal-dialog}}
 </script>
