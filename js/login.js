@@ -16,7 +16,7 @@
                 username: "",
                 password: "",
                 remember: false,
-                resetEmail: 'todo',
+                resetEmail: '',
                 showReset: false
             };
         },
@@ -24,8 +24,18 @@
             return Ember.ObjectController.extend({
                 actions: {
                     reset: function(c) {
-                        alert("reset " + this.get('resetEmail') + " : " + c);
+                    	var email = this.get('resetEmail');
+                    	if (!email) return;
+
+                    	var that = this;
                         this.set('showReset', false);
+						this._m.service.post("lostpassword", {"email": email}).done(function(r) {
+							that.set('resetEmail', '');
+							Bootstrap.NM.push(Ember.I18n.t('login.reset-password.success'));
+						}).fail(function(e) {
+							this.handled = true;
+							Bootstrap.NM.push(Ember.I18n.t('login.reset-password.failure'));
+						});
                     },
                     login: function() {
                         var that = this;
@@ -33,6 +43,8 @@
                         //TODO validation
                         var username = this.get('username');
                         var password = this.get('password');
+                        if (!username || !password) return;
+
                         var remember = this.get('remember');
 
                         this._m.service.post("session/authenticate/", {
@@ -52,10 +64,7 @@
                             }
                         }).fail(function(e) {
                             if (e.code == 107) this.handled = true;
-                            console.log("error");
-                            Bootstrap.NM.push('Error!', 'warning')
-                            //that.set('showLoginError', true);
-                            //that.showLoginError();
+                            Bootstrap.NM.push(Ember.I18n.t('login.failure'));
                         });
                     }
                 }

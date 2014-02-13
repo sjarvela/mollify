@@ -54,7 +54,7 @@
             model: $.proxy(module.model, _m),
             beforeModel: r.is_parent ? undefined : function(transition) {
                 // prevent unauthorized access
-                if (module.requiresAuthentication && !_m.session().user) {
+                if (module.requiresAuthentication && !_m.session.user) {
                     console.log("not authenticated, redirect to login");
                     var loginController = this.controllerFor('login');
                     loginController.set('previousTransition', transition);

@@ -14,7 +14,6 @@
 		composite: true,
 		model: function() {
 			return {
-				session: this.session()
 			};
 		},
 		controller: function() {
