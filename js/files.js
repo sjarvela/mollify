@@ -8,30 +8,37 @@
  */
 
 ! function($, mollify) {
-    window.mollify.registerModule({
-            views: {
-                // files parent view
-                files: {
-                    templateFile: 'files',
-                    template: 'files',
-                    parent: "main",
-                    path: "/files",
-                    model: function() {
-                        return {
-                            viewType: 'list'
-                        };
-                    },
-                    controller: function() {
-                        return Ember.ObjectController.extend({});
-                    },
-                    index: {
-                        before: function(transition) {
-                            var r = this.filesystem.roots[0];
-                            this.transitionTo("item", r.id);
-                        }
-                    }
+    mollify.registerModule({
+        views: {
+            // files parent view
+            files: {
+                templateFile: 'files',
+                template: 'files',
+                parent: "main",
+                path: "/files",
+                requiresAuthentication: true,
+
+                render: function(_m, c, m) {
+					this.render('files');
+					this.render('files-header-tools', {
+                        into: 'main',
+                        outlet: 'header-tools'
+                    });
                 },
-                requiresAuthentication: true
+                model: function() {
+                    return {
+                        viewType: 'list'
+                    };
+                },
+                controller: function() {
+                    return Ember.ObjectController.extend({});
+                },
+                index: {
+                    before: function(_m, transition) {
+                        if (_m.filesystem.roots.length === 0) return;
+                        this.transitionTo("item", _m.filesystem.roots[0].id);
+                    }
+                }
             },
 
             // item view (folder listing)
@@ -39,6 +46,8 @@
                 parent: "files",
                 template: 'item',
                 path: "/:id",
+                requiresAuthentication: true,
+
                 model: function(p) {
                     var df = $.Deferred();
                     this.filesystem.folderInfo(p.id, true, {}).done(function(r) {
@@ -58,40 +67,4 @@
             }
         }
     });
-
-/*window.mollify.registerModule({
-		name: 'main/files:item',
-		template: 'files',
-		model: function() {
-			return {
-				viewType: 'list'
-			};
-		},
-		render: function(c, m){
-
-		},
-		defaultChild: function() {
-			return this.filesystem.roots[0];
-		},
-		requiresAuthentication: true,
-		controller: function(details) {
-			return Ember.ObjectController.extend({});
-		},
-		detailsModel: function(p) {
-			var df = $.Deferred();
-			this.filesystem.folderInfo(p.id, true, {}).done(function(r){
-				var result = {
-					id: p.id,
-					items: r.folders.concat(r.files)
-				};
-				df.resolve(result);
-			});	//TODO data
-			return df;
-		},
-		detailsController: function() {
-			return Ember.ObjectController.extend({
-				needs: 'main'
-			});			
-		}
-	});*/
 }(window.jQuery, window.mollify);

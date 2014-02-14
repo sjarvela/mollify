@@ -15,8 +15,16 @@
                 template: 'main',
                 path: "/",
 
+                routeActions: {
+                    showHeadertools: function(name) {
+                        return this.render(name, {
+                            into: 'main',
+                            outlet: 'header-tools'
+                        });
+                    }
+                },
                 index: {
-                    before: function(transition) {
+                    before: function(_m, transition) {
                         this.transitionTo('files');
                     }
                 },

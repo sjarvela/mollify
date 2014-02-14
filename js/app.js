@@ -73,6 +73,7 @@
 
     var createRoute = function(view, App, _m, allViews) {
         return Ember.Route.extend({
+        	actions: view.routeActions,
             model: createModelFn(view, App, _m),
             beforeModel: function(transition) {
                 // prevent unauthorized access
@@ -84,6 +85,8 @@
                     this.transitionTo('login');
                     return;
                 }
+                if (view.before) view.before.apply(this, [_m, transition]);
+
                 var templates = getEffectiveTemplates(view, allViews);
                 if (!templates || _m.templateLoader.isLoaded(templates)) return;
 
@@ -92,8 +95,6 @@
                 _m.templateLoader.load(templates).done(function() {
                     transition.retry();
                 });
-
-                if (view.before) view.before.apply(this);
             },
             setupController: function(controller, model) {
                 controller.set('model', model);
@@ -102,9 +103,11 @@
                 //if (module.setupController) module.setupController(controller, model);
             },
             renderTemplate: function(controller, model) {
-                //if (module.render) module.render(controller, model);
-                if (view.template) this.render(view.template);
-                else this._super(controller, model);
+                if (view.render) view.render.apply(this, [_m, controller, model]);
+                else {
+                    if (view.template) this.render(view.template);
+                    else this._super(controller, model);
+                }
             }
         });
     };
@@ -317,7 +320,7 @@
         this.filesystem = new Filesystem(this);
         this.ui = new UI(this);
         this.templateLoader = new TemplateLoader(that.settings['template-path']);
-        this.plugins = null;
+        this.plugins = new PluginManager();
 
         this.init = function(fh, plugins) {
             that._fh = fh;
@@ -349,14 +352,14 @@
 
         this._onSessionStart = function(session) {
             that.session = new Session(session);
-            that.plugins = new PluginManager(that._clientPlugins, session);
+            that.plugins.init(that._clientPlugins, session);
             that.filesystem.setup(that.session.data.folders, ((that.session.user && that.session.user.admin) ? that.session.data.roots : false));
             that.ui.initializeLang();
         };
 
         this._onSessionEnd = function() {
             that.session = new Session();
-            that.plugins = null;
+            that.plugins.init();
             that.filesystem.setup([]);
         };
 
@@ -392,10 +395,12 @@
 		return this._api;*/
     };
 
-    var PluginManager = function(clientPlugins, sessionData) {
+    var PluginManager = function() {
         var that = this;
 
-        this.list = sessionData.plugins;
+        this.init = function(clientPlugins, sessionData) {
+            this.list = sessionData ? sessionData.plugins : [];
+        };
     };
 
     /**	
