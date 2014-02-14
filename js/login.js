@@ -24,7 +24,7 @@
                         showReset: false
                     };
                 },
-                controller: function(details) {
+                controller: function() {
                     return Ember.ObjectController.extend({
                         actions: {
                             reset: function(c) {

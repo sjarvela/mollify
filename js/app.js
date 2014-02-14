@@ -47,11 +47,11 @@
     };
 
     var createView = function(view, App, _m) {
-
+        return view.view.apply(_m);
     };
 
     var createController = function(view, App, _m) {
-
+        return view.controller.apply(_m);
     };
 
     var createModelFn = function(view, App, _m) {
@@ -92,6 +92,8 @@
                 _m.templateLoader.load(templates).done(function() {
                     transition.retry();
                 });
+
+                if (view.before) view.before.apply(this);
             },
             setupController: function(controller, model) {
                 controller.set('model', model);
@@ -100,19 +102,20 @@
                 //if (module.setupController) module.setupController(controller, model);
             },
             renderTemplate: function(controller, model) {
-            	//if (module.render) module.render(controller, model);
+                //if (module.render) module.render(controller, model);
                 if (view.template) this.render(view.template);
                 else this._super(controller, model);
             }
         });
     };
 
-    var setupViews = function(hierarchy, views, App, _m) {
+    var setupModuleViews = function(hierarchy, views, App, _m) {
         var process = function(parent) {
             $.each(mollify.utils.getKeys(parent), function(i, viewId) {
                 var view = views[viewId];
 
-                if (view.path) App[view._emberName + "Route"] = createRoute(view, App, _m, views);
+                App[view._emberName + "Route"] = createRoute(view, App, _m, views);
+                if (view.index) App[view._emberName + "IndexRoute"] = createRoute(view.index, App, _m, views);
                 if (view.controller) App[view._emberName + "Controller"] = createController(view, App, _m); //view.controller.apply(_m);
                 if (view.view) App[view._emberName + "View"] = createView(view, App, _m); //view.view.apply(_m);
 
@@ -122,60 +125,73 @@
         process(hierarchy);
     };
 
-    var setupRoutes = function(hierarchy, views, App, _m) {
+    var setupModuleRoutes = function(hierarchy, views, App, _m) {
         var process = function(router, parent) {
             $.each(mollify.utils.getKeys(parent), function(i, viewId) {
-            	var view = views[viewId];
-            	if (!view.path) return
+                var view = views[viewId];
+                if (!view.path) return
 
-            	console.log(view.path);
-            	router.resource(viewId, { path: view.path }, function(){
-            		process(this, parent[viewId]);	
-            	});
+                console.log(view.path);
+                router.resource(viewId, {
+                    path: view.path
+                }, function() {
+                    process(this, parent[viewId]);
+                });
             });
         };
 
         App.Router.map(function() {
             process(this, hierarchy);
         });
+    };
 
+    var setupApp = function(App, _m) {
+        App._m = _m;
+        App.ApplicationRoute = Ember.Route.extend({
+            actions: {
+                /*openModal: function(modalName, model) {
+                            this.controllerFor(modalName).set('model', model);
+                            return this.render(modalName, {
+                                into: 'application',
+                                outlet: 'modal'
+                            });
+                        },
 
-            /*$.each(window.mollify.utils.getKeys(routes), function(i, k) {
-                if (!routes[k]) return;
-                var r = routes[k];
+                        closeModal: function() {
+                            return this.disconnectOutlet({
+                                outlet: 'modal',
+                                parentView: 'application'
+                            });
+                        }*/
+            }
+        });
 
-                if (r.is_parent) {
-                    that.resource(k, {
-                        path: '/'
-                    }, function() {
-                        console.log(k + "/");
-                        var st = this;
-                        if (r.children) $.each(window.mollify.utils.getKeys(r.children), function(i, ck) {
-                            var cr = r.children[ck];
-                            //console.log("/" + ck);
+        App.IndexRoute = Ember.Route.extend({
+            beforeModel: function() {
+                // defaults to "files"
+                this.transitionTo('files');
+            }
+        });
 
-                            if (cr.detailsName)
-                                st.resource(ck, {
-                                    path: "/" + ck
-                                }, function() {
-                                    this.resource(cr.detailsName, {
-                                        path: "/:id"
-                                    });
-                                    //console.log(" /:id");
-                                });
-                            else
-                                st.route(ck, {
-                                    path: "/" + ck
-                                });
-                        });
-                    });
-                } else {
-                    console.log(k);
-                    that.route(k, {
-                        path: '/' + k
-                    });
-                }
-            });*/
+        var hierarchy = {};
+        var allViews = {};
+        $.each(window.mollify.modules, function(i, m) {
+            allViews = $.extend(allViews, m.views);
+
+            $.each(window.mollify.utils.getKeys(m.views), function(i, viewId) {
+                var view = allViews[viewId];
+                var parentNode = view.parent ? allViews[view.parent]._hierarchyNode : hierarchy;
+                var parentPath = view.parent ? allViews[view.parent]._path : "";
+                parentNode[viewId] = {};
+                view._hierarchyNode = parentNode[viewId];
+
+                view._path = (view.parent ? (allViews[view.parent]._path + "/") : "") + viewId;
+                view._emberName = window.mollify.utils.firstLetterUp(viewId);
+            });
+        });
+
+        setupModuleViews(hierarchy, allViews, App, _m);
+        setupModuleRoutes(hierarchy, allViews, App, _m);
     };
 
     // register module route
@@ -249,155 +265,30 @@
         }
     };*/
 
+    // Ember additions
+    Em.View.reopen(Em.I18n.TranslateableAttributes);
+    Ember.TextField.reopen({
+        attributeBindings: ['accept', 'autocomplete', 'autofocus', 'name', 'required']
+    });
+
     window.mollify = {
         modules: [],
         init: function(config, plugins) {
             // instance
             var _m = new MollifyApp(config);
 
-            // Ember additions
-            Em.View.reopen(Em.I18n.TranslateableAttributes);
-            Ember.TextField.reopen({
-                attributeBindings: ['accept', 'autocomplete', 'autofocus', 'name', 'required']
+            window.App = Ember.Application.create({
+                rootElement: '#' + _m.settings["app-element-id"],
+                LOG_ACTIVE_GENERATION: true,
+                LOG_TRANSITIONS_INTERNAL: true
             });
+            var App = window.App;
+            App.deferReadiness();
+            window.registerPopover(App); //TODO away
+
+            setupApp(App, _m);
 
             _m.templateLoader.load('application').done(function() {
-                window.App = Ember.Application.create({
-                    rootElement: '#' + _m.settings["app-element-id"],
-                    LOG_ACTIVE_GENERATION: true,
-                    LOG_TRANSITIONS_INTERNAL: true
-                });
-                var App = window.App;
-                App._m = _m;
-                App.deferReadiness();
-
-                App.ApplicationRoute = Ember.Route.extend({
-                    actions: {
-                        /*openModal: function(modalName, model) {
-                            this.controllerFor(modalName).set('model', model);
-                            return this.render(modalName, {
-                                into: 'application',
-                                outlet: 'modal'
-                            });
-                        },
-
-                        closeModal: function() {
-                            return this.disconnectOutlet({
-                                outlet: 'modal',
-                                parentView: 'application'
-                            });
-                        }*/
-                    }
-                });
-
-                var hierarchy = {};
-                var allViews = {};
-                $.each(window.mollify.modules, function(i, m) {
-                    allViews = $.extend(allViews, m.views);
-
-                    $.each(window.mollify.utils.getKeys(m.views), function(i, viewId) {
-                        var view = allViews[viewId];
-                        var parentNode = view.parent ? allViews[view.parent]._hierarchyNode : hierarchy;
-                        var parentPath = view.parent ? allViews[view.parent]._path : "";
-                        parentNode[viewId] = {};
-                        view._hierarchyNode = parentNode[viewId];
-
-                        view._path = (view.parent ? (allViews[view.parent]._path + "/") : "") + viewId;
-                        view._emberName = window.mollify.utils.firstLetterUp(viewId);
-                    });
-                });
-
-                setupViews(hierarchy, allViews, App, _m);
-                setupRoutes(hierarchy, allViews, App, _m);
-
-                // init modules
-                /*$.each(window.mollify.modules, function(i, m) {
-                    var nameParts = m.name.split("/");
-                    if (nameParts.length > 2) return;
-
-                    var childView = nameParts.length > 1;
-                    var name = nameParts[nameParts.length - 1];
-                    var r = {
-                        name: name,
-                        module: m,
-                        logicalName: window.mollify.utils.firstLetterUp(name)
-                    };
-
-                    if (m.composite) {
-                        r.is_parent = true;
-                        r.children = {};
-                        routes[name] = r;
-                    } else {
-                        if (childView) {
-                            r.is_child = true;
-                            var subname = r.name.split(":");
-                            if (subname.length > 1) {
-                                r.name = subname[0];
-                                r.logicalName = window.mollify.utils.firstLetterUp(r.name);
-                                r.detailsName = subname[1];
-                                r.detailsLogicalName = window.mollify.utils.firstLetterUp(r.detailsName);
-                                name = r.name;
-                            }
-
-                            var parent = nameParts[0];
-                            r.parent = routes[parent];
-                            r.parent.children[r.name] = r;
-                        } else {
-                            routes[name] = r;
-                        }
-                    }
-
-                    setupModuleClasses(r, window.App, _m);
-                });
-
-                window.App.Router.map(function() {
-                    var that = this;
-
-                    $.each(window.mollify.utils.getKeys(routes), function(i, k) {
-                        if (!routes[k]) return;
-                        var r = routes[k];
-
-                        if (r.is_parent) {
-                            that.resource(k, {
-                                path: '/'
-                            }, function() {
-                                console.log(k + "/");
-                                var st = this;
-                                if (r.children) $.each(window.mollify.utils.getKeys(r.children), function(i, ck) {
-                                    var cr = r.children[ck];
-                                    //console.log("/" + ck);
-
-                                    if (cr.detailsName)
-                                        st.resource(ck, {
-                                            path: "/" + ck
-                                        }, function() {
-                                            this.resource(cr.detailsName, {
-                                                path: "/:id"
-                                            });
-                                            //console.log(" /:id");
-                                        });
-                                    else
-                                        st.route(ck, {
-                                            path: "/" + ck
-                                        });
-                                });
-                            });
-                        } else {
-                            console.log(k);
-                            that.route(k, {
-                                path: '/' + k
-                            });
-                        }
-                    });
-                });*/
-
-                window.App.IndexRoute = Ember.Route.extend({
-                    beforeModel: function() {
-                        // defaults to "files"
-                        this.transitionTo('files');
-                    }
-                });
-
                 var fh = {
                     start: function() {
                         window.App.advanceReadiness();
@@ -405,13 +296,7 @@
                 };
 
                 _m.init(fh, plugins);
-
-
-                // start
                 _m.start();
-                //$.when.apply($, tasks).done(function() {
-                //	_m.start();
-                //});
             }).fail(function() {
                 $("body").html("Mollify could not be started");
             });
@@ -1429,7 +1314,7 @@
         }
     };
 
-    var setupEmberComponents = function(App) {
+    /*var setupEmberComponents = function(App) {
         window.registerPopover(App);
 
         App.Popover = Ember.View.extend({
@@ -1480,7 +1365,7 @@
                 this.$().modal('show').find(".modal").show();
             }
         });
-    };
+    };*/
 
     /* Common */
 
