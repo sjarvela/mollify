@@ -57,7 +57,8 @@
                 if (module.requiresAuthentication && !_m.session.user) {
                     console.log("not authenticated, redirect to login");
                     var loginController = this.controllerFor('login');
-                    loginController.set('previousTransition', transition);
+                    _m.session._loginTransition = transition;
+                    //loginController.set('previousTransition', transition);
                     this.transitionTo('login');
                     return;
                 }
@@ -83,10 +84,11 @@
                 if (module.setupController) module.setupController(controller, model);
             },
             renderTemplate: r.is_parent ? undefined : function(controller, model) {
+            	if (module.render) module.render(controller, model);
                 if (module.template) this.render(module.template);
                 else this._super(controller, model);
             }
-        });
+        }, module.route ? module.route() : {});
         App[r.logicalName + "Route"] = route;
         if (module.controller) App[r.logicalName + "Controller"] = module.controller.apply(_m);
         if (module.setup) module.setup.apply(_m, [App]);
@@ -110,6 +112,7 @@
             if (r.detailsName) {
                 App[r.detailsLogicalName + "Route"] = Ember.Route.extend({
                     model: $.proxy(module.detailsModel, _m),
+		            renderTemplate: module.renderDetails ? module.renderDetails : undefined
                 });
                 if (module.detailsController)
                     App[r.detailsLogicalName + "Controller"] = module.detailsController.apply(_m);
@@ -214,8 +217,7 @@
                                 var st = this;
                                 if (r.children) $.each(window.mollify.utils.getKeys(r.children), function(i, ck) {
                                     var cr = r.children[ck];
-
-                                    console.log("/" + ck);
+                                    //console.log("/" + ck);
 
                                     if (cr.detailsName)
                                         st.resource(ck, {
@@ -224,7 +226,7 @@
                                             this.resource(cr.detailsName, {
                                                 path: "/:id"
                                             });
-                                            console.log(" /:id");
+                                            //console.log(" /:id");
                                         });
                                     else
                                         st.route(ck, {

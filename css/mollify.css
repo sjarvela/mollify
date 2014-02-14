@@ -22,6 +22,6 @@
   background-color: #f5f5f5;
   border-right: 1px solid #eee;
 }
-#mollify .main-view .row.main {
-  margin-top: 70px;
+#mollify .main-view > .container-fluid {
+  margin-top: 30px;
 }

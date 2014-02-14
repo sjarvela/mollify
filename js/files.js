@@ -12,7 +12,12 @@
 		name: 'main/files:item',
 		template: 'files',
 		model: function() {
-			return {};
+			return {
+				viewType: 'list'
+			};
+		},
+		render: function(c, m){
+
 		},
 		defaultChild: function() {
 			return this.filesystem.roots[0];

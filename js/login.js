@@ -24,18 +24,20 @@
             return Ember.ObjectController.extend({
                 actions: {
                     reset: function(c) {
-                    	var email = this.get('resetEmail');
-                    	if (!email) return;
+                        var email = this.get('resetEmail');
+                        if (!email) return;
 
-                    	var that = this;
+                        var that = this;
                         this.set('showReset', false);
-						this._m.service.post("lostpassword", {"email": email}).done(function(r) {
-							that.set('resetEmail', '');
-							Bootstrap.NM.push(Ember.I18n.t('login.reset-password.success'));
-						}).fail(function(e) {
-							this.handled = true;
-							Bootstrap.NM.push(Ember.I18n.t('login.reset-password.failure'));
-						});
+                        this._m.service.post("lostpassword", {
+                            "email": email
+                        }).done(function(r) {
+                            that.set('resetEmail', '');
+                            Bootstrap.NM.push(Ember.I18n.t('login.reset-password.success'));
+                        }).fail(function(e) {
+                            this.handled = true;
+                            Bootstrap.NM.push(Ember.I18n.t('login.reset-password.failure'));
+                        });
                     },
                     login: function() {
                         var that = this;
@@ -53,19 +55,21 @@
                             remember: remember
                         }).done(function(s) {
                             that._m.events.dispatch('session/start', s);
-
-                            // forward to next view						
-                            var previousTransition = that.get('previousTransition');
-                            if (previousTransition) {
-                                that.set('previousTransition', null);
-                                previousTransition.retry();
-                            } else {
-                                that.transitionToRoute('index');
-                            }
+                            that.openInitialView();
                         }).fail(function(e) {
                             if (e.code == 107) this.handled = true;
                             Bootstrap.NM.push(Ember.I18n.t('login.failure'));
                         });
+                    },
+                    openInitialView: function() {
+                        // forward to next view						
+                        var previousTransition = that._m.session._loginTransition; //that.get('previousTransition');
+                        if (previousTransition) {
+                            that._m.session._loginTransition = null; //that.set('previousTransition', null);
+                            previousTransition.retry();
+                        } else {
+                            that.transitionToRoute('files');
+                        }
                     }
                 }
             });
