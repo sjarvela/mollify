@@ -9,6 +9,23 @@
 
 !function($, mollify) {
 	window.mollify.registerModule({
+		views: {
+			main : {
+				templateFile: 'main',
+				template: 'main',
+				path: "/",
+
+				model: function() {
+					return {};
+				},
+				controller: function(details) {
+					return Ember.ObjectController.extend({});
+				},
+				requiresAuthentication: true
+			}
+		}
+	});
+	/*window.mollify.registerModule({
 		name: 'main',
 		template: 'main',
 		composite: true,
@@ -20,5 +37,5 @@
 			return Ember.ObjectController.extend({});
 		},
 		defaultChild: 'files'
-	});
+	});*/
 }(window.jQuery, window.mollify);
