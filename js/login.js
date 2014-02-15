@@ -70,7 +70,7 @@
                                         this._m.session._loginTransition = null; //that.set('previousTransition', null);
                                         previousTransition.retry();
                                     } else {
-                                        this.transitionToRoute('files');
+                                        this.transitionTo('files');
                                     }
                                 }).fail(function(e) {
                                     if (e.code == 107) this.handled = true;

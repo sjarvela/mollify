@@ -27,11 +27,20 @@
                 },
                 model: function() {
                     return {
-                        viewType: 'list'
+                    	viewTypes: ['list', 'icon-small', 'icon-large'],
+                        viewType: 'list',
+
                     };
                 },
                 controller: function() {
-                    return Ember.ObjectController.extend({});
+                    return Ember.ObjectController.extend({
+                    	actions: {
+                    		changeViewtype : function(t) {
+                    			this.set('viewType', t);
+                    		}
+                    	},
+                    	isListView: function() { return this.get('viewType') == 'list'; }.property('viewType')
+                    });
                 },
                 index: {
                     before: function(_m, transition) {
@@ -61,7 +70,7 @@
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
-                        needs: 'main'
+                        needs: ['main', 'files']
                     });
                 }
             }

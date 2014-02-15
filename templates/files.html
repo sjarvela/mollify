@@ -1,6 +1,13 @@
 <script type="text/x-handlebars" data-template-name="files">
 	<h2>Files</h2>
 	
+	{{outlet}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="item">
+	<span>{{controllers.files.viewType}}</span>
+
+	{{#if controllers.files.isListView}}
 	<table class="table table-striped">
 		<thead>
 			<tr>
@@ -10,23 +17,24 @@
 			</tr>
 		</thead>
 		<tbody>			
-			{{outlet}}
+			{{#each items}}
+			<tr>
+			  <td>{{name}}</td>
+			  <td>{{extension}}</td>
+			  <td>{{size}}</td>
+			</tr>
+			{{/each}}
 		</tbody>
 	</table>
-</script>
-
-<script type="text/x-handlebars" data-template-name="item">
-	{{#each items}}
-	<tr>
-	  <td>{{name}}</td>
-	  <td>{{extension}}</td>
-	  <td>{{size}}</td>
-	</tr>
-	{{/each}}
+	{{else}}
+		else
+	{{/if}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-tools">
 	<ul class="nav navbar-nav navbar-right">
-		<li>{{viewType}}</li>
+		{{#each viewTypes}}
+			<li><a {{action "changeViewtype" this}}>{{this}}</a></li>
+		{{/each}}
 	</ul>
 </script>
