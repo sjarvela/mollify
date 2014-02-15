@@ -8,6 +8,13 @@
 	<span>{{controllers.files.viewType}}</span>
 
 	{{#if controllers.files.isListView}}
+		{{file-list-view items=items}}
+	{{else}}
+		{{file-icon-view items=items}}
+	{{/if}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/file-list-view">
 	<table class="table table-striped">
 		<thead>
 			<tr>
@@ -26,9 +33,14 @@
 			{{/each}}
 		</tbody>
 	</table>
-	{{else}}
-		else
-	{{/if}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/file-icon-view">
+	{{#each items}}
+	<div>
+		{{name}}
+	</div>
+	{{/each}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-tools">

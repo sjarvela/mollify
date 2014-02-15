@@ -121,7 +121,7 @@
                 if (view.index) App[view._emberName + "IndexRoute"] = createRoute(view.index, App, _m, views);
                 if (view.controller) App[view._emberName + "Controller"] = createController(view, App, _m); //view.controller.apply(_m);
                 if (view.view) App[view._emberName + "View"] = createView(view, App, _m); //view.view.apply(_m);
-
+                if (view.setup) view.setup(App, _m);
                 process(parent[viewId]);
             });
         };

@@ -19,27 +19,29 @@
                 requiresAuthentication: true,
 
                 render: function(_m, c, m) {
-					this.render('files');
-					this.render('files-header-tools', {
+                    this.render('files');
+                    this.render('files-header-tools', {
                         into: 'main',
                         outlet: 'header-tools'
                     });
                 },
                 model: function() {
                     return {
-                    	viewTypes: ['list', 'icon-small', 'icon-large'],
+                        viewTypes: ['list', 'icon-small', 'icon-large'],
                         viewType: 'list',
 
                     };
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
-                    	actions: {
-                    		changeViewtype : function(t) {
-                    			this.set('viewType', t);
-                    		}
-                    	},
-                    	isListView: function() { return this.get('viewType') == 'list'; }.property('viewType')
+                        actions: {
+                            changeViewtype: function(t) {
+                                this.set('viewType', t);
+                            }
+                        },
+                        isListView: function() {
+                            return this.get('viewType') == 'list';
+                        }.property('viewType')
                     });
                 },
                 index: {
@@ -47,6 +49,16 @@
                         if (_m.filesystem.roots.length === 0) return;
                         this.transitionTo("item", _m.filesystem.roots[0].id);
                     }
+                },
+
+                setup: function(App) {
+                    App.FileListViewComponent = Ember.Component.extend({
+
+                    });
+
+                    App.FileIconViewComponent = Ember.Component.extend({
+
+                    });
                 }
             },
 
