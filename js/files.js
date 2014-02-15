@@ -41,6 +41,9 @@
                         },
                         isListView: function() {
                             return this.get('viewType') == 'list';
+                        }.property('viewType'),
+                        isIconViewLarge: function() {
+                            return this.get('viewType') == 'icon-large';
                         }.property('viewType')
                     });
                 },
@@ -53,11 +56,13 @@
 
                 setup: function(App) {
                     App.FileListViewComponent = Ember.Component.extend({
-
+                    	tagName: 'table',
+						classNames: ['file-list-view table table-striped']
                     });
 
                     App.FileIconViewComponent = Ember.Component.extend({
-
+                    	classNames: ['file-icon-view'],
+                    	classNameBindings: ['large:large']
                     });
                 }
             },

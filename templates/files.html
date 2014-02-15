@@ -10,34 +10,32 @@
 	{{#if controllers.files.isListView}}
 		{{file-list-view items=items}}
 	{{else}}
-		{{file-icon-view items=items}}
+		{{file-icon-view items=items large=controllers.files.isIconViewLarge}}
 	{{/if}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="components/file-list-view">
-	<table class="table table-striped">
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Extension</th>
-				<th>Size</th>
-			</tr>
-		</thead>
-		<tbody>			
-			{{#each items}}
-			<tr>
-			  <td>{{name}}</td>
-			  <td>{{extension}}</td>
-			  <td>{{size}}</td>
-			</tr>
-			{{/each}}
-		</tbody>
-	</table>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Extension</th>
+			<th>Size</th>
+		</tr>
+	</thead>
+	<tbody>			
+		{{#each items}}
+		<tr id="item-{{id}}" class="item">
+		  <td>{{name}}</td>
+		  <td>{{extension}}</td>
+		  <td>{{size}}</td>
+		</tr>
+		{{/each}}
+	</tbody>
 </script>
 
 <script type="text/x-handlebars" data-template-name="components/file-icon-view">
 	{{#each items}}
-	<div>
+	<div id="item-{{id}}" class="item">
 		{{name}}
 	</div>
 	{{/each}}

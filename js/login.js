@@ -67,10 +67,10 @@
                                     // forward to next view						
                                     var previousTransition = that._m.session._loginTransition; //that.get('previousTransition');
                                     if (previousTransition) {
-                                        this._m.session._loginTransition = null; //that.set('previousTransition', null);
+                                        that._m.session._loginTransition = null; //that.set('previousTransition', null);
                                         previousTransition.retry();
                                     } else {
-                                        this.transitionTo('files');
+                                        that.transitionTo('files');
                                     }
                                 }).fail(function(e) {
                                     if (e.code == 107) this.handled = true;
