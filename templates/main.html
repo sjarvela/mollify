@@ -12,11 +12,12 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="main-header-nav nav navbar-nav navbar-left">
-						{{header-nav-menu class="mainview" items=navItems select="selectMainView" selected=currentView}}
+						{{header-nav-menu class="mainview" items=navItems prop="title" select="selectMainView" selected=currentView}}
 						{{outlet "header-nav"}}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						<li><a href="#">{{fa-icon class="fa-user"}}</a></li>
+						{{header-nav-menu class="user" items=controller.sessionActions prop="title" fa="fa-user"}}
+						<!--li><a href="#">fa-icon class="fa-user"</a></li-->
 					</ul>
 					<form class="navbar-form navbar-right">
 						<input type="text" class="form-control" placeholder="Search...">
@@ -46,11 +47,18 @@
 
 <script type="text/x-handlebars" data-template-name="components/header-nav-menu">
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		{{#if selected.fa}}
-			{{fa-icon class=selected.fa}}
+		{{#if selected}}
+			{{#if selected.fa}}
+				{{fa-icon class=selected.fa}}
+			{{/if}}
+			<span class="title">
+			{{val selected prop}}
+		{{else}}
+			{{#if fa}}
+				{{fa-icon class=fa}}
+			{{/if}}
+			{{title}}
 		{{/if}}
-		<span class="title">
-		{{val selected prop}}
 		<b class="caret"></b>
 	</a>
 	<ul class="dropdown-menu">

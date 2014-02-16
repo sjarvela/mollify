@@ -1,11 +1,9 @@
 <script type="text/x-handlebars" data-template-name="files">
-	<h2>Files</h2>
-	
 	{{outlet}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="item">
-	<span>{{controllers.files.viewType}}</span>
+	<h2>{{folder.name}}</h2>
 
 	{{#if controllers.files.isListView}}
 		{{file-list-view items=items click-item="gotoFolder"}}

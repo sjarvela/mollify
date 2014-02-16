@@ -93,9 +93,14 @@
                     this.filesystem.folderInfo(p.id, true, {}).done(function(r) {
                         var result = {
                             id: p.id,
+                            folder: r.folder,
                             items: r.folders.concat(r.files),
+                            folders: r.folders,
+                            files: r.files,
                             root: r.hierarchy[0],
-                            hierarchy: r.hierarchy.slice(1)
+                            hierarchy: r.hierarchy.slice(1),
+                            data: r.data,
+                            permissions: r.permissions
                         };
                         df.resolve(result);
                     }); //TODO data

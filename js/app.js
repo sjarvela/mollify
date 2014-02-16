@@ -493,7 +493,7 @@
     var Session = function(sd) {
         var that = this;
 
-        this._user = sd.authenticated ? {
+        this._user = sd && sd.authenticated ? {
             id: sd.user_id,
             name: sd.username,
             type: sd.user_type,

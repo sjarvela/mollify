@@ -29,6 +29,7 @@
                         this.transitionTo('files');
                     }
                 },
+
                 model: function(_m) {
                     return {
                         navItems: [{
@@ -38,9 +39,14 @@
                         }, {
                             title: 'config',
                             path: 'config'
+                        }],
+
+                        sessionActions: [{
+                            title: "todo"
                         }]
-                    };
+                    }
                 },
+
                 controller: function() {
                     return Ember.ObjectController.extend({
                         needs: ['application'],
@@ -67,12 +73,15 @@
 
                 setup: function(App) {
                     Ember.Handlebars.registerBoundHelper('val', function(value, prop) {
+                        if (!value) return "";
+                        if (!prop) return new Handlebars.SafeString(value);
                         return new Handlebars.SafeString(value[prop]);
                     });
+
                     App.HeaderNavMenuComponent = Ember.Component.extend({
                         tagName: 'li',
                         classNames: ['dropdown'],
-                        prop: 'title',
+                        prop: false,
                         actions: {
                             select: function(item) {
                                 this.sendAction("select", item);
