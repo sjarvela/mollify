@@ -16,6 +16,7 @@
                 template: 'files',
                 parent: "main",
                 path: "/files",
+                nameKey: 'files.view.title',
                 requiresAuthentication: true,
 
                 render: function(_m, c, m) {
@@ -39,6 +40,7 @@
                                 this.set('viewType', t);
                             }
                         },
+
                         isListView: function() {
                             return this.get('viewType') == 'list';
                         }.property('viewType'),
@@ -56,13 +58,18 @@
 
                 setup: function(App) {
                     App.FileListViewComponent = Ember.Component.extend({
-                    	tagName: 'table',
-						classNames: ['file-list-view table table-striped']
+                        tagName: 'table',
+                        classNames: ['file-list-view table table-striped'],
+                        actions: {
+                            click: function(item) {
+                                this.sendAction("click-item", item);
+                            }
+                        }
                     });
 
                     App.FileIconViewComponent = Ember.Component.extend({
-                    	classNames: ['file-icon-view'],
-                    	classNameBindings: ['large:large']
+                        classNames: ['file-icon-view'],
+                        classNameBindings: ['large:large']
                     });
                 }
             },
@@ -87,7 +94,13 @@
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
-                        needs: ['main', 'files']
+                        needs: ['main', 'files'],
+                        actions: {
+                            clickItem: function(item) {
+                            	if (!item.is_file) this.transitionToRoute("item", item.id);
+                                else alert(item.name);
+                            }
+                        }
                     });
                 }
             }

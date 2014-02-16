@@ -21,20 +21,44 @@
                             into: 'main',
                             outlet: 'header-tools'
                         });
+                    },
+                    goto: function(p, id) {
+                    	this.transitionTo(p);
                     }
                 },
+
                 index: {
                     before: function(_m, transition) {
                         this.transitionTo('files');
                     }
                 },
-                model: function() {
-                    return {};
+                model: function(_m) {
+                    return {
+                    	navItems: [{
+                    		title: 'files',
+                    		path: 'files'
+                    	}, {
+                    		title: 'config',
+                    		path: 'config'
+                    	}]
+                    };
                 },
                 controller: function(details) {
-                    return Ember.ObjectController.extend({});
+                    return Ember.ObjectController.extend({
+                    });
                 },
-                requiresAuthentication: true
+
+                setup: function(App) {
+                    App.HeaderNavMenuComponent = Ember.Component.extend({
+                    	tagName: 'li',
+                    	classes: ['dropdown'],
+                        actions: {
+                        	select: function(item) {
+                        		this.sendAction("goto", item.path);
+                        	}
+                        }
+                    });
+                }
             }
         }
     });

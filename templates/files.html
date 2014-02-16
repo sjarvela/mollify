@@ -8,9 +8,9 @@
 	<span>{{controllers.files.viewType}}</span>
 
 	{{#if controllers.files.isListView}}
-		{{file-list-view items=items}}
+		{{file-list-view items=items click-item="clickItem"}}
 	{{else}}
-		{{file-icon-view items=items large=controllers.files.isIconViewLarge}}
+		{{file-icon-view items=items click-item="clickItem" large=controllers.files.isIconViewLarge}}
 	{{/if}}
 </script>
 
@@ -24,7 +24,7 @@
 	</thead>
 	<tbody>			
 		{{#each items}}
-		<tr id="item-{{id}}" class="item">
+		<tr id="item-{{id}}" class="item" {{action click this}}>
 		  <td>{{name}}</td>
 		  <td>{{extension}}</td>
 		  <td>{{size}}</td>
