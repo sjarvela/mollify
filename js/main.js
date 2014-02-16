@@ -31,48 +31,52 @@
                 },
                 model: function(_m) {
                     return {
-                    	navItems: [{
-                    		title: 'files',
-                    		path: 'files',
-                    		fa: 'fa-folder'
-                    	}, {
-                    		title: 'config',
-                    		path: 'config'
-                    	}]
+                        navItems: [{
+                            title: 'files',
+                            path: 'files',
+                            fa: 'fa-folder'
+                        }, {
+                            title: 'config',
+                            path: 'config'
+                        }]
                     };
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
-                    	needs: ['application'],
-                    	actions: {
-                    		selectMainView: function(mv) {
-                    			this.transitionToRoute(mv.path);
-                    		}
-                    	},
-                    	currentView: function() {
-                    		var path = this.get('controllers.application.currentPath');
-                    		// first is "main", second is the current view
-                    		var id = path.split(".")[1];
-                    		var found = false;
-                    		$.each(this.get('navItems'), function(i, item) {
-                    			if (item.path == id) {
-                    				found = item;
-                    				return false;
-                    			}
-                    		});
-                    		return found;
-                    	}.property('controllers.application.currentPath')
+                        needs: ['application'],
+                        actions: {
+                            selectMainView: function(mv) {
+                                this.transitionToRoute(mv.path);
+                            }
+                        },
+                        currentView: function() {
+                            var path = this.get('controllers.application.currentPath');
+                            // first is "main", second is the current view
+                            var id = path.split(".")[1];
+                            var found = false;
+                            $.each(this.get('navItems'), function(i, item) {
+                                if (item.path == id) {
+                                    found = item;
+                                    return false;
+                                }
+                            });
+                            return found;
+                        }.property('controllers.application.currentPath')
                     });
                 },
 
                 setup: function(App) {
+                    Ember.Handlebars.registerBoundHelper('val', function(value, prop) {
+                        return new Handlebars.SafeString(value[prop]);
+                    });
                     App.HeaderNavMenuComponent = Ember.Component.extend({
-                    	tagName: 'li',
-                    	classNames: ['dropdown'],
+                        tagName: 'li',
+                        classNames: ['dropdown'],
+                        prop: 'title',
                         actions: {
-                        	select: function(item) {
-                        		this.sendAction("select", item);
-                        	}
+                            select: function(item) {
+                                this.sendAction("select", item);
+                            }
                         }
                     });
                 }

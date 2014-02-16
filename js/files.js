@@ -30,7 +30,7 @@
                     return {
                         viewTypes: ['list', 'icon-small', 'icon-large'],
                         viewType: 'list',
-
+                        roots: this.filesystem.roots
                     };
                 },
                 controller: function() {
@@ -81,12 +81,21 @@
                 path: "/:id",
                 requiresAuthentication: true,
 
+                render: function(_m, c, m) {
+                    this.render('item');
+                    this.render('files-header-nav-items', {
+                        into: 'main',
+                        outlet: 'header-nav'
+                    });
+                },
                 model: function(p) {
                     var df = $.Deferred();
                     this.filesystem.folderInfo(p.id, true, {}).done(function(r) {
                         var result = {
                             id: p.id,
-                            items: r.folders.concat(r.files)
+                            items: r.folders.concat(r.files),
+                            root: r.hierarchy[0],
+                            hierarchy: r.hierarchy.slice(1)
                         };
                         df.resolve(result);
                     }); //TODO data
@@ -96,7 +105,7 @@
                     return Ember.ObjectController.extend({
                         needs: ['main', 'files'],
                         actions: {
-                            clickItem: function(item) {
+                            gotoFolder: function(item) {
                             	if (!item.is_file) this.transitionToRoute("item", item.id);
                                 else alert(item.name);
                             }

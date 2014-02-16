@@ -11,7 +11,7 @@
 					{{#link-to 'main' class="navbar-brand"}}Mollify{{/link-to}}
 				</div>
 				<div class="navbar-collapse collapse">
-					<ul class="main-header-navs nav navbar-nav navbar-left">
+					<ul class="main-header-nav nav navbar-nav navbar-left">
 						{{header-nav-menu class="mainview" items=navItems select="selectMainView" selected=currentView}}
 						{{outlet "header-nav"}}
 					</ul>
@@ -50,12 +50,12 @@
 			{{fa-icon class=selected.fa}}
 		{{/if}}
 		<span class="title">
-		{{selected.title}}
+		{{val selected prop}}
 		<b class="caret"></b>
 	</a>
 	<ul class="dropdown-menu">
 		{{#each items}}
-			<li><a {{action "select" this}}>{{title}}</a></li>
+			<li><a {{action "select" this}}>{{val this controller.prop}}</a></li>
 		{{/each}}
 	</ul>
 </script>

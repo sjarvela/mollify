@@ -8,9 +8,9 @@
 	<span>{{controllers.files.viewType}}</span>
 
 	{{#if controllers.files.isListView}}
-		{{file-list-view items=items click-item="clickItem"}}
+		{{file-list-view items=items click-item="gotoFolder"}}
 	{{else}}
-		{{file-icon-view items=items click-item="clickItem" large=controllers.files.isIconViewLarge}}
+		{{file-icon-view items=items click-item="gotoFolder" large=controllers.files.isIconViewLarge}}
 	{{/if}}
 </script>
 
@@ -38,6 +38,13 @@
 	<div id="item-{{id}}" class="item">
 		{{name}}
 	</div>
+	{{/each}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="files-header-nav-items">
+	{{header-nav-menu class="root" items=controllers.files.roots prop="name" select="gotoFolder" selected=root}}
+	{{#each hierarchy}}
+		<li><a {{action 'gotoFolder' this}}>{{name}}</a></li>
 	{{/each}}
 </script>
 
