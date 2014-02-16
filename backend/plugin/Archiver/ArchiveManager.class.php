@@ -29,14 +29,14 @@
 			$c = $this->getCompressor();
 			
 			if (is_array($items)) {
-				$this->env->filesystem()->assertRights($items, Authentication::RIGHTS_READ, "add to package");
+				$this->env->filesystem()->assertRights($items, FilesystemController::PERMISSION_LEVEL_READ, "add to package");
 				
 				foreach($items as $item) {
 					$item->addTo($c);
 				}
 			} else {
 				$item = $items;
-				$this->env->filesystem()->assertRights($item, Authentication::RIGHTS_READ, "add to package");
+				$this->env->filesystem()->assertRights($item, FilesystemController::PERMISSION_LEVEL_READ, "add to package");
 				$item->addTo($c);
 			}
 			

@@ -27,7 +27,7 @@
 				If (!$this->request->hasParam("item")) throw $this->invalidRequestException();
 				$itemId = $this->request->param("item");
 				$item = $this->item($itemId);
-				$this->env->filesystem()->assertRights($item, Authentication::RIGHTS_READ, "compress");
+				$this->env->filesystem()->assertRights($item, FilesystemController::PERMISSION_LEVEL_READ, "compress");
 				$a = $this->archiveManager()->compress($item);
 				$name = $item->name().".zip";
 			} else {
@@ -64,14 +64,14 @@
 			if (count($items) < 1 || !array_key_exists("folder", $data) || !array_key_exists("name", $data) || strlen($data["name"]) == 0) throw $this->invalidRequestException();
 		
 			$folder = $this->item($data['folder']);
-			$this->env->filesystem()->assertRights($folder, Authentication::RIGHTS_WRITE, "compress");
+			$this->env->filesystem()->assertRights($folder, FilesystemController::PERMISSION_LEVEL_READWRITE, "compress");
 			
 			$items = array();
 			foreach($data['items'] as $i)
 				$items[] = $this->item($i);
 			if (count($items) == 0) throw $this->invalidRequestException();
 			
-			$this->env->filesystem()->assertRights($items, Authentication::RIGHTS_READ, "compress");
+			$this->env->filesystem()->assertRights($items, FilesystemController::PERMISSION_LEVEL_READ, "compress");
 			
 			$ext = ".zip";	//TODO
 			$extl = strlen($ext);
@@ -102,7 +102,7 @@
 				$items[] = $this->item($i);
 			if (count($items) == 0) throw $this->invalidRequestException();
 			
-			$this->env->filesystem()->assertRights($items, Authentication::RIGHTS_READ, "download compressed");
+			$this->env->filesystem()->assertRights($items, FilesystemController::PERMISSION_LEVEL_READ, "download compressed");
 			
 			$a = $this->archiveManager()->compress($items);
 			$id = uniqid();
@@ -123,13 +123,13 @@
 			
 			$overwrite = isset($data['overwrite']) ? $data['overwrite'] : FALSE;
 			$archive = $this->item($data["item"]);
-			$this->env->filesystem()->assertRights($archive, Authentication::RIGHTS_READ, "extract");
+			$this->env->filesystem()->assertRights($archive, FilesystemController::PERMISSION_LEVEL_READ, "extract");
 			
 			$parent = NULL;
 			if (isset($data["folder"])) $this->item($data["folder"]);
 			else $parent = $archive->parent();
 			
-			$this->env->filesystem()->assertRights($parent, Authentication::RIGHTS_WRITE, "extract");
+			$this->env->filesystem()->assertRights($parent, FilesystemController::PERMISSION_LEVEL_READWRITE, "extract");
 			
 			$name = str_replace(".", "_", basename($archive->internalPath()));
 			$target = $parent->internalPath().DIRECTORY_SEPARATOR.$name.DIRECTORY_SEPARATOR;
