@@ -73,7 +73,7 @@
 
     var createRoute = function(view, App, _m, allViews) {
         return Ember.Route.extend({
-        	actions: view.routeActions,
+            actions: view.routeActions,
             model: createModelFn(view, App, _m),
             beforeModel: function(transition) {
                 // prevent unauthorized access
@@ -150,8 +150,22 @@
 
     var setupApp = function(App, _m) {
         App._m = _m;
+        App.ApplicationController = Ember.Controller.extend({
+            updateCurrentPath: function() {
+                App.set('currentPath', this.get('currentPath'));
+            }.observes('currentPath')
+        });
         App.ApplicationRoute = Ember.Route.extend({
             actions: {
+                goto: function(p) {
+                    var parts = p.split("/");
+                    var path = parts[0];
+                    var id = parts.length > 1 ? parts[1] : undefined;
+                    if (id)
+                        this.transitionTo(path, id);
+                    else
+                        this.transitionTo(path);
+                }
                 /*openModal: function(modalName, model) {
                             this.controllerFor(modalName).set('model', model);
                             return this.render(modalName, {
@@ -176,6 +190,14 @@
             }
         });
 
+        //TODO some other place
+        // core components
+        App.FaIconComponent = Ember.Component.extend({
+            tagName: 'i',
+            classNames: ['fa']
+        });
+
+        // modules
         var hierarchy = {};
         var allViews = {};
         $.each(window.mollify.modules, function(i, m) {
@@ -283,7 +305,8 @@
             window.App = Ember.Application.create({
                 rootElement: '#' + _m.settings["app-element-id"],
                 LOG_ACTIVE_GENERATION: true,
-                LOG_TRANSITIONS_INTERNAL: true
+                LOG_TRANSITIONS_INTERNAL: true,
+                currentPath: ''
             });
             var App = window.App;
             App.deferReadiness();

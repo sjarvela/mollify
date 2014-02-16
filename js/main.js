@@ -21,9 +21,6 @@
                             into: 'main',
                             outlet: 'header-tools'
                         });
-                    },
-                    goto: function(p, id) {
-                    	this.transitionTo(p);
                     }
                 },
 
@@ -36,25 +33,45 @@
                     return {
                     	navItems: [{
                     		title: 'files',
-                    		path: 'files'
+                    		path: 'files',
+                    		fa: 'fa-folder'
                     	}, {
                     		title: 'config',
                     		path: 'config'
                     	}]
                     };
                 },
-                controller: function(details) {
+                controller: function() {
                     return Ember.ObjectController.extend({
+                    	needs: ['application'],
+                    	actions: {
+                    		selectMainView: function(mv) {
+                    			this.transitionToRoute(mv.path);
+                    		}
+                    	},
+                    	currentView: function() {
+                    		var path = this.get('controllers.application.currentPath');
+                    		// first is "main", second is the current view
+                    		var id = path.split(".")[1];
+                    		var found = false;
+                    		$.each(this.get('navItems'), function(i, item) {
+                    			if (item.path == id) {
+                    				found = item;
+                    				return false;
+                    			}
+                    		});
+                    		return found;
+                    	}.property('controllers.application.currentPath')
                     });
                 },
 
                 setup: function(App) {
                     App.HeaderNavMenuComponent = Ember.Component.extend({
                     	tagName: 'li',
-                    	classes: ['dropdown'],
+                    	classNames: ['dropdown'],
                         actions: {
                         	select: function(item) {
-                        		this.sendAction("goto", item.path);
+                        		this.sendAction("select", item);
                         	}
                         }
                     });

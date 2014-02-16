@@ -32,11 +32,28 @@
                 },
                 index: {
                     before: function(_m, transition) {
-                        //this.transitionTo("item", _m.filesystem.roots[0].id);
+                        this.transitionTo("account");
                     }
                 },
 
                 setup: function(App) {
+                }
+            },
+
+            // account config view
+            account: {
+                parent: "config",
+                template: 'config/account',
+                path: "/account",
+                requiresAuthentication: true,
+
+                model: function() {
+                    return {};
+                },
+                controller: function() {
+                    return Ember.ObjectController.extend({
+                        needs: ['main', 'config']
+                    });
                 }
             }
         }
