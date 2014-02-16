@@ -12,11 +12,11 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="main-header-nav nav navbar-nav navbar-left">
-						{{header-nav-menu class="mainview" items=navItems prop="title" select="selectMainView" selected=currentView}}
+						{{header-nav-menu class="mainview" items=navItems titleProperty="titleKey" titleLocalized=true select="selectMainView" selected=currentView}}
 						{{outlet "header-nav"}}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						{{header-nav-menu class="user" items=controller.sessionActions prop="title" fa="fa-user"}}
+						{{header-nav-menu class="user" items=controller.sessionActions titleProperty="title" titleLocalized=true fa="fa-user"}}
 						<!--li><a href="#">fa-icon class="fa-user"</a></li-->
 					</ul>
 					<form class="navbar-form navbar-right">
@@ -52,7 +52,7 @@
 				{{fa-icon class=selected.fa}}
 			{{/if}}
 			<span class="title">
-			{{val selected prop}}
+			{{val selected titleProperty titleLocalized}}
 		{{else}}
 			{{#if fa}}
 				{{fa-icon class=fa}}
@@ -63,7 +63,7 @@
 	</a>
 	<ul class="dropdown-menu">
 		{{#each items}}
-			<li><a {{action "select" this}}>{{val this controller.prop}}</a></li>
+			<li><a {{action "select" this}}>{{val this controller.titleProperty controller.titleLocalized}}</a></li>
 		{{/each}}
 	</ul>
 </script>

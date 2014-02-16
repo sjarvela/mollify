@@ -45,7 +45,7 @@
 		"errorDialogMessage_205": "Folder already exists.",
 		"errorDialogMessage_212": "Insufficient permissions",
 
-		"login": {
+		"login-view": {
 			"title": "Login",
 			"username": "Username",
 			"password": "Password",
@@ -62,6 +62,14 @@
 						
 			"register-action": "Register",
 			"failure": "Login failed, user name or password was incorrect."
+		},
+
+		"files-view": {
+			"title" : "Files"
+		},
+
+		"config-view": {
+			"title" : "Configuration"
 		},
 
 		"mainviewMenuTitle": "Files",

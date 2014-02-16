@@ -215,6 +215,11 @@
             });
         });
 
+        _m.ui.views = {
+        	all : allViews,
+        	hierarchy : hierarchy
+        };
+
         setupModuleViews(hierarchy, allViews, App, _m);
         setupModuleRoutes(hierarchy, allViews, App, _m);
     };
@@ -599,7 +604,8 @@
 
                 get: function(id, p) {
                     if (!id) return "";
-                    var t = Em.I18n.translations[id];
+                    return Ember.I18n.t(id);
+                    /*var t = Em.I18n.translations[id];
                     if (!t) return "!" + this.locale + ":" + id;
 
                     if (p !== undefined) {
@@ -607,11 +613,11 @@
                         for (var i = 0, j = p.length; i < j; i++)
                             t = t.replace("{" + i + "}", p[i]);
                     }
-                    return t;
+                    return t;*/
                 },
 
                 has: function(id) {
-                    return !!Em.I18n.translations[id];
+                    return Em.I18n.t.exists(id);
                 }
             };
 

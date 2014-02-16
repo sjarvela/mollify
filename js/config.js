@@ -18,7 +18,11 @@
                 path: "/config",
                 nameKey: 'config.view.title',
                 requiresAuthentication: true,
-                requiresAdmin: true,
+
+                ui: {
+                    titleKey: 'config-view.title',
+                    fa: 'fa-folder'
+                },
 
                 model: function() {
                     return {

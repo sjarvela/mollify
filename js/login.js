@@ -74,7 +74,7 @@
                                     }
                                 }).fail(function(e) {
                                     if (e.code == 107) this.handled = true;
-                                    Bootstrap.NM.push(Ember.I18n.t('login.failure'));
+                                    Bootstrap.NM.push(that._m.ui.texts.get('login.failure'));
                                 });
                             }
                         }

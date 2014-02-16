@@ -19,6 +19,11 @@
                 nameKey: 'files.view.title',
                 requiresAuthentication: true,
 
+                ui: {
+                	titleKey: 'files-view.title',
+                	fa: 'fa-folder'
+                },
+
                 render: function(_m, c, m) {
                     this.render('files');
                     this.render('files-header-tools', {

@@ -8,7 +8,7 @@
  */
 
 ! function($, mollify) {
-    window.mollify.registerModule({
+    mollify.registerModule({
         views: {
             main: {
                 templateFile: 'main',
@@ -30,17 +30,32 @@
                     }
                 },
 
-                model: function(_m) {
-                    return {
-                        navItems: [{
-                            title: 'files',
-                            path: 'files',
-                            fa: 'fa-folder'
-                        }, {
-                            title: 'config',
-                            path: 'config'
-                        }],
+                model: function() {
+                	var that = this;
 
+                	// get main views and create nav items
+                	var mainViewKeys = mollify.utils.getKeys(this.ui.views.hierarchy.main);
+                	var mainViews = [];
+                	var navItems = [];
+                	$.each(mainViewKeys, function(i, k) {
+                		var view = that.ui.views.all[k];
+                		view.id = k;
+                		mainViews.push(view);
+
+                		var navItem = {
+                			view: view
+                		};
+            			if (view.ui) {
+            				navItem.titleKey = view.ui.titleKey;
+            				if (view.ui.fa) navItem.fa = view.ui.fa;
+            			} else {
+            				navItem.titleKey = 'main.view.'+view.id;
+            			}
+                		navItems.push(navItem);
+                	});
+                    return {
+                    	views: mainViews,
+                        navItems: navItems,
                         sessionActions: [{
                             title: "todo"
                         }]
@@ -52,7 +67,7 @@
                         needs: ['application'],
                         actions: {
                             selectMainView: function(mv) {
-                                this.transitionToRoute(mv.path);
+                                this.transitionToRoute(mv.view.id);
                             }
                         },
                         currentView: function() {
@@ -61,7 +76,7 @@
                             var id = path.split(".")[1];
                             var found = false;
                             $.each(this.get('navItems'), function(i, item) {
-                                if (item.path == id) {
+                                if (item.view.id == id) {
                                     found = item;
                                     return false;
                                 }
@@ -72,16 +87,20 @@
                 },
 
                 setup: function(App) {
-                    Ember.Handlebars.registerBoundHelper('val', function(value, prop) {
+                    Ember.Handlebars.registerBoundHelper('val', function(value, prop, localized) {
                         if (!value) return "";
-                        if (!prop) return new Handlebars.SafeString(value);
-                        return new Handlebars.SafeString(value[prop]);
+                        var v = value;
+                        if (prop) v = value[prop];
+                        
+                        if (localized) return Ember.I18n.t(v);
+                        return new Handlebars.SafeString(v);
                     });
 
                     App.HeaderNavMenuComponent = Ember.Component.extend({
                         tagName: 'li',
                         classNames: ['dropdown'],
-                        prop: false,
+                        titleProperty: false,
+                        titleLocalized: false,
                         actions: {
                             select: function(item) {
                                 this.sendAction("select", item);
