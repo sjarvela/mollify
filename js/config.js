@@ -21,7 +21,7 @@
 
                 ui: {
                     titleKey: 'config-view.title',
-                    fa: 'fa-folder'
+                    fa: 'fa-cog'
                 },
 
                 model: function() {

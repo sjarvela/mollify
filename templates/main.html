@@ -16,7 +16,7 @@
 						{{outlet "header-nav"}}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						{{header-nav-menu class="user" items=controller.sessionActions titleProperty="title" titleLocalized=true fa="fa-user"}}
+						{{header-nav-menu class="user" items=controller.sessionActions titleProperty="titleKey" titleLocalized=true fa="fa-user" select="onAction"}}
 						<!--li><a href="#">fa-icon class="fa-user"</a></li-->
 					</ul>
 					<form class="navbar-form navbar-right">
@@ -63,7 +63,14 @@
 	</a>
 	<ul class="dropdown-menu">
 		{{#each items}}
-			<li><a {{action "select" this}}>{{val this controller.titleProperty controller.titleLocalized}}</a></li>
+			<li>
+				<a {{action "select" this}}>
+					{{#if fa}}
+						{{fa-icon class=fa}}
+					{{/if}}
+					{{val this controller.titleProperty controller.titleLocalized}}
+				</a>
+			</li>
 		{{/each}}
 	</ul>
 </script>

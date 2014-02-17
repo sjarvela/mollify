@@ -31,34 +31,32 @@
                 },
 
                 model: function() {
-                	var that = this;
+                    var that = this;
 
-                	// get main views and create nav items
-                	var mainViewKeys = mollify.utils.getKeys(this.ui.views.hierarchy.main);
-                	var mainViews = [];
-                	var navItems = [];
-                	$.each(mainViewKeys, function(i, k) {
-                		var view = that.ui.views.all[k];
-                		view.id = k;
-                		mainViews.push(view);
+                    // get main views and create nav items
+                    var mainViewKeys = mollify.utils.getKeys(this.ui.views.hierarchy.main);
+                    var mainViews = [];
+                    var navItems = [];
+                    $.each(mainViewKeys, function(i, k) {
+                        var view = that.ui.views.all[k];
+                        view.id = k;
+                        mainViews.push(view);
 
-                		var navItem = {
-                			view: view
-                		};
-            			if (view.ui) {
-            				navItem.titleKey = view.ui.titleKey;
-            				if (view.ui.fa) navItem.fa = view.ui.fa;
-            			} else {
-            				navItem.titleKey = 'main.view.'+view.id;
-            			}
-                		navItems.push(navItem);
-                	});
+                        var navItem = {
+                            view: view
+                        };
+                        if (view.ui) {
+                            navItem.titleKey = view.ui.titleKey;
+                            if (view.ui.fa) navItem.fa = view.ui.fa;
+                        } else {
+                            navItem.titleKey = 'main.view.' + view.id;
+                        }
+                        navItems.push(navItem);
+                    });
                     return {
-                    	views: mainViews,
+                        views: mainViews,
                         navItems: navItems,
-                        sessionActions: [{
-                            title: "todo"
-                        }]
+                        sessionActions: this.actions.getApplicableByType('session')
                     }
                 },
 
@@ -68,6 +66,9 @@
                         actions: {
                             selectMainView: function(mv) {
                                 this.transitionToRoute(mv.view.id);
+                            },
+                            onAction: function(a) {
+                            	a.handler.apply(this._m);
                             }
                         },
                         currentView: function() {
@@ -84,44 +85,32 @@
                             return found;
                         }.property('controllers.application.currentPath')
                     });
-                },
-
-                setup: function(App) {
-                    Ember.Handlebars.registerBoundHelper('val', function(value, prop, localized) {
-                        if (!value) return "";
-                        var v = value;
-                        if (prop) v = value[prop];
-                        
-                        if (localized) return Ember.I18n.t(v);
-                        return new Handlebars.SafeString(v);
-                    });
-
-                    App.HeaderNavMenuComponent = Ember.Component.extend({
-                        tagName: 'li',
-                        classNames: ['dropdown'],
-                        titleProperty: false,
-                        titleLocalized: false,
-                        actions: {
-                            select: function(item) {
-                                this.sendAction("select", item);
-                            }
-                        }
-                    });
                 }
             }
+        },
+
+        // module setup
+        setup: function(App) {
+            Ember.Handlebars.registerBoundHelper('val', function(value, prop, localized) {
+                if (!value) return "";
+                var v = value;
+                if (prop) v = value[prop];
+
+                if (localized) return Ember.I18n.t(v);
+                return new Handlebars.SafeString(v);
+            });
+
+            App.HeaderNavMenuComponent = Ember.Component.extend({
+                tagName: 'li',
+                classNames: ['dropdown'],
+                titleProperty: false,
+                titleLocalized: false,
+                actions: {
+                    select: function(item) {
+                        this.sendAction("select", item);
+                    }
+                }
+            });
         }
     });
-    /*window.mollify.registerModule({
-		name: 'main',
-		template: 'main',
-		composite: true,
-		model: function() {
-			return {
-			};
-		},
-		controller: function() {
-			return Ember.ObjectController.extend({});
-		},
-		defaultChild: 'files'
-	});*/
 }(window.jQuery, window.mollify);
