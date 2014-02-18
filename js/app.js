@@ -134,7 +134,7 @@
                 var view = views[viewId];
                 if (!view.path) return
 
-                console.log(view.path);
+                //console.log(view.path);
                 router.resource(viewId, {
                     path: view.path
                 }, function() {
@@ -165,30 +165,23 @@
                         this.transitionTo(path, id);
                     else
                         this.transitionTo(path);
+                },
+                doAction: function(a) {
+                    var action = a;
+                    //Bootstrap.ModalManager.open('change-password', "TODO", "core/change-password", [], this.controller);
+                    if (typeof(a) == "string") action = _m.actions.all[a];
+                    if (!action || !action.handler) return;
+                    action.handler.apply(this, [_m]);
                 }
-                /*openModal: function(modalName, model) {
-                            this.controllerFor(modalName).set('model', model);
-                            return this.render(modalName, {
-                                into: 'application',
-                                outlet: 'modal'
-                            });
-                        },
-
-                        closeModal: function() {
-                            return this.disconnectOutlet({
-                                outlet: 'modal',
-                                parentView: 'application'
-                            });
-                        }*/
             },
-            setupController : function(c) {
-				Ember.Instrumentation.subscribe('restart', {
-					before: function() {},
-					after: function() {
-						// forward to "main", it should be redirected to default view (or login)
-						c.transitionToRoute('main');
-					}
-				});
+            setupController: function(c) {
+                Ember.Instrumentation.subscribe('restart', {
+                    before: function() {},
+                    after: function() {
+                        // forward to "main", it should be redirected to default view (or login)
+                        c.transitionToRoute('main');
+                    }
+                });
             }
         });
 
@@ -231,22 +224,22 @@
         var actionKeys = window.mollify.utils.getKeys(allActions);
         var actionsByType = {};
         $.each(actionKeys, function(i, k) {
-        	var a = allActions[k];
-        	var t = a.type;
-        	if (!t) return;
-        	if (!actionsByType[t]) actionsByType[t] = [];
-        	actionsByType[t].push(k);
+            var a = allActions[k];
+            var t = a.type;
+            if (!t) return;
+            if (!actionsByType[t]) actionsByType[t] = [];
+            actionsByType[t].push(k);
         });
 
         _m.actions = {
-        	keys: actionKeys,
+            keys: actionKeys,
             all: allActions,
             byType: actionsByType,
             getByType: function(type) {
-            	var that = this;
-            	var list = [];
-            	$.each(this.byType[type], function(i, k) {
-            		list.push(that.all[k]);
+                var that = this;
+                var list = [];
+                $.each(this.byType[type], function(i, k) {
+                    list.push(that.all[k]);
                 });
                 return list;
             },
@@ -297,7 +290,7 @@
                     },
                     restart: function() {
                         console.log('restart');
-                        Ember.Instrumentation.instrument("restart", null, function(){});
+                        Ember.Instrumentation.instrument("restart", null, function() {});
                     }
                 };
 

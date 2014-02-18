@@ -5,3 +5,24 @@
 
 <script type="text/x-handlebars" data-template-name="components/fa-icon">
 </script>
+
+<script type="text/x-handlebars" data-template-name="core-change-password">
+	<form role="form">
+		{{t change-password.instructions tagName="h2"}}
+
+		<div class="form-group">
+			<label class="sr-only" for="oldPassword">{{t change-password.old-password}}</label>
+			{{input id="oldPassword" type="text" value=oldPassword placeholderTranslation="change-password.old-password" class="form-control" required="1"}}
+		</div>
+
+		<div class="form-group">
+			<label class="sr-only" for="newPassword">{{t change-password.new-password}}</label>
+			{{input id="newPassword" type="text" value=newPassword placeholderTranslation="change-password.new-password" class="form-control" required="1"}}
+		</div>
+
+		<div class="form-group">
+			<label class="sr-only" for="newPassword">{{t change-password.confirm-password}}</label>
+			{{input id="confirmPassword" type="text" value=confirmPassword placeholderTranslation="change-password.confirm-password" class="form-control" required="1"}}
+		</div>
+	</form>
+</script>

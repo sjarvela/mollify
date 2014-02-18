@@ -66,9 +66,6 @@
                         actions: {
                             selectMainView: function(mv) {
                                 this.transitionToRoute(mv.view.id);
-                            },
-                            onAction: function(a) {
-                            	a.handler.apply(this._m);
                             }
                         },
                         currentView: function() {

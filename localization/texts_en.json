@@ -45,6 +45,11 @@
         "errorDialogMessage_205": "Folder already exists.",
         "errorDialogMessage_212": "Insufficient permissions",
 
+        "dialogs": {
+        	"cancel": "Cancel",
+        	"ok": "OK"
+        },
+
         "login-view": {
             "title": "Login",
             "username": "Username",
@@ -64,6 +69,12 @@
             "failure": "Login failed, user name or password was incorrect."
         },
 
+        "change-password": {
+        	"title": "Change Password",
+        	"instructions": "Enter new password",
+        	"change-action": "Change"
+        },
+
         "files-view": {
             "title": "Files"
         },
@@ -73,9 +84,10 @@
         },
 
         "actions": {
-        	"session" : {
-        		"logout" : "Logout"
-        	}
+            "session": {
+                "logout": "Logout",
+                "change-password": "Change password..."
+            }
         },
 
         "mainviewMenuTitle": "Files",
