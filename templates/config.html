@@ -1,9 +1,18 @@
 <script type="text/x-handlebars" data-template-name="config">
-	<h2>Config</h2>
+	<legend>{{val currentView "translate-key:titleKey"}}</legend>
 	
 	{{outlet}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="config/account">
-	Account
+	<form role="form">
+		<div class="form-group">
+			<label for="username">{{t config-view.account.username}}</label>
+			{{input id="username" type="text" value=session.user.name placeholderTranslation="config-view.account.username" class="form-control"}}
+		</div>
+	</form>
+</script>
+
+<script type="text/x-handlebars" data-template-name="config-header-nav-items">
+	{{header-nav-menu class="config-view" items=navItems titleProperty="translate-key:titleKey" select="selectConfigView" selected=currentView}}
 </script>

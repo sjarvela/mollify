@@ -16,7 +16,6 @@
                 template: 'files',
                 parent: "main",
                 path: "/files",
-                nameKey: 'files.view.title',
                 requiresAuthentication: true,
 
                 ui: {

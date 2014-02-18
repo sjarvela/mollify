@@ -85,7 +85,11 @@
         },
 
         "config-view": {
-            "title": "Configuration"
+            "title": "Configuration",
+
+            "account" : {
+            	"title": "Account"
+            }
         },
 
         "actions": {

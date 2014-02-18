@@ -40,7 +40,7 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-nav-items">
-	{{header-nav-menu class="root" items=controllers.files.roots titleProperty="name" select="gotoFolder" selected=root}}
+	{{header-nav-menu class="root" items=controllers.files.roots titleProperty="name" select="gotoFolder" fa="fa-folder" selected=root}}
 	{{#each hierarchy}}
 		<li><a {{action 'gotoFolder' this}}>{{name}}</a></li>
 	{{/each}}

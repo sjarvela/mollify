@@ -238,6 +238,8 @@
 
                 $.each(window.mollify.utils.getKeys(module.views), function(i, viewId) {
                     var view = allViews[viewId];
+                    view.id = viewId;
+
                     var parentNode = view.parent ? allViews[view.parent]._hierarchyNode : hierarchy;
                     var parentPath = view.parent ? allViews[view.parent]._path : "";
                     parentNode[viewId] = {};
@@ -1433,6 +1435,13 @@
         String.prototype.startsWith = function(s) {
             if (!s || s.length === 0) return false;
             return this.substring(0, s.length) == s;
+        }
+    }
+
+    if (typeof String.prototype.endsWith !== 'function') {
+        String.prototype.endsWith = function(s) {
+            if (!s || s.length === 0) return false;
+            return this.substring(this.length - s.length) == s;
         }
     }
 

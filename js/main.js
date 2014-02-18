@@ -39,7 +39,6 @@
                     var navItems = [];
                     $.each(mainViewKeys, function(i, k) {
                         var view = that.ui.views.all[k];
-                        view.id = k;
                         mainViews.push(view);
 
                         var navItem = {
@@ -73,7 +72,8 @@
                             // first is "main", second is the current view
                             var id = path.split(".")[1];
                             var found = false;
-                            $.each(this.get('navItems'), function(i, item) {
+                            var items = this.get('navItems');
+                            $.each(items, function(i, item) {
                                 if (item.view.id == id) {
                                     found = item;
                                     return false;
@@ -88,12 +88,24 @@
 
         // module setup
         setup: function(App) {
-            Ember.Handlebars.registerBoundHelper('val', function(value, prop, localized) {
+            Ember.Handlebars.registerBoundHelper('val', function(value, prop) {
                 if (!value) return "";
                 var v = value;
-                if (prop) v = value[prop];
+                var translate = false;
+                if (prop && typeof(prop) == "string") {
+                    var p = prop.split(":");
+                    if (p.length == 1)
+                        v = value[prop];
+                    else {
+                        translate = p[0].startsWith('translate');
+                        if (p[0].endsWith('property'))
+                            v = value.get(p[1]);
+                        else if (p[0].endsWith('key')) v = value[p[1]];
+                    }
+                }
 
-                if (localized) return Ember.I18n.t(v);
+                if (!v) return "-";
+                if (translate) return Ember.I18n.t(v);
                 return new Handlebars.SafeString(v);
             });
 
@@ -101,7 +113,6 @@
                 tagName: 'li',
                 classNames: ['dropdown'],
                 titleProperty: false,
-                titleLocalized: false,
                 actions: {
                     select: function(item) {
                         this.sendAction("select", item);
