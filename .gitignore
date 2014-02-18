@@ -43,4 +43,3 @@ node_modules
 backend/configuration.php
 dist
 composer.lock
-vendor
