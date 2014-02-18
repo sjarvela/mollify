@@ -35,45 +35,34 @@
                     return !!this.session.user; //can logout if there is user
                 },
                 handler: function() {
-                    var model = {
-                        oldPassword: '',
-                        newPassword: '',
-                        confirmPassword: ''
-                    };
-                    var buttons = [{
-                        title: this._m.ui.texts.get('change-password.change-action'),
-                        clicked: 'change'
-                    }, {
-                        title: this._m.ui.texts.get('dialogs.cancel'),
-                        dismiss: 'modal'
-                    }];
-                    this.openModal('core-change-password', model, this._m.ui.texts.get('change-password.title'), buttons);
-                    /*var controller = this.controllerFor('core-change-password').set('model', {
-                        oldPassword: '',
-                        newPassword: '',
-                        confirmPassword: ''
-                    });
-                    controller._m = _m;
-
-                    Bootstrap.ModalManager.open('change-password', _m.ui.texts.get('change-password.title'), "core-change-password", [{
-                        title: _m.ui.texts.get('change-password.change-action'),
-                        clicked: 'change'
-                    },{
-                        title: _m.ui.texts.get('dialogs.cancel'),
-                        dismiss: 'modal'
-                    }], controller);*/
+                    this.openModal('core-change-password');
                 }
             }
         },
 
         // module setup
         setup: function(App) {
+        	// font awesome icon component
             App.FaIconComponent = Ember.Component.extend({
                 tagName: 'i',
                 classNames: ['fa']
             });
 
+            // change password
             App.CoreChangePasswordController = Ember.ObjectController.extend({
+            	titleKey: 'change-password.title',
+                content: {
+                    oldPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                },
+                buttons: [{
+                    titleKey: 'change-password.change-action',
+                    clicked: 'change'
+                }, {
+                    titleKey: 'dialogs.cancel',
+                    dismiss: 'modal'
+                }],
                 actions: {
                     change: function() {
                         var oldPw = this.get('oldPassword');

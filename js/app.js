@@ -174,10 +174,25 @@
                     var that = this;
                     action.handler.apply({
                     	_m : _m,
-                        openModal: function(name, model, title, buttons) {
-                            var controller = that.controllerFor(name).set('model', model);
+                        openModal: function(name, opt) {
+                            var controller = opt.controller ? opt.controller : that.controllerFor(name);
+                            if (opt.model) controller.set('model', opt.model);
                             controller._m = _m;
-                            Bootstrap.ModalManager.open(name, title, name, buttons, controller);
+
+                            var buttons = opt.buttons;
+                            if (!buttons) {
+                            	buttons = [];
+                            	if (controller.buttons) {
+                            		$.each(controller.buttons, function(i, b) {
+                            			if (!b.title && b.titleKey) b.title = _m.ui.texts.get(b.titleKey);
+                            			buttons.push(b);
+                            		});
+                            	}
+                            }
+                            var title = opt.title;
+                            if (!title && controller.title) title = controller.title;
+                            if (!title && controller.titleKey) title = _m.ui.texts.get(controller.titleKey);
+                            Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
                             return {
                             	close: function() {
                             		Bootstrap.ModalManager.close(name);
