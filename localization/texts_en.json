@@ -72,6 +72,9 @@
         "change-password": {
         	"title": "Change Password",
         	"instructions": "Enter new password",
+        	"old-password": "Old password",
+        	"new-password": "New password",
+        	"confirm-password": "Confirm password",
         	"change-action": "Change"
         },
 

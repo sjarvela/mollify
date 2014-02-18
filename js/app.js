@@ -168,10 +168,23 @@
                 },
                 doAction: function(a) {
                     var action = a;
-                    //Bootstrap.ModalManager.open('change-password', "TODO", "core/change-password", [], this.controller);
                     if (typeof(a) == "string") action = _m.actions.all[a];
                     if (!action || !action.handler) return;
-                    action.handler.apply(this, [_m]);
+
+                    var that = this;
+                    action.handler.apply({
+                    	_m : _m,
+                        openModal: function(name, model, title, buttons) {
+                            var controller = that.controllerFor(name).set('model', model);
+                            controller._m = _m;
+                            Bootstrap.ModalManager.open(name, title, name, buttons, controller);
+                            return {
+                            	close: function() {
+                            		Bootstrap.ModalManager.close(name);
+                            	}
+                            }
+                        }
+                    });
                 }
             },
             setupController: function(c) {
