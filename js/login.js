@@ -41,10 +41,10 @@
                                     "email": email
                                 }).done(function(r) {
                                     that.set('resetEmail', '');
-                                    Bootstrap.NM.push(Ember.I18n.t('login.reset-password.success'));
+                                    that._m.ui.notification.success(that._m.ui.texts.get('login-view.reset-password.success'));
                                 }).fail(function(e) {
                                     this.handled = true;
-                                    Bootstrap.NM.push(Ember.I18n.t('login.reset-password.failure'));
+                                    that._m.ui.notification.warning(that._m.ui.texts.get('login-view.reset-password.failure'));
                                 });
                             },
                             login: function() {
@@ -74,7 +74,7 @@
                                     }
                                 }).fail(function(e) {
                                     if (e.code == 107) this.handled = true;
-                                    Bootstrap.NM.push(that._m.ui.texts.get('login.failure'));
+                                    that._m.ui.notification.warning(that._m.ui.texts.get('login-view.failure'));
                                 });
                             }
                         }

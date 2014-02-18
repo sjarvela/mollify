@@ -173,31 +173,35 @@
 
                     var that = this;
                     action.handler.apply({
-                    	_m : _m,
-                        openModal: function(name, opt) {
+                        _m: _m,
+                        openModal: function(name, o) {
+                            var opt = o || {};
+                            var api = {
+                                close: function() {
+                                    Bootstrap.ModalManager.close(name);
+                                }
+                            };
                             var controller = opt.controller ? opt.controller : that.controllerFor(name);
                             if (opt.model) controller.set('model', opt.model);
                             controller._m = _m;
+                            controller.modal = api;
 
                             var buttons = opt.buttons;
                             if (!buttons) {
-                            	buttons = [];
-                            	if (controller.buttons) {
-                            		$.each(controller.buttons, function(i, b) {
-                            			if (!b.title && b.titleKey) b.title = _m.ui.texts.get(b.titleKey);
-                            			buttons.push(b);
-                            		});
-                            	}
+                                buttons = [];
+                                if (controller.buttons) {
+                                    $.each(controller.buttons, function(i, b) {
+                                        if (!b.title && b.titleKey) b.title = _m.ui.texts.get(b.titleKey);
+                                        buttons.push(b);
+                                    });
+                                }
                             }
                             var title = opt.title;
                             if (!title && controller.title) title = controller.title;
                             if (!title && controller.titleKey) title = _m.ui.texts.get(controller.titleKey);
                             Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
-                            return {
-                            	close: function() {
-                            		Bootstrap.ModalManager.close(name);
-                            	}
-                            }
+
+                            return api;
                         }
                     });
                 }
@@ -645,6 +649,21 @@
             }
             $.when.apply($, list).done(df.resolve).fail(df.reject);
             return df;
+        };
+
+        this.notification = {
+        	info: function(text) {
+        		this.success(text);
+        	},
+            success: function(text) {
+                Bootstrap.NM.push(text, 'success');
+            },
+            warning: function(text) {
+                Bootstrap.NM.push(text, 'warning');
+            },
+            error: function(text) {
+                Bootstrap.NM.push(text, 'danger');
+            }
         };
     };
 

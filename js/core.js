@@ -42,7 +42,7 @@
 
         // module setup
         setup: function(App) {
-        	// font awesome icon component
+            // font awesome icon component
             App.FaIconComponent = Ember.Component.extend({
                 tagName: 'i',
                 classNames: ['fa']
@@ -50,11 +50,12 @@
 
             // change password
             App.CoreChangePasswordController = Ember.ObjectController.extend({
-            	titleKey: 'change-password.title',
+                titleKey: 'change-password.title',
                 content: {
                     oldPassword: '',
                     newPassword: '',
-                    confirmPassword: ''
+                    confirmPassword: '',
+                    error: false
                 },
                 buttons: [{
                     titleKey: 'change-password.change-action',
@@ -65,22 +66,24 @@
                 }],
                 actions: {
                     change: function() {
+                        var that = this;
                         var oldPw = this.get('oldPassword');
                         var newPw = this.get('newPassword');
                         var confirmPw = this.get('confirmPassword');
                         if (!oldPw || oldPw.length === 0 || !newPw || newPw.length === 0 || !confirmPw || confirmPw.length === 0) return;
                         if (newPw != confirmPw) return;
+                        that.set('error', false);
 
                         this._m.service.put("configuration/users/current/password/", {
                             old: window.Base64.encode(oldPw),
                             "new": window.Base64.encode(newPw)
                         }).done(function(r) {
-                            alert("success");
-                            //_m.ui.dialogs.notification({message:_m.ui.texts.get('mainviewChangePasswordSuccess')});
+                            that.modal.close();
+                            that._m.ui.notification.success(that._m.ui.texts.get('change-password.success'));
                         }).fail(function(e) {
                             this.handled = true;
                             if (e.code == 107) {
-                                //_m.ui.dialogs.notification({message:_m.ui.texts.get('mainviewChangePasswordError'), type: 'error', cls: 'full', target: $dlg.find(".modal-footer")});
+                                that.set('error', that._m.ui.texts.get('change-password.failure'));
                             } else this.handled = false;
                         });
                     }

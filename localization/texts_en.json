@@ -75,7 +75,9 @@
         	"old-password": "Old password",
         	"new-password": "New password",
         	"confirm-password": "Confirm password",
-        	"change-action": "Change"
+        	"change-action": "Change",
+        	"failure" : "Could not change password, old password did not match",
+        	"success" : "Your password has been changed"
         },
 
         "files-view": {
