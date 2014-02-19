@@ -1239,6 +1239,15 @@
 
     /* UTILS */
 
+    window.mollify.filelist = {
+    	columns : [],
+    	columnsById : {},
+    	registerColumn : function(spec) {
+    		this.columns.push(spec);
+    		this.columnsById[spec.id] = spec;
+    	}
+    };
+
     window.mollify.utils = {
         firstLetterUp: function(s) {
             return s.charAt(0).toUpperCase() + s.slice(1);

@@ -15,20 +15,24 @@
 <script type="text/x-handlebars" data-template-name="components/file-list-view">
 	<thead>
 		<tr>
-			<th>Name</th>
-			<th>Extension</th>
-			<th>Size</th>
+			{{#each cols}}
+			<th {{action colClick this}}>{{val this "translate-key:titleKey"}}</th>
+			{{/each}}
 		</tr>
 	</thead>
 	<tbody>			
-		{{#each items}}
-		<tr id="item-{{id}}" class="item" {{action click this}}>
-		  <td>{{name}}</td>
-		  <td>{{extension}}</td>
-		  <td>{{size}}</td>
+		{{#each item in sorted}}
+		<tr id="item-{{id}}" class="item">
+			{{#each col in cols}}
+				{{file-list-cell item=item col=col}}
+		  	{{/each}}
 		</tr>
 		{{/each}}
 	</tbody>
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/file-list-cell">
+	{{content}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="components/file-icon-view">

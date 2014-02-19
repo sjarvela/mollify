@@ -19,8 +19,8 @@
                 requiresAuthentication: true,
 
                 ui: {
-                	titleKey: 'files-view.title',
-                	fa: 'fa-folder'
+                    titleKey: 'files-view.title',
+                    fa: 'fa-folder'
                 },
 
                 render: function(_m, c, m) {
@@ -58,23 +58,6 @@
                         if (_m.filesystem.roots.length === 0) return;
                         this.transitionTo("item", _m.filesystem.roots[0].id);
                     }
-                },
-
-                setup: function(App) {
-                    App.FileListViewComponent = Ember.Component.extend({
-                        tagName: 'table',
-                        classNames: ['file-list-view table table-striped'],
-                        actions: {
-                            click: function(item) {
-                                this.sendAction("click-item", item);
-                            }
-                        }
-                    });
-
-                    App.FileIconViewComponent = Ember.Component.extend({
-                        classNames: ['file-icon-view'],
-                        classNameBindings: ['large:large']
-                    });
                 }
             },
 
@@ -114,14 +97,156 @@
                     return Ember.ObjectController.extend({
                         needs: ['main', 'files'],
                         actions: {
+                            clickItem: function(item, col) {
+                                alert('click item' + item.id);
+                            },
                             gotoFolder: function(item) {
-                            	if (!item.is_file) this.transitionToRoute("item", item.id);
+                                if (!item.is_file) this.transitionToRoute("item", item.id);
                                 else alert(item.name);
                             }
                         }
                     });
                 }
             }
+        },
+
+        // module setup
+        setup: function(App) {
+            App.FileListViewComponent = Ember.Component.extend({
+                tagName: 'table',
+                classNames: ['file-list-view table table-striped'],
+                items: [],
+                //sorted: [],
+                actions: {
+                    colClick: function(col) {
+                        var sortCol = this.get('sortCol');
+                        if (sortCol.id == col.id) {
+                            this.toggleProperty('sortAsc');
+                        } else {
+                            this.setProperties({
+                                sortCol: col,
+                                sortAsc: true
+                            });
+                        }
+                        //this.sendAction("click-item", item);
+                    }
+                },
+                sorted: function() {
+                    var sortCol = this.get('sortCol');
+                    var asc = this.get('sortAsc');
+                    var items = this.get('items');
+                    var sorted = items.slice(0);
+                    if (sortCol.sort) sorted.sort(function(i1, i2) {
+                        return sortCol.sort(i1, i2, asc ? 1 : -1);
+                    });
+                    return sorted;
+                }.property('sortCol', 'sortAsc'),
+
+                init: function() {
+                    this._super();
+                    var that = this;
+                    this._m = this.get('targetObject._m');
+
+                    var cols = [];
+                    $.each(mollify.utils.getKeys(this._m.settings["file-view"]["list-view-columns"]), function(i, k) {
+                        var spec = mollify.filelist.columnsById[k];
+                        if (!spec) return;
+
+                        spec = $.extend({}, spec);
+                        spec.opts = $.extend({}, spec.opts, that._m.settings["file-view"]["list-view-columns"][k]);
+                        cols.push(spec);
+                    });
+                    this.set('cols', cols);
+                    this.set('sortCol', cols[0]);
+                    this.set('sortAsc', true);
+                }
+            });
+
+            App.FileListCellComponent = Ember.Component.extend({
+                tagName: 'td',
+                item: false,
+                col: false,
+                contentKey: '',
+                init: function() {
+                    this._super();
+                    this._m = this.get('targetObject._m');
+
+                    var item = this.get('item');
+                    var col = this.get('col');
+                    this.set('contentKey', item.id + '_' + col.id);
+                },
+                content: function() {
+                    var item = this.get('item');
+                    var col = this.get('col');
+                    return col.content.apply(this._m, [item]);
+                }.property('contentKey'),
+
+                click: function(evt) {
+                    this.sendAction("clickItem", this.get('item'), this.get('col'));
+                    //alert("click " + this.get('contentKey'));
+                },
+
+                rightClick: function(evt) {
+                    alert("rightClick " + this.get('contentKey'));
+                }
+            });
+
+            App.FileIconViewComponent = Ember.Component.extend({
+                classNames: ['file-icon-view'],
+                classNameBindings: ['large:large']
+            });
+        }
+    });
+
+    // register file list columns
+    mollify.filelist.registerColumn({
+        id: "name",
+        titleKey: "fileListColumnTitleName",
+        sort: function(i1, i2, sort, data) {
+            return i1.name.toLowerCase().localeCompare(i2.name.toLowerCase()) * sort;
+        },
+        content: function(item, data) {
+            return item.name;
+        }
+    });
+    mollify.filelist.registerColumn({
+        id: "path",
+        titleKey: "fileListColumnTitlePath",
+        sort: function(i1, i2, sort, data) {
+            var p1 = _m.filesystem.rootsById[i1.root_id].name + i1.path;
+            var p2 = _m.filesystem.rootsById[i2.root_id].name + i2.path;
+            return p1.toLowerCase().localeCompare(p2.toLowerCase()) * sort;
+        },
+        html: true,
+        content: function(item, data) {
+            return '<span class="item-path-root">' + this.filesystem.rootsById[item.root_id].name + '</span>: <span class="item-path-val">' + item.path + '</span>';
+        }
+    });
+    mollify.filelist.registerColumn({
+        id: "type",
+        titleKey: "fileListColumnTitleType",
+        sort: function(i1, i2, sort, data) {
+            var e1 = i1.is_file ? (i1.extension || '') : '';
+            var e2 = i2.is_file ? (i2.extension || '') : '';
+            return e1.toLowerCase().localeCompare(e2.toLowerCase()) * sort;
+        },
+        content: function(item, data) {
+            return item.is_file ? (item.extension || '') : '';
+        }
+    });
+    mollify.filelist.registerColumn({
+        id: "size",
+        titleKey: "fileListColumnTitleSize",
+        opts: {
+            "min-width": 75
+        },
+        sort: function(i1, i2, sort, data) {
+            var s1 = (i1.is_file ? parseInt(i1.size, 10) : 0);
+            var s2 = (i2.is_file ? parseInt(i2.size, 10) : 0);
+            return (s1 - s2) * sort;
+        },
+        content: function(item, data) {
+            return item.is_file ? item.size : ''; //TODO item.is_file ? this.ui.formatters.byteSize.format(item.size) : '';
         }
     });
 }(window.jQuery, window.mollify);

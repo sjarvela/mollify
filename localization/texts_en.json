@@ -88,7 +88,8 @@
             "title": "Configuration",
 
             "account" : {
-            	"title": "Account"
+            	"title": "Account",
+            	"username": "Name"
             }
         },
 
