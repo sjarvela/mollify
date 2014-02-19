@@ -192,7 +192,7 @@
 		private function hasRights($item, $required) {
 			if (is_array($item)) {
 				foreach($item as $i)
-					if (!$this->env->permissions()->hasFilesystemPermission("filesystem_item_access", $item, $required)) return FALSE;
+					if (!$this->env->permissions()->hasFilesystemPermission("filesystem_item_access", $i, $required)) return FALSE;
 				return TRUE;
 			}
 
