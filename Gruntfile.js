@@ -226,7 +226,7 @@ module.exports = function (grunt) {
 	      archive: 'dist/mollify_webdav.zip'
 	    },
 	    files: [
-	      {expand: true, cwd: 'dist/dav/', src: ['**'], dest: 'dav/'}
+	      {expand: true, cwd: 'dist/dav/', src: ['**', '.htaccess'], dest: 'dav/'}
 	    ]
 	  }
 	},
