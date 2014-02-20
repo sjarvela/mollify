@@ -7,6 +7,11 @@
 		"plusSign": "+",
 		"minusSign": "-",
 
+		"language_en": "English",
+		"language_de": "Deutsch",
+		"language_es": "Español",
+		"language_fr": "Français",
+
 		"days": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"],
 		"daysShort": ["Son", "Mon", "Die", "Mit", "Don", "Fre", "Sam", "Son"],
 		"daysMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],

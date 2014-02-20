@@ -2,7 +2,9 @@
 	"locale": "en",
 	"texts": {
 		"language_en": "English",
-		"language_es": "Spanish",
+		"language_de": "Deutsch",
+		"language_es": "Español",
+		"language_fr": "Français",
 
 		"decimalSeparator": ",",
 		"groupingSeparator": ".",

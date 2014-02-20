@@ -1,7 +1,10 @@
 {
 	"locale": "hr",
 	"texts": {
-		"language_en": "Croatian",
+		"language_en": "English",
+		"language_de": "Deutsch",
+		"language_es": "Español",
+		"language_fr": "Français",
 		"language_hr": "Hrvatski",
 
 		"decimalSeparator": ".",
