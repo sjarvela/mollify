@@ -295,6 +295,13 @@
 		public function updateUserGroup($id, $name, $description) {
 			return $this->updateUser($id, $name, NULL, NULL, NULL, NULL, $description);
 		}
+
+		public function removeUserGroups($ids) {
+			$this->db->startTransaction();
+			foreach($ids as $id) $this->removeUserGroup($id);
+			$this->db->commit();
+			return TRUE;
+		}
 		
 		public function removeUserGroup($id) {
 			$this->db->startTransaction();

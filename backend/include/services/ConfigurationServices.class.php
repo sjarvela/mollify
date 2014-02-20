@@ -455,7 +455,22 @@
 		}
 		
 		private function processDeleteUserGroups() {
-			if (count($this->path) != 2) throw $this->invalidRequestException();
+			if (count($this->path) > 2) throw $this->invalidRequestException();
+
+			// configuration/usergroups
+			if (count($this->path) == 1) {
+				$data = $this->request->data;
+				if (!isset($data['ids'])) throw $this->invalidRequestException();
+				$ids = $data['ids'];
+				if (!$ids or !is_array($ids) or count($ids) == 0) throw $this->invalidRequestException();
+				
+				$this->env->configuration()->removeUserGroups($ids);
+				foreach($ids as $id)
+					$this->env->events()->onEvent(UserEvent::groupRemoved($id));
+				$this->response()->success(TRUE);
+				
+				return;	
+			}
 
 			$id = $this->path[1];
 			$this->env->configuration()->removeUserGroup($id);
