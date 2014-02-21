@@ -97,8 +97,8 @@
                     return Ember.ObjectController.extend({
                         needs: ['main', 'files'],
                         actions: {
-                            clickItem: function(item, col) {
-                                alert('click item' + item.id);
+                            clickItem: function(item, col, type) {
+                                alert('item' + item.id + " " + col + " " + type);
                             },
                             gotoFolder: function(item) {
                                 if (!item.is_file) this.transitionToRoute("item", item.id);
@@ -106,6 +106,16 @@
                             }
                         }
                     });
+                },
+                setupController: function(controller, model) {
+                    controller._ctx = {
+                    	_m: this,
+                        formatters: {
+                            byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('decimalSeparator'))),
+                            timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('shortDateTimeFormat')),
+                            uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
+                        }
+                    };
                 }
             }
         },
@@ -115,9 +125,10 @@
             App.FileListViewComponent = Ember.Component.extend({
                 tagName: 'table',
                 classNames: ['file-list-view table table-striped'],
-                items: [],
-                //sorted: [],
                 actions: {
+                    clickItem: function(item, col, type) {
+                        this.sendAction("clickItem", item, col, type);
+                    },
                     colClick: function(col) {
                         var sortCol = this.get('sortCol');
                         if (sortCol.id == col.id) {
@@ -128,7 +139,6 @@
                                 sortAsc: true
                             });
                         }
-                        //this.sendAction("click-item", item);
                     }
                 },
                 sorted: function() {
@@ -144,8 +154,9 @@
 
                 init: function() {
                     this._super();
+
                     var that = this;
-                    this._m = this.get('targetObject._m');
+                    this._ctx = this.get('targetObject._ctx');
 
                     var cols = [];
                     $.each(mollify.utils.getKeys(this._m.settings["file-view"]["list-view-columns"]), function(i, k) {
@@ -162,6 +173,19 @@
                 }
             });
 
+            App.FileListRowComponent = Ember.Component.extend({
+                tagName: 'tr',
+                init: function() {
+                    this._super();
+                    this._ctx = this.get('targetObject._ctx');
+                },
+                actions: {
+                    clickItem: function(item, col, type) {
+                        this.sendAction("clickItem", item, col, type);
+                    }
+                }
+            });
+
             App.FileListCellComponent = Ember.Component.extend({
                 tagName: 'td',
                 item: false,
@@ -169,7 +193,7 @@
                 contentKey: '',
                 init: function() {
                     this._super();
-                    this._m = this.get('targetObject._m');
+                    this._ctx = this.get('targetObject._ctx');
 
                     var item = this.get('item');
                     var col = this.get('col');
@@ -178,16 +202,16 @@
                 content: function() {
                     var item = this.get('item');
                     var col = this.get('col');
-                    return col.content.apply(this._m, [item]);
+
+                    return col.content.apply(this._ctx, [item]);
                 }.property('contentKey'),
 
                 click: function(evt) {
-                    this.sendAction("clickItem", this.get('item'), this.get('col'));
-                    //alert("click " + this.get('contentKey'));
+                    this.sendAction("clickItem", this.get('item'), this.get('col').id, 'click');
                 },
-
-                rightClick: function(evt) {
-                    alert("rightClick " + this.get('contentKey'));
+                contextMenu: function(evt) {
+                    this.sendAction("clickItem", this.get('item'), this.get('col').id, 'rightclick');
+                    return false;
                 }
             });
 
@@ -246,7 +270,7 @@
             return (s1 - s2) * sort;
         },
         content: function(item, data) {
-            return item.is_file ? item.size : ''; //TODO item.is_file ? this.ui.formatters.byteSize.format(item.size) : '';
+            return item.is_file ? this.formatters.byteSize.format(item.size) : '';
         }
     });
 }(window.jQuery, window.mollify);

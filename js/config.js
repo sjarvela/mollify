@@ -68,9 +68,8 @@
                             }
                         },
                         currentView: function() {
-                            var path = this.get('controllers.application.currentPath');
                             // first is "main", second is "config", and third is the current view
-                            var id = path.split(".")[2];
+                            var id = this.get('controllers.application').getCurrentPath(3);
                             var found = false;
                             var items = this.get('navItems');
                             $.each(items, function(i, item) {

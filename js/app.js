@@ -100,7 +100,7 @@
                 controller.set('model', model);
                 controller.set('session', _m.session);
                 controller._m = _m;
-                //if (module.setupController) module.setupController(controller, model);
+                if (view.setupController) view.setupController.apply(_m, [controller, model]);
             },
             renderTemplate: function(controller, model) {
                 if (view.render) view.render.apply(this, [_m, controller, model]);
@@ -153,7 +153,13 @@
         App.ApplicationController = Ember.Controller.extend({
             updateCurrentPath: function() {
                 App.set('currentPath', this.get('currentPath'));
-            }.observes('currentPath')
+            }.observes('currentPath'),
+
+            getCurrentPath: function(n) {
+                var path = this.get('currentPath');
+                if (!window.def(n)) return path;
+                return path.split('.')[n - 1];
+            }
         });
         App.ApplicationRoute = Ember.Route.extend({
             actions: {
@@ -408,22 +414,6 @@
             //var viewId = id || 'main';
             //that._fh.openView(viewId);	
         };
-
-        /*this._api = {
-			init: that.init,
-			start: that.start,
-			resourceUrl: that.resourceUrl,
-			openView : that.openView,
-			settings : that._settings,
-			session : function() { return that._session; },
-			pageUrl : "foo",	//TODO
-			service : that._service,
-			events : that._events,
-			filesystem : that._filesystem,
-			templateLoader : that._templateLoader,
-			plugins : that._plugins
-		};
-		return this._api;*/
     };
 
     var PluginManager = function() {
@@ -607,16 +597,15 @@
 
                 get: function(id, p) {
                     if (!id) return "";
-                    return Ember.I18n.t(id);
-                    /*var t = Em.I18n.translations[id];
-                    if (!t) return "!" + this.locale + ":" + id;
+                    if (!Em.I18n.exists(id)) return "!" + this.locale + ":" + id;
+                    var t = Ember.I18n.t(id);
 
                     if (p !== undefined) {
                         if (!window.isArray(p)) p = [p];
                         for (var i = 0, j = p.length; i < j; i++)
                             t = t.replace("{" + i + "}", p[i]);
                     }
-                    return t;*/
+                    return t;
                 },
 
                 has: function(id) {
@@ -654,9 +643,9 @@
         };
 
         this.notification = {
-        	info: function(text) {
-        		this.success(text);
-        	},
+            info: function(text) {
+                this.success(text);
+            },
             success: function(text) {
                 Bootstrap.NM.push(text, 'success');
             },
@@ -666,6 +655,77 @@
             error: function(text) {
                 Bootstrap.NM.push(text, 'danger');
             }
+        };
+
+	var processPopupActions = function(l) {
+		$.each(l, function(i, item){
+			if (item.type == 'submenu') {
+				processPopupActions(item.items);
+				return;
+			}
+			if (item.title) return;
+			if (item["titleKey"]) item.title = that.texts.get(item['titleKey']);
+		});
+	};
+	var createPopupItems = function(itemList) {
+		var list = itemList||[];
+		processPopupActions(list);
+		//TODO handlebar template: return mollify.dom.template("mollify-tmpl-popupmenu", {items:list});
+	};
+	var initPopupItems = function($p, l, onItem) {
+		$p.find(".dropdown-item").click(function() {
+			var $e = $(this);
+			var $top = $p.find(".dropdown-menu");
+			var path = [];
+			while (true) {
+				if (!$e.hasClass("dropdown-menu"))
+					path.push($e.index());
+				$e = $e.parent();
+				if ($e[0] == $top[0]) break;
+			}
+			var item = false;
+			var parent = l;
+			$.each(path.reverse(), function(i, ind) {
+				item = parent[ind];
+				if (item.type == 'submenu') parent = item.items;
+			});
+			if (onItem) onItem(item, item.callback ? item.callback() : null);
+			else if (item.callback) item.callback();
+			return false;
+		});
+	};
+
+        this.popupmenu = function($e, opt) {
+			//var popupId = false;
+			//var $e = $(a.element);
+			var pos = $e.offset();
+			var $mnu = $('<div class="mollify-popupmenu" style="position: absolute; top: '+(pos.top + $e.outerHeight())+'px; left:'+pos.left+'px;"></div>');
+			var popupitems = opt.items;
+			var hidePopup = function() {
+				if (opt.onHide) opt.onHide();
+				$mnu.remove();
+				//that.ui.removeActivePopup(popupId);
+			};
+			var onItem = function(i, cbr) {
+				hidePopup();
+				//if (opt.onItem) a.onItem(i, cbr);
+			};
+			
+			if (!opt.items) $mnu.addClass("loading");
+			$mnu.append(createPopupItems(opt.items).css("display", "block"));
+			if (opt.style) $mnu.addClass(a.style);
+			that.element.append($mnu);//.on('click', hidePopup);
+			
+			var api = {
+				hide: hidePopup,
+				items: function(items) {
+					$mnu.empty().removeClass("loading").append(createPopupItems(items).css("display", "block"));
+					initPopupItems($mnu, items, onItem);
+				}
+			};
+			if (opt.items) initPopupItems($mnu, opt.items, onItem);
+			//popupId = _m.ui.activePopup(api);
+			return api;
         };
     };
 
@@ -1239,13 +1299,68 @@
 
     /* UTILS */
 
+    window.mollify.formatters = {
+        ByteSize: function(texts, nf) {
+            this.format = function(b) {
+                if (!window.def(b)) return "";
+
+                var bytes = b;
+                if (typeof(b) === "string") {
+                    bytes = parseInt(bytes, 10);
+                    if (isNaN(bytes)) return "";
+                } else if (typeof(b) !== "number") return "";
+
+                if (bytes < 1024)
+                    return (bytes == 1 ? texts.get('sizeOneByte') : texts.get('sizeInBytes', nf.format(bytes)));
+
+                if (bytes < (1024 * 1024)) {
+                    var kilobytes = bytes / 1024;
+                    return (kilobytes == 1 ? texts.get('sizeOneKilobyte') : texts.get('sizeInKilobytes', nf.format(kilobytes)));
+                }
+
+                if (bytes < (1024 * 1024 * 1024)) {
+                    var megabytes = bytes / (1024 * 1024);
+                    return texts.get('sizeInMegabytes', nf.format(megabytes));
+                }
+
+                var gigabytes = bytes / (1024 * 1024 * 1024);
+                return texts.get('sizeInGigabytes', nf.format(gigabytes));
+            };
+        },
+        Timestamp: function(fmt) {
+            this.format = function(ts) {
+                if (ts == null) return "";
+                if (typeof(ts) === 'string') ts = mollify.utils.parseInternalTime(ts);
+                return ts.toString(fmt);
+            };
+        },
+        Number: function(precision, unit, ds) {
+            this.format = function(n) {
+                if (!window.def(n) || typeof(n) !== 'number') return "";
+
+                var s = Math.pow(10, precision);
+                var v = Math.floor(n * s) / s;
+                var sv = v.toString();
+                if (ds) sv = sv.replace(".", ds);
+                if (unit) return sv + " " + unit;
+                return sv;
+            };
+        },
+        FilesystemItemPath: function(fs) {
+            this.format = function(item) {
+                if (!item) return "";
+                return fs.rootsById[item.root_id].name + (item.path.length > 0 ? ":&nbsp;" + item.path : "");
+            }
+        }
+    };
+
     window.mollify.filelist = {
-    	columns : [],
-    	columnsById : {},
-    	registerColumn : function(spec) {
-    		this.columns.push(spec);
-    		this.columnsById[spec.id] = spec;
-    	}
+        columns: [],
+        columnsById: {},
+        registerColumn: function(spec) {
+            this.columns.push(spec);
+            this.columnsById[spec.id] = spec;
+        }
     };
 
     window.mollify.utils = {
