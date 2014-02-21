@@ -159,12 +159,12 @@
                     this._ctx = this.get('targetObject._ctx');
 
                     var cols = [];
-                    $.each(mollify.utils.getKeys(this._m.settings["file-view"]["list-view-columns"]), function(i, k) {
+                    $.each(mollify.utils.getKeys(this._ctx._m.settings["file-view"]["list-view-columns"]), function(i, k) {
                         var spec = mollify.filelist.columnsById[k];
                         if (!spec) return;
 
                         spec = $.extend({}, spec);
-                        spec.opts = $.extend({}, spec.opts, that._m.settings["file-view"]["list-view-columns"][k]);
+                        spec.opts = $.extend({}, spec.opts, that._ctx._m.settings["file-view"]["list-view-columns"][k]);
                         cols.push(spec);
                     });
                     this.set('cols', cols);
