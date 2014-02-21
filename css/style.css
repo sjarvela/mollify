@@ -1028,6 +1028,8 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 	min-height: 200px;
 }
 
+.fileviewereditor-editor-content { height: 100%; }
+
 .mollify-fileviewereditor-viewer-item .carousel-caption {
 	display: none;
 	position: absolute;

@@ -832,7 +832,7 @@
 						}}
 					);
 				}
-				if (editorAvailable) {
+				if (editorAvailable && mollify.filesystem.hasPermission(item, "filesystem_item_access", "rw")) {
 					result.actions.push(
 						{ id: 'pluginFileViewerEditorView', "title-key": 'pluginFileViewerEditorEdit', type:"primary", callback: function() {
 							that.onEdit(item, data.edit);
