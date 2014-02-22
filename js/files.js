@@ -99,7 +99,7 @@
                         actions: {
                             clickItem: function(item, type, src) {
                             	var source = src[0];
-                            	this._ctx.app.showPopupMenu(source.element, [{ title: "1" }]);
+                            	this._ctx.app.showPopupMenu(source.element, this._m.actions.filesystem(item));
                                 //alert('item' + item.id + " " + col + " " + type);
                             },
                             gotoFolder: function(item) {

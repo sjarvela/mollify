@@ -15,6 +15,7 @@
                 titleKey: 'actions.session.logout',
                 fa: 'fa-sign-out',
                 type: 'session',
+                index: 999, //always last
                 isApplicable: function(ctx) {
                     return !!this.session.user; //can logout if there is user
                 },
@@ -36,6 +37,17 @@
                 },
                 handler: function() {
                     this.openModal('core-change-password');
+                }
+            },
+
+            copy: {
+                titleKey: 'actions.filesystem.copy',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return true;
+                },
+                handler: function(item) {
+                    //TODO
                 }
             }
         },

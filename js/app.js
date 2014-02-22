@@ -151,6 +151,17 @@
     var setupApp = function(App, _m) {
         App._m = _m;
         App.ApplicationController = Ember.Controller.extend({
+        	actions: {
+        		click: function() { console.log('click'); }
+        	},
+        	init: function() {
+        		console.log("app init");
+        		var that = this;
+        		$(window).click(function() {
+        			if (that.activePopup) that.activePopup.close();
+        		});
+        	},
+
             updateCurrentPath: function() {
                 App.set('currentPath', this.get('currentPath'));
             }.observes('currentPath'),
@@ -162,6 +173,9 @@
             },
 
             showPopupMenu: function($e, items) {
+                var that = this;
+                if (this.activePopup) this.activePopup.close();
+
                 var controller = Ember.ObjectController.create({
                     items: items
                 });
@@ -173,18 +187,25 @@
                     template: template,
                     controller: controller,
                     didInsertElement: function() {
-                    	var pos = $e.offset();
-                    	this.$().css({
-                    		position: "absolute",
-                    		top: (pos.top + $e.outerHeight()) + "px",
-                    		left: pos.left
-                    	}).find(".dropdown-menu").show();
+                        var pos = $e.offset();
+                        this.$().css({
+                            position: "absolute",
+                            top: (pos.top + $e.outerHeight()) + "px",
+                            left: pos.left
+                        }).find(".dropdown-menu").show();
                     }
                 });
                 view.appendTo(this.namespace.rootElement);
                 var api = {
-
-                }
+                    close: function() {
+                        view.remove();
+                        that.activePopup = false;
+                    }
+                };
+                Ember.run.later(this, function() {
+                	this.activePopup = api;
+                }, 0);
+                
                 return api;
             }
         });
@@ -305,6 +326,9 @@
             getByType: function(type) {
                 var that = this;
                 var list = [];
+                var typeList = this.byType[type];
+                if (!typeList) return list;
+
                 $.each(this.byType[type], function(i, k) {
                     list.push(that.all[k]);
                 });
@@ -314,6 +338,11 @@
                 return $.grep(this.getByType(type), function(a) {
                     return !a.isApplicable || a.isApplicable.apply(_m, [ctx]);
                 });
+            },
+            filesystem: function(i) {
+                if (window.isArray(i))
+                    return this.getApplicableByType("filesystem-item-list", i);
+                return this.getApplicableByType("filesystem-item", i);
             }
         };
 
@@ -739,40 +768,6 @@
                 else if (item.callback) item.callback();
                 return false;
             });
-        };
-
-        this.popupmenu = function($e, opt) {
-            //var popupId = false;
-            //var $e = $(a.element);
-            var pos = $e.offset();
-            var view =
-            //var $mnu = $('<div class="mollify-popupmenu" style="position: absolute; top: ' + (pos.top + $e.outerHeight()) + 'px; left:' + pos.left + 'px;"></div>');
-            var popupitems = opt.items;
-            var hidePopup = function() {
-                if (opt.onHide) opt.onHide();
-                $mnu.remove();
-                //that.ui.removeActivePopup(popupId);
-            };
-            var onItem = function(i, cbr) {
-                hidePopup();
-                //if (opt.onItem) a.onItem(i, cbr);
-            };
-
-            if (!opt.items) $mnu.addClass("loading");
-            $mnu.append(createPopupItems(opt.items).css("display", "block"));
-            if (opt.style) $mnu.addClass(a.style);
-            that.element.append($mnu); //.on('click', hidePopup);
-
-            var api = {
-                hide: hidePopup,
-                items: function(items) {
-                    $mnu.empty().removeClass("loading").append(createPopupItems(items).css("display", "block"));
-                    initPopupItems($mnu, items, onItem);
-                }
-            };
-            if (opt.items) initPopupItems($mnu, opt.items, onItem);
-            //popupId = _m.ui.activePopup(api);
-            return api;
         };*/
     };
 
