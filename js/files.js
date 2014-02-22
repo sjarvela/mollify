@@ -95,10 +95,12 @@
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
-                        needs: ['main', 'files'],
+                        needs: ['application', 'main', 'files'],
                         actions: {
-                            clickItem: function(item, col, type) {
-                                alert('item' + item.id + " " + col + " " + type);
+                            clickItem: function(item, type, src) {
+                            	var source = src[0];
+                            	this._ctx.app.showPopupMenu(source.element, [{ title: "1" }]);
+                                //alert('item' + item.id + " " + col + " " + type);
                             },
                             gotoFolder: function(item) {
                                 if (!item.is_file) this.transitionToRoute("item", item.id);
@@ -109,7 +111,8 @@
                 },
                 setupController: function(controller, model) {
                     controller._ctx = {
-                    	_m: this,
+                        _m: this,
+                        app: controller.get('controllers.application'),
                         formatters: {
                             byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('decimalSeparator'))),
                             timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('shortDateTimeFormat')),
@@ -123,11 +126,14 @@
         // module setup
         setup: function(App) {
             App.FileListViewComponent = Ember.Component.extend({
+                needs: ['application'],
                 tagName: 'table',
                 classNames: ['file-list-view table table-striped'],
                 actions: {
-                    clickItem: function(item, col, type) {
-                        this.sendAction("clickItem", item, col, type);
+                    clickItem: function(item, type, src) {
+                    	var source = src || [];
+                    	source.push(this.getActionSource());
+                    	this.sendAction("clickItem", item, type, source);
                     },
                     colClick: function(col) {
                         var sortCol = this.get('sortCol');
@@ -151,6 +157,13 @@
                     });
                     return sorted;
                 }.property('sortCol', 'sortAsc'),
+
+                getActionSource: function() {
+                    return {
+                        type: 'list',
+                        element: this.$()
+                    };
+                },
 
                 init: function() {
                     this._super();
@@ -179,9 +192,15 @@
                     this._super();
                     this._ctx = this.get('targetObject._ctx');
                 },
+                getActionSource: function() {
+                    return {
+                        type: 'row',
+                        element: this.$()
+                    };
+                },
                 actions: {
-                    clickItem: function(item, col, type) {
-                        this.sendAction("clickItem", item, col, type);
+                    clickItem: function(item, type, src) {
+                        this.sendAction("clickItem", item, type, src ? [src, this.getActionSource()] : this.getActionSource());
                     }
                 }
             });
@@ -204,13 +223,24 @@
                     var col = this.get('col');
 
                     return col.content.apply(this._ctx, [item]);
-                }.property('contentKey'),
+                }.property('contentKey'), //TODO bind to actual property
+
+                getActionSource: function() {
+                    return {
+                        type: 'col',
+                        id: this.get('col').id,
+                        element: this.$()
+                    };
+                },
 
                 click: function(evt) {
-                    this.sendAction("clickItem", this.get('item'), this.get('col').id, 'click');
+                    this.sendAction("clickItem", this.get('item'), 'click', this.getActionSource());
+                    //this._ctx.app.showPopupElement(this.$(), [{ title: "1" }]);
+                    //this.sendAction("clickItem", this.get('item'), this.get('col').id, 'click');
                 },
                 contextMenu: function(evt) {
-                    this.sendAction("clickItem", this.get('item'), this.get('col').id, 'rightclick');
+                    this.sendAction("clickItem", this.get('item'), 'rightclick', this.getActionSource());
+                    //this.sendAction("clickItem", this.get('item'), this.get('col').id, 'rightclick');
                     return false;
                 }
             });

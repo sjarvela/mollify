@@ -70,8 +70,6 @@
                         currentView: function() {
                             // first is "main", second is the current view
                             var id = this.get('controllers.application').getCurrentPath(2);
-
-                            //var id = path.split(".")[1];
                             var found = false;
                             var items = this.get('navItems');
                             $.each(items, function(i, item) {
@@ -119,6 +117,10 @@
                         this.sendAction("select", item);
                     }
                 }
+            });
+
+            App.CorePopupComponent = Ember.Component.extend({
+                layoutName: 'components/core-popup-element'
             });
         }
     });

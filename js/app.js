@@ -159,6 +159,33 @@
                 var path = this.get('currentPath');
                 if (!window.def(n)) return path;
                 return path.split('.')[n - 1];
+            },
+
+            showPopupMenu: function($e, items) {
+                var controller = Ember.ObjectController.create({
+                    items: items
+                });
+
+                var template = this.container.lookup("template:core-popup-menu");
+                Ember.assert("Template core-popup-menu could not be found.", template);
+
+                var view = Ember.View.create({
+                    template: template,
+                    controller: controller,
+                    didInsertElement: function() {
+                    	var pos = $e.offset();
+                    	this.$().css({
+                    		position: "absolute",
+                    		top: (pos.top + $e.outerHeight()) + "px",
+                    		left: pos.left
+                    	}).find(".dropdown-menu").show();
+                    }
+                });
+                view.appendTo(this.namespace.rootElement);
+                var api = {
+
+                }
+                return api;
             }
         });
         App.ApplicationRoute = Ember.Route.extend({
@@ -657,76 +684,96 @@
             }
         };
 
-	var processPopupActions = function(l) {
-		$.each(l, function(i, item){
-			if (item.type == 'submenu') {
-				processPopupActions(item.items);
-				return;
-			}
-			if (item.title) return;
-			if (item["titleKey"]) item.title = that.texts.get(item['titleKey']);
-		});
-	};
-	var createPopupItems = function(itemList) {
-		var list = itemList||[];
-		processPopupActions(list);
-		//TODO handlebar template: return mollify.dom.template("mollify-tmpl-popupmenu", {items:list});
-	};
-	var initPopupItems = function($p, l, onItem) {
-		$p.find(".dropdown-item").click(function() {
-			var $e = $(this);
-			var $top = $p.find(".dropdown-menu");
-			var path = [];
-			while (true) {
-				if (!$e.hasClass("dropdown-menu"))
-					path.push($e.index());
-				$e = $e.parent();
-				if ($e[0] == $top[0]) break;
-			}
-			var item = false;
-			var parent = l;
-			$.each(path.reverse(), function(i, ind) {
-				item = parent[ind];
-				if (item.type == 'submenu') parent = item.items;
-			});
-			if (onItem) onItem(item, item.callback ? item.callback() : null);
-			else if (item.callback) item.callback();
-			return false;
-		});
-	};
+        /*var processPopupActions = function(l) {
+            $.each(l, function(i, item) {
+                if (item.type == 'submenu') {
+                    processPopupActions(item.items);
+                    return;
+                }
+                if (item.title) return;
+                if (item["titleKey"]) item.title = that.texts.get(item['titleKey']);
+            });
+        };
+        var createPopupItems = function(itemList) {
+            var list = itemList || [];
+            processPopupActions(list);
+
+            var buffer = [];
+            Ember.TEMPLATES['core-popupmenu-item']({
+                1: 2
+            }, {
+                data: {
+                    view: {
+                        container: {
+                            foo: "bar"
+                        },
+                        registerObserver: function() {},
+                        appendChild: function(c) {
+                            console.log(c);
+                        }
+                    },
+                    buffer: buffer
+                }
+            });
+            return $(buffer.join(""));
+            //TODO handlebar template: return mollify.dom.template("mollify-tmpl-popupmenu", {items:list});
+        };*/
+        /*var initPopupItems = function($p, l, onItem) {
+            $p.find(".dropdown-item").click(function() {
+                var $e = $(this);
+                var $top = $p.find(".dropdown-menu");
+                var path = [];
+                while (true) {
+                    if (!$e.hasClass("dropdown-menu"))
+                        path.push($e.index());
+                    $e = $e.parent();
+                    if ($e[0] == $top[0]) break;
+                }
+                var item = false;
+                var parent = l;
+                $.each(path.reverse(), function(i, ind) {
+                    item = parent[ind];
+                    if (item.type == 'submenu') parent = item.items;
+                });
+                if (onItem) onItem(item, item.callback ? item.callback() : null);
+                else if (item.callback) item.callback();
+                return false;
+            });
+        };
 
         this.popupmenu = function($e, opt) {
-			//var popupId = false;
-			//var $e = $(a.element);
-			var pos = $e.offset();
-			var $mnu = $('<div class="mollify-popupmenu" style="position: absolute; top: '+(pos.top + $e.outerHeight())+'px; left:'+pos.left+'px;"></div>');
-			var popupitems = opt.items;
-			var hidePopup = function() {
-				if (opt.onHide) opt.onHide();
-				$mnu.remove();
-				//that.ui.removeActivePopup(popupId);
-			};
-			var onItem = function(i, cbr) {
-				hidePopup();
-				//if (opt.onItem) a.onItem(i, cbr);
-			};
-			
-			if (!opt.items) $mnu.addClass("loading");
-			$mnu.append(createPopupItems(opt.items).css("display", "block"));
-			if (opt.style) $mnu.addClass(a.style);
-			that.element.append($mnu);//.on('click', hidePopup);
-			
-			var api = {
-				hide: hidePopup,
-				items: function(items) {
-					$mnu.empty().removeClass("loading").append(createPopupItems(items).css("display", "block"));
-					initPopupItems($mnu, items, onItem);
-				}
-			};
-			if (opt.items) initPopupItems($mnu, opt.items, onItem);
-			//popupId = _m.ui.activePopup(api);
-			return api;
-        };
+            //var popupId = false;
+            //var $e = $(a.element);
+            var pos = $e.offset();
+            var view =
+            //var $mnu = $('<div class="mollify-popupmenu" style="position: absolute; top: ' + (pos.top + $e.outerHeight()) + 'px; left:' + pos.left + 'px;"></div>');
+            var popupitems = opt.items;
+            var hidePopup = function() {
+                if (opt.onHide) opt.onHide();
+                $mnu.remove();
+                //that.ui.removeActivePopup(popupId);
+            };
+            var onItem = function(i, cbr) {
+                hidePopup();
+                //if (opt.onItem) a.onItem(i, cbr);
+            };
+
+            if (!opt.items) $mnu.addClass("loading");
+            $mnu.append(createPopupItems(opt.items).css("display", "block"));
+            if (opt.style) $mnu.addClass(a.style);
+            that.element.append($mnu); //.on('click', hidePopup);
+
+            var api = {
+                hide: hidePopup,
+                items: function(items) {
+                    $mnu.empty().removeClass("loading").append(createPopupItems(items).css("display", "block"));
+                    initPopupItems($mnu, items, onItem);
+                }
+            };
+            if (opt.items) initPopupItems($mnu, opt.items, onItem);
+            //popupId = _m.ui.activePopup(api);
+            return api;
+        };*/
     };
 
     /* SERVICE */

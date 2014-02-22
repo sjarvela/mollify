@@ -30,3 +30,16 @@
 		{{#if error}}<div class="alert alert-warning">{{error}}</div>{{/if}}
 	</form>
 </script>
+
+<script type="text/x-handlebars" data-template-name="components/core-popup-element">
+	popup
+	{{yield}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="core-popup-menu">
+	<ul class="dropdown-menu" role="menu">
+	{{#each items}}
+		<li role="presentation"><a role="menuitem" tabindex="-1" {{action "select" this}}>{{title}}</a></li>
+	{{/each}}
+	</ul>
+</script>
