@@ -174,6 +174,36 @@
                 return path.split('.')[n - 1];
             },
 
+            openModal: function(name, o) {
+                var opt = o || {};
+                var api = {
+                    close: function() {
+                        Bootstrap.ModalManager.close(name);
+                    }
+                };
+                var controller = opt.controller ? opt.controller : this.container.lookup("controller:"+name);
+                if (opt.model) controller.set('model', opt.model);
+                controller._m = _m;
+                controller.modal = api;
+
+                var buttons = opt.buttons;
+                if (!buttons) {
+                    buttons = [];
+                    if (controller.buttons) {
+                        $.each(controller.buttons, function(i, b) {
+                            if (!b.title && b.titleKey) b.title = _m.ui.texts.get(b.titleKey);
+                            buttons.push(b);
+                        });
+                    }
+                }
+                var title = opt.title;
+                if (!title && controller.title) title = controller.title;
+                if (!title && controller.titleKey) title = _m.ui.texts.get(controller.titleKey);
+                Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
+
+                return api;
+            },
+
             showPopupMenu: function($e, items, ctx, cb) {
                 var that = this;
                 if (this.activePopup) this.activePopup.close();
@@ -237,35 +267,7 @@
                     var that = this;
                     action.handler.apply({
                         _m: _m,
-                        openModal: function(name, o) {
-                            var opt = o || {};
-                            var api = {
-                                close: function() {
-                                    Bootstrap.ModalManager.close(name);
-                                }
-                            };
-                            var controller = opt.controller ? opt.controller : that.controllerFor(name);
-                            if (opt.model) controller.set('model', opt.model);
-                            controller._m = _m;
-                            controller.modal = api;
-
-                            var buttons = opt.buttons;
-                            if (!buttons) {
-                                buttons = [];
-                                if (controller.buttons) {
-                                    $.each(controller.buttons, function(i, b) {
-                                        if (!b.title && b.titleKey) b.title = _m.ui.texts.get(b.titleKey);
-                                        buttons.push(b);
-                                    });
-                                }
-                            }
-                            var title = opt.title;
-                            if (!title && controller.title) title = controller.title;
-                            if (!title && controller.titleKey) title = _m.ui.texts.get(controller.titleKey);
-                            Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
-
-                            return api;
-                        }
+                        openModal: $.proxy(this.controller.openModal, this.controller)
                     }, [ctx]);
                 }
             },

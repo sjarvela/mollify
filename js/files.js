@@ -98,38 +98,40 @@
                         needs: ['application', 'main', 'files'],
                         actions: {
                             clickItem: function(item, type, src) {
-                            	// TODO action spec in settings
-                            	var ia = this.getItemAction(item, type);
-                            	if (ia === true) return;
+                                // TODO action spec in settings
+                                var ia = this.getItemAction(item, type);
+                                if (ia === true) return;
 
-                            	if (ia == 'open_menu')
-                            		this.showPopupMenu(item, src[0]);
-                            	else if (ia == 'go_into_folder')
-                            		this.gotoFolder(item);
-                            	else if (ia == 'open_info')
-                            		this.showInfo(item);
+                                if (ia == 'open_menu')
+                                    this.showPopupMenu(item, src[0]);
+                                else if (ia == 'go_into_folder')
+                                    this.gotoFolder(item);
+                                else if (ia == 'open_info')
+                                    this.showInfo(item);
+                                else if (ia == 'download' && item.is_file)
+                                    this.send("doAction", this._m.actions.all.download, item);
                             }
                         },
 
                         getItemAction: function(item, clickType) {
-                        	var handler = 'onClick';
-                        	var action = item.is_file ? 'open_info' : 'go_into_folder';
+                            var handler = 'onClick';
+                            var action = item.is_file ? 'open_info' : 'go_into_folder';
 
-                        	if (clickType == 'rightclick') {
-                        		handler = 'onRightClick';
-                        		action = 'open_menu';
-                        	} else if (clickType == 'doubleclick') {
-                        		handler = 'onDblClick';
-                        		action =  item.is_file ? 'view' : 'go_into_folder';
-                        	}
+                            if (clickType == 'rightclick') {
+                                handler = 'onRightClick';
+                                action = 'open_menu';
+                            } else if (clickType == 'doubleclick') {
+                                handler = 'onDblClick';
+                                action = item.is_file ? 'view' : 'go_into_folder';
+                            }
 
-                        	if (this._m.settings['file-view'].actions[handler]) {
-                        		var ctx = {}; //TODO
-                        		var customAction = this._m.settings['file-view'].actions[handler](item, ctx);
-                        		if (customAction === true) return true;
-                        		if (customAction) action = customAction;
-                        	}
-                        	return action;
+                            if (this._m.settings['file-view'].actions[handler]) {
+                                var ctx = {}; //TODO
+                                var customAction = this._m.settings['file-view'].actions[handler](item, ctx);
+                                if (customAction === true) return true;
+                                if (customAction) action = customAction;
+                            }
+                            return action;
                         },
                         gotoFolder: function(item) {
                             if (item.is_file) return;
@@ -137,12 +139,12 @@
                         },
                         showPopupMenu: function(item, src) {
                             var that = this;
-                        	this._ctx.app.showPopupMenu(src.element, this._m.actions.filesystem(item), item, function(action) {
-                        		that.send("doAction", action, item);
-                        	});                        	
+                            this._ctx.app.showPopupMenu(src.element, this._m.actions.filesystem(item), item, function(action) {
+                                that.send("doAction", action, item);
+                            });
                         },
                         showInfo: function(item) {
-                        	alert('info');
+                            alert('info');
                         }
                     });
                 },
@@ -168,9 +170,9 @@
                 classNames: ['file-list-view table table-striped'],
                 actions: {
                     clickItem: function(item, type, src) {
-                    	var source = src || [];
-                    	source.push(this.getActionSource());
-                    	this.sendAction("clickItem", item, type, source);
+                        var source = src || [];
+                        source.push(this.getActionSource());
+                        this.sendAction("clickItem", item, type, source);
                     },
                     colClick: function(col) {
                         var sortCol = this.get('sortCol');
@@ -271,13 +273,20 @@
                 },
 
                 click: function(evt) {
-                    this.sendAction("clickItem", this.get('item'), 'click', this.getActionSource());
-                    //this._ctx.app.showPopupElement(this.$(), [{ title: "1" }]);
-                    //this.sendAction("clickItem", this.get('item'), this.get('col').id, 'click');
+                	if (this.clickAction) return;
+                    var that = this;
+                    this.clickAction = Ember.run.later({}, function() {
+                        that.clickAction = false;
+                        that.sendAction("clickItem", that.get('item'), 'click', that.getActionSource());
+                    }, 200);
+                },
+                doubleClick: function(evt) {
+                    if (this.clickAction) Ember.run.cancel(this.clickAction);
+                    this.clickAction = false;
+                    this.sendAction("clickItem", this.get('item'), 'doubleclick', this.getActionSource());
                 },
                 contextMenu: function(evt) {
                     this.sendAction("clickItem", this.get('item'), 'rightclick', this.getActionSource());
-                    //this.sendAction("clickItem", this.get('item'), this.get('col').id, 'rightclick');
                     return false;
                 }
             });

@@ -40,11 +40,22 @@
                 }
             },
 
+            download: {
+                titleKey: 'actions.filesystem.download',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return true;	//TODO permissions
+                },
+                handler: function(item) {
+                    window.alert(item.id);
+                }
+            },
+
             copy: {
                 titleKey: 'actions.filesystem.copy',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return true;
+                    return true;	//TODO permissions
                 },
                 handler: function(item) {
                     window.alert(item.id);
