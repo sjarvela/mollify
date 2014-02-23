@@ -47,7 +47,7 @@
                     return true;
                 },
                 handler: function(item) {
-                    //TODO
+                    window.alert(item.id);
                 }
             }
         },

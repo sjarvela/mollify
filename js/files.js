@@ -98,14 +98,51 @@
                         needs: ['application', 'main', 'files'],
                         actions: {
                             clickItem: function(item, type, src) {
-                            	var source = src[0];
-                            	this._ctx.app.showPopupMenu(source.element, this._m.actions.filesystem(item));
-                                //alert('item' + item.id + " " + col + " " + type);
-                            },
-                            gotoFolder: function(item) {
-                                if (!item.is_file) this.transitionToRoute("item", item.id);
-                                else alert(item.name);
+                            	// TODO action spec in settings
+                            	var ia = this.getItemAction(item, type);
+                            	if (ia === true) return;
+
+                            	if (ia == 'open_menu')
+                            		this.showPopupMenu(item, src[0]);
+                            	else if (ia == 'go_into_folder')
+                            		this.gotoFolder(item);
+                            	else if (ia == 'open_info')
+                            		this.showInfo(item);
                             }
+                        },
+
+                        getItemAction: function(item, clickType) {
+                        	var handler = 'onClick';
+                        	var action = item.is_file ? 'open_info' : 'go_into_folder';
+
+                        	if (clickType == 'rightclick') {
+                        		handler = 'onRightClick';
+                        		action = 'open_menu';
+                        	} else if (clickType == 'doubleclick') {
+                        		handler = 'onDblClick';
+                        		action =  item.is_file ? 'view' : 'go_into_folder';
+                        	}
+
+                        	if (this._m.settings['file-view'].actions[handler]) {
+                        		var ctx = {}; //TODO
+                        		var customAction = this._m.settings['file-view'].actions[handler](item, ctx);
+                        		if (customAction === true) return true;
+                        		if (customAction) action = customAction;
+                        	}
+                        	return action;
+                        },
+                        gotoFolder: function(item) {
+                            if (item.is_file) return;
+                            this.transitionToRoute("item", item.id);
+                        },
+                        showPopupMenu: function(item, src) {
+                            var that = this;
+                        	this._ctx.app.showPopupMenu(src.element, this._m.actions.filesystem(item), item, function(action) {
+                        		that.send("doAction", action, item);
+                        	});                        	
+                        },
+                        showInfo: function(item) {
+                        	alert('info');
                         }
                     });
                 },
@@ -156,7 +193,7 @@
                         return sortCol.sort(i1, i2, asc ? 1 : -1);
                     });
                     return sorted;
-                }.property('sortCol', 'sortAsc'),
+                }.property('sortCol', 'sortAsc', 'items'),
 
                 getActionSource: function() {
                     return {

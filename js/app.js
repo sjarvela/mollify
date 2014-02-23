@@ -151,16 +151,18 @@
     var setupApp = function(App, _m) {
         App._m = _m;
         App.ApplicationController = Ember.Controller.extend({
-        	actions: {
-        		click: function() { console.log('click'); }
-        	},
-        	init: function() {
-        		console.log("app init");
-        		var that = this;
-        		$(window).click(function() {
-        			if (that.activePopup) that.activePopup.close();
-        		});
-        	},
+            actions: {
+                click: function() {
+                    console.log('click');
+                }
+            },
+            init: function() {
+                console.log("app init");
+                var that = this;
+                $(window).click(function() {
+                    if (that.activePopup) that.activePopup.close();
+                });
+            },
 
             updateCurrentPath: function() {
                 App.set('currentPath', this.get('currentPath'));
@@ -172,12 +174,19 @@
                 return path.split('.')[n - 1];
             },
 
-            showPopupMenu: function($e, items) {
+            showPopupMenu: function($e, items, ctx, cb) {
                 var that = this;
                 if (this.activePopup) this.activePopup.close();
 
-                var controller = Ember.ObjectController.create({
-                    items: items
+                var controller = Ember.ObjectController.extend({
+                    actions: {
+                        select: function(item) {
+                            cb(item, ctx);
+                        }
+                    }
+                }).create({
+                    items: items,
+                    ctx: ctx
                 });
 
                 var template = this.container.lookup("template:core-popup-menu");
@@ -203,9 +212,9 @@
                     }
                 };
                 Ember.run.later(this, function() {
-                	this.activePopup = api;
+                    this.activePopup = api;
                 }, 0);
-                
+
                 return api;
             }
         });
@@ -220,7 +229,7 @@
                     else
                         this.transitionTo(path);
                 },
-                doAction: function(a) {
+                doAction: function(a, ctx) {
                     var action = a;
                     if (typeof(a) == "string") action = _m.actions.all[a];
                     if (!action || !action.handler) return;
@@ -257,7 +266,7 @@
 
                             return api;
                         }
-                    });
+                    }, [ctx]);
                 }
             },
             setupController: function(c) {

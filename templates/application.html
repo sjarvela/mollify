@@ -39,7 +39,14 @@
 <script type="text/x-handlebars" data-template-name="core-popup-menu">
 	<ul class="dropdown-menu" role="menu">
 	{{#each items}}
-		<li role="presentation"><a role="menuitem" tabindex="-1" {{action "select" this}}>{{title}}</a></li>
+		<li role="presentation">
+			<a role="menuitem" tabindex="-1" {{action "select" this}}>
+				{{#if fa}}
+					{{fa-icon class=fa}}
+				{{/if}}
+				{{val this "translate-key:titleKey"}}
+			</a>
+		</li>
 	{{/each}}
 	</ul>
 </script>
