@@ -44,7 +44,7 @@
                 titleKey: 'actions.filesystem.download',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return this.hasPermission(item, 'filesystem_item_access', 'r');
+                    return this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
                     window.alert(item.id);
@@ -55,7 +55,7 @@
                 titleKey: 'actions.filesystem.copy',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return this.hasPermission(item, 'filesystem_item_access', 'r');
+                    return this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
                     window.alert(item.id);

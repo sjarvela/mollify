@@ -364,11 +364,11 @@
                 var requestCache = {};
                 var p = {
                     _m: _m,
-                    hasPermission: function(s, n, r) {
+                    hasPermission: function(n, s, r) {
                         var requestKey = (typeof(s) === "object" ? s.id : s) + "_" + n;
                         if (requestCache[requestKey])
                             return requestCache[requestKey];
-                        var pr = _m.permissions.hasPermission(s, n, r);
+                        var pr = _m.permissions.hasPermission(n, s, r);
                         requestCache[requestKey] = pr;
                         return pr;
                     }
@@ -502,7 +502,7 @@
 
         this._onSessionStart = function(session) {
             that.session = new Session(session);
-            that.permissions.cache(false, that.session.data.permissions);
+            that.permissions.init(that.session.data);
             that.plugins.init(that._clientPlugins, session);
             that.filesystem.setup(that.session.data.folders, ((that.session.user && that.session.user.admin) ? that.session.data.roots : false));
             that.ui.initializeLang();
@@ -511,7 +511,7 @@
         this._onSessionEnd = function() {
             that.session = new Session();
             that.plugins.init();
-            that.permissions.clear();
+            that.permissions.init();
             that.filesystem.setup([]);
             that._fh.restart(); //go to initial view
         };
@@ -534,8 +534,15 @@
         this.permissions = {
             _cache: {},
 
-            clear: function() {
+            init: function(sessionData) {
                 this._cache = {};
+                this.types = sessionData ? sessionData.permission_types : {};
+                if (!sessionData) return;
+                this.cache(false, sessionData.permissions);
+            },
+
+            isValidPermissionType: function(name) {
+                return this.types && this.types.values[name] !== undefined;
             },
 
             cache: function(subject, a, b) {
@@ -553,8 +560,9 @@
                 }
             },
 
-            hasPermission: function(subject, name, required) {
+            hasPermission: function(name, subject, required) {
                 var df = $.Deferred();
+                if (!name || !this.isValidPermissionType(name)) return df.reject();
                 if (!that.session.user) return df.resolve(false);
                 if (that.session.user.admin) return df.resolve(true);
 
@@ -563,7 +571,7 @@
                 var list = this._cache[s];
                 var check = function() {
                     var v = pt._cache[s][name];
-                    var options = that.session.data.permission_types.values[name];
+                    var options = pt.types.values[name];
                     if (!required || !options) {
                         df.resolve(v == "1");
                         return;
@@ -573,6 +581,7 @@
                     var ri = options.indexOf(required);
                     df.resolve(ui >= ri);
                 }
+
                 if (!this._cache[s] || this._cache[s][name] === undefined) {
                     that.service.get('permissions/user/?name=' + name + (subject ? "&subject=" + s : "")).done(function(permission) {
                         pt.cache(s, name, permission);
