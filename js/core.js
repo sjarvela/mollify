@@ -17,12 +17,12 @@
                 type: 'session',
                 index: 999, //always last
                 isApplicable: function(ctx) {
-                    return !!this.session.user; //can logout if there is user
+                    return !!this._m.session.user; //can logout if there is user
                 },
                 handler: function(_m) {
                     var that = this;
-                    this.service.post("session/logout").done(function(s) {
-                        that.events.dispatch('session/end');
+                    this._m.service.post("session/logout").done(function(s) {
+                        that._m.events.dispatch('session/end');
                     });
                 }
             },
@@ -33,7 +33,7 @@
                 fa: 'fa-key',
                 type: 'session',
                 isApplicable: function(ctx) {
-                    return !!this.session.user; //can logout if there is user
+                    return !!this._m.session.user; //can logout if there is user
                 },
                 handler: function() {
                     this.openModal('core-change-password');
@@ -44,7 +44,7 @@
                 titleKey: 'actions.filesystem.download',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return true;	//TODO permissions
+                    return this.hasPermission(item, 'filesystem_item_access', 'r');
                 },
                 handler: function(item) {
                     window.alert(item.id);
@@ -55,7 +55,7 @@
                 titleKey: 'actions.filesystem.copy',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return true;	//TODO permissions
+                    return this.hasPermission(item, 'filesystem_item_access', 'r');
                 },
                 handler: function(item) {
                     window.alert(item.id);
@@ -69,6 +69,17 @@
             App.FaIconComponent = Ember.Component.extend({
                 tagName: 'i',
                 classNames: ['fa']
+            });
+
+            // change password
+            App.CoreErrorController = Ember.ObjectController.extend({
+                titleKey: 'error-dialog.title',
+                content: {},
+                buttons: [{
+                    titleKey: 'dialogs.ok',
+                    dismiss: 'modal'
+                }],
+                actions: {}
             });
 
             // change password

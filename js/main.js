@@ -55,7 +55,7 @@
                     return {
                         views: mainViews,
                         navItems: navItems,
-                        sessionActions: this.actions.getApplicableByType('session')
+                        sessionActions: []
                     }
                 },
 
@@ -80,6 +80,12 @@
                             });
                             return found;
                         }.property('controllers.application.currentPath')
+                    });
+                },
+
+                setupController: function(controller, model) {
+                    this.actions.getApplicableByType('session').done(function(a) {
+                        controller.set('sessionActions', a);
                     });
                 }
             }

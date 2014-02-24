@@ -181,7 +181,7 @@
                         Bootstrap.ModalManager.close(name);
                     }
                 };
-                var controller = opt.controller ? opt.controller : this.container.lookup("controller:"+name);
+                var controller = opt.controller ? opt.controller : this.container.lookup("controller:" + name);
                 if (opt.model) controller.set('model', opt.model);
                 controller._m = _m;
                 controller.modal = api;
@@ -208,37 +208,46 @@
                 var that = this;
                 if (this.activePopup) this.activePopup.close();
 
-                var controller = Ember.ObjectController.extend({
-                    actions: {
-                        select: function(item) {
-                            cb(item, ctx);
+                var view = false;
+
+                var open = function(list) {
+                    var controller = Ember.ObjectController.extend({
+                        actions: {
+                            select: function(item) {
+                                cb(item, ctx);
+                            }
                         }
-                    }
-                }).create({
-                    items: items,
-                    ctx: ctx
-                });
+                    }).create({
+                        items: list,
+                        ctx: ctx
+                    });
 
-                var template = this.container.lookup("template:core-popup-menu");
-                Ember.assert("Template core-popup-menu could not be found.", template);
+                    var template = that.container.lookup("template:core-popup-menu");
+                    Ember.assert("Template core-popup-menu could not be found.", template);
 
-                var view = Ember.View.create({
-                    template: template,
-                    controller: controller,
-                    didInsertElement: function() {
-                        var pos = $e.offset();
-                        this.$().css({
-                            position: "absolute",
-                            top: (pos.top + $e.outerHeight()) + "px",
-                            left: pos.left
-                        }).find(".dropdown-menu").show();
-                    }
-                });
-                view.appendTo(this.namespace.rootElement);
+                    view = Ember.View.create({
+                        template: template,
+                        controller: controller,
+                        didInsertElement: function() {
+                            var pos = $e.offset();
+                            this.$().css({
+                                position: "absolute",
+                                top: (pos.top + $e.outerHeight()) + "px",
+                                left: pos.left
+                            }).find(".dropdown-menu").show();
+                        }
+                    });
+                    view.appendTo(that.namespace.rootElement);
+                }
+                if (items.done) items.done(open);
+                else open(items);
+
                 var api = {
                     close: function() {
+                        if (!view) return;
                         view.remove();
                         that.activePopup = false;
+                        view = false;
                     }
                 };
                 Ember.run.later(this, function() {
@@ -277,6 +286,12 @@
                     after: function() {
                         // forward to "main", it should be redirected to default view (or login)
                         c.transitionToRoute('main');
+                    }
+                });
+                Ember.Instrumentation.subscribe('showError', {
+                    before: function() {},
+                    after: function() {
+                        c.openModal('core-error');
                     }
                 });
             }
@@ -346,9 +361,38 @@
                 return list;
             },
             getApplicableByType: function(type, ctx) {
-                return $.grep(this.getByType(type), function(a) {
-                    return !a.isApplicable || a.isApplicable.apply(_m, [ctx]);
+                var requestCache = {};
+                var p = {
+                    _m: _m,
+                    hasPermission: function(s, n, r) {
+                        var requestKey = (typeof(s) === "object" ? s.id : s) + "_" + n;
+                        if (requestCache[requestKey])
+                            return requestCache[requestKey];
+                        var pr = _m.permissions.hasPermission(s, n, r);
+                        requestCache[requestKey] = pr;
+                        return pr;
+                    }
+                };
+
+                var list = [];
+                var wait = [];
+                var df = $.Deferred();
+                $.each(this.getByType(type), function(i, a) {
+                    if (!a.isApplicable) return;
+                    var applicable = a.isApplicable.apply(p, [ctx]);
+                    if (!applicable) return;
+
+                    if (applicable.done) {
+                        wait.push(applicable);
+                        applicable.done(function(ap) {
+                            if (ap) list.push(a);
+                            wait.remove(applicable);
+                            if (wait.length === 0) df.resolve(list);
+                        }).fail(df.reject);
+                    } else list.push(a);
                 });
+                if (wait.length === 0) df.resolve(list);
+                return df;
             },
             filesystem: function(i) {
                 if (window.isArray(i))
@@ -393,11 +437,14 @@
             _m.templateLoader.load('application').done(function() {
                 var fh = {
                     run: function() {
-                        window.App.advanceReadiness();
+                        App.advanceReadiness();
                     },
                     restart: function() {
                         console.log('restart');
                         Ember.Instrumentation.instrument("restart", null, function() {});
+                    },
+                    showError: function(spec) {
+                        Ember.Instrumentation.instrument("showError", spec, function() {});
                     }
                 };
 
@@ -423,7 +470,7 @@
         this.filesystem = new Filesystem(this);
         this.ui = new UI(this);
         this.templateLoader = new TemplateLoader(that.settings['template-path']);
-        this.plugins = new PluginManager();
+        this.plugins = PluginManager.create();
 
         this.init = function(fh, plugins) {
             that._fh = fh;
@@ -455,6 +502,7 @@
 
         this._onSessionStart = function(session) {
             that.session = new Session(session);
+            that.permissions.cache(false, that.session.data.permissions);
             that.plugins.init(that._clientPlugins, session);
             that.filesystem.setup(that.session.data.folders, ((that.session.user && that.session.user.admin) ? that.session.data.roots : false));
             that.ui.initializeLang();
@@ -463,6 +511,7 @@
         this._onSessionEnd = function() {
             that.session = new Session();
             that.plugins.init();
+            that.permissions.clear();
             that.filesystem.setup([]);
             that._fh.restart(); //go to initial view
         };
@@ -481,15 +530,69 @@
             //var viewId = id || 'main';
             //that._fh.openView(viewId);	
         };
-    };
 
-    var PluginManager = function() {
-        var that = this;
+        this.permissions = {
+            _cache: {},
 
-        this.init = function(clientPlugins, sessionData) {
-            this.list = sessionData ? sessionData.plugins : [];
+            clear: function() {
+                this._cache = {};
+            },
+
+            cache: function(subject, a, b) {
+                var s = "_";
+                if (subject) {
+                    if (typeof(subject) !== 'string') return;
+                    s = subject;
+                }
+                if (!this._cache[s]) this._cache[s] = {};
+
+                if (b === undefined && typeof(a) === 'object') {
+                    $.extend(this._cache[s], a);
+                } else {
+                    this._cache[s][a] = b;
+                }
+            },
+
+            hasPermission: function(subject, name, required) {
+                var df = $.Deferred();
+                if (!that.session.user) return df.resolve(false);
+                if (that.session.user.admin) return df.resolve(true);
+
+                var pt = this;
+                var s = subject ? (typeof(subject) === 'object' ? subject.id : subject) : "_";
+                var list = this._cache[s];
+                var check = function() {
+                    var v = pt._cache[s][name];
+                    var options = that.session.data.permission_types.values[name];
+                    if (!required || !options) {
+                        df.resolve(v == "1");
+                        return;
+                    }
+
+                    var ui = options.indexOf(v);
+                    var ri = options.indexOf(required);
+                    df.resolve(ui >= ri);
+                }
+                if (!this._cache[s] || this._cache[s][name] === undefined) {
+                    that.service.get('permissions/user/?name=' + name + (subject ? "&subject=" + s : "")).done(function(permission) {
+                        pt.cache(s, name, permission);
+                        check();
+                    });
+                } else {
+                    check();
+                }
+
+                return df;
+            }
         };
     };
+
+    var PluginManager = Ember.Object.extend({
+        list: [],
+        init: function(clientPlugins, sessionData) {
+            this.set('list', sessionData ? sessionData.plugins : []);
+        }
+    });
 
     /**	
      *	TemplateLoader, loads view templates dynamically
@@ -563,9 +666,7 @@
             name: sd.username,
             type: sd.user_type,
             lang: sd.lang,
-            admin: sd.user_type == 'a',
-            permissions: sd.permissions
-            //hasPermission : function(name, required) { return _gm.helpers.hasPermission(s.permissions, name, required); }
+            admin: sd.user_type == 'a'
         } : false;
 
         return {
@@ -583,6 +684,7 @@
         var that = this;
 
         this.init = function() {
+            that.showError = _m._fh.showError;
             that.element = $("#" + _m.settings['app-element-id']);
 
             that.texts = {
@@ -864,7 +966,7 @@
                     // push default handler to end of callback list
                     setTimeout(function() {
                         df.fail(function(err) {
-                            if (!failContext.handled) _m.ui.dialogs.showError(err);
+                            if (!failContext.handled) _m.ui.showError(err);
                         });
                     }, 0);
                     return df.rejectWith(failContext, [error]);
@@ -941,8 +1043,9 @@
             return _m.service.post("filesystem/" + item.id + "/details/", {
                 data: data
             }).done(function(r) {
-                that._permissionCache[item.id] = r.permissions;
-                if (item.parent_id && r.parent_permissions) that._permissionCache[item.parent_id] = r.parent_permissions;
+                _m.permissions.cache('fs', item.id, r.permissions);
+                //that._permissionCache[item.id] = r.permissions;
+                if (item.parent_id && r.parent_permissions) _m.permissions.cache('fs', item.parent_id, r.parent_permissions);
             });
         };
 
@@ -950,7 +1053,7 @@
             return _m.service.post("filesystem/" + (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), {
                 data: data
             }).done(function(r) {
-                that._permissionCache[id] = r.permissions;
+                _m.permissions.cache('fs', id, r.permissions);
             });
         };
 
@@ -964,7 +1067,7 @@
         this.hasPermission = function(item, name, required) {
             if (!_m.session.user) return false;
             if (_m.session.user.admin) return true;
-            return false; //TODOwindow.mollify.utils.hasPermission(_m.filesystem.permissionCache[((typeof(item) === "string") ? item : item.id)], name, required);
+            return _m.permissions.hasPermission(((typeof(item) === "string") ? item : item.id), name, required);
         };
 
         this.items = function(parent, files) {
