@@ -139,7 +139,7 @@
                             id: 'edit',
                             type: 'action',
                             action: 'edit',
-                            actionTitle: 'foo'
+                            fa: 'fa-edit'
                         }]
                     });
                 }
@@ -149,6 +149,7 @@
         setup: function(App) {
             App.ConfigListComponent = Ember.Component.extend({
                 tagName: 'table',
+                classNames: ['table table-striped'],
                 actions: {
                     colAction: function(col, item) {
                         this.sendAction("colAction", col, item);

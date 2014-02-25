@@ -15,8 +15,6 @@
 	<form role="form">
 		{{t change-password.instructions tagName="h4"}}
 
-		{{bs-notifications style="z-index: 1000; position: fixed; width: 50%; left: 0; right: 0; margin-left: auto; margin-right: auto; margin-top: 50px;"}}
-
 		<div class="form-group">
 			<label class="sr-only" for="oldPassword">{{t change-password.old-password}}</label>
 			{{input id="oldPassword" type="password" value=oldPassword placeholderTranslation="change-password.old-password" class="form-control" required="1" autofocus="1"}}
@@ -49,7 +47,7 @@
 				{{#if fa}}
 					{{fa-icon class=fa}}
 				{{/if}}
-				{{val this key="titleKey" translate=true}}
+				{{val titleKey translate=true}}
 			</a>
 		</li>
 	{{/each}}
