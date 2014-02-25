@@ -16,7 +16,7 @@
 	<thead>
 		<tr>
 			{{#each cols}}
-			<th {{action colClick this}}>{{val this "translate-key:titleKey"}}</th>
+			<th {{action colClick this}}>{{val this key="titleKey" translate=true}}</th>
 			{{/each}}
 		</tr>
 	</thead>
@@ -48,7 +48,7 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-nav-items">
-	{{header-nav-menu class="root" items=controllers.files.roots titleProperty="name" select="gotoFolder" fa="fa-folder" selected=root}}
+	{{header-nav-menu class="root" items=controllers.files.roots titleKey="name" select="gotoFolder" fa="fa-folder" selected=root}}
 	{{#each hierarchy}}
 		<li><a {{action 'gotoFolder' this}}>{{name}}</a></li>
 	{{/each}}

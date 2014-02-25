@@ -1,7 +1,11 @@
 <script type="text/x-handlebars" data-template-name="config">
-	<legend>{{val currentView "translate-key:titleKey"}}</legend>
+	<legend>{{val currentView key="titleKey" translate=true}}</legend>
 	
 	{{outlet}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="config-header-nav-items">
+	{{header-nav-menu class="config-view" items=navItems titleKey="titleKey" titleTranslate=true select="selectConfigView" selected=currentView}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="config/account">
@@ -9,10 +13,44 @@
 		<div class="form-group">
 			<label for="username">{{t config-view.account.username}}</label>
 			{{input id="username" type="text" value=session.user.name placeholderTranslation="config-view.account.username" class="form-control"}}
+			<button {{action "doAction" "changePassword"}} class="btn btn-lg btn-primary btn-block" type="submit">
+				{{t config-view.account.change-password}}
+			</button>
 		</div>
 	</form>
 </script>
 
-<script type="text/x-handlebars" data-template-name="config-header-nav-items">
-	{{header-nav-menu class="config-view" items=navItems titleProperty="translate-key:titleKey" select="selectConfigView" selected=currentView}}
+<script type="text/x-handlebars" data-template-name="config/users">
+	{{config-list items=model cols=cols colAction="colAction"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/config-list">
+	<thead>
+		<tr>
+			{{#each cols}}
+			<th {{action colClick this}}>{{val titleKey translate=true}}</th>
+			{{/each}}
+		</tr>
+	</thead>
+	<tbody>			
+		{{#each item in items}}
+		<tr>
+			{{config-list-row item=item cols=cols colAction="colAction"}}
+		</tr>
+		{{/each}}
+	</tbody>
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/config-list-row">
+	{{#each col in cols}}
+		{{config-list-cell item=item col=col colAction="colAction"}}
+	{{/each}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/config-list-cell">
+	{{#if controller.isAction}}
+		<a {{action "doColAction"}}>{{val col.actionTitle translate=true}}</a>
+	{{else}}
+		{{val item keyBinding=col.id}}
+	{{/if}}
 </script>

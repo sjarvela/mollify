@@ -65,6 +65,36 @@
 
         // module setup
         setup: function(App) {
+            Ember.Handlebars.registerBoundHelper('val', function(value, options) {
+                if (!value) return "";
+
+                var v = value;
+                var translate = !! options.hash.translate;
+                var prop = options.hash.key;
+                if (prop && typeof(prop) == "string") {
+                    v = value[prop];
+                } else {
+                    prop = options.hash.get;
+                    if (prop && typeof(prop) == "string" && value.get)
+                        v = value.get(prop);
+                }
+
+                if (!v) return "";
+                if (translate) return Ember.I18n.t(v);
+                return new Handlebars.SafeString(v);
+            });
+
+            Ember.Handlebars.registerHelper('ifvalue', function(v, options) {
+            	var c = options.contexts[0][v];
+            	//if (options.hash.value) c = c[options.hash.value];
+            	console.log("if " + c + "="+options.hash.matches);
+                if (options.hash.matches === c) {
+                    return options.fn(this)
+                } else {
+                    return options.inverse(this);
+                }
+            });
+
             // font awesome icon component
             App.FaIconComponent = Ember.Component.extend({
                 tagName: 'i',

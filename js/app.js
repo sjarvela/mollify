@@ -403,7 +403,27 @@
 
         _m.ui.views = {
             all: allViews,
-            hierarchy: hierarchy
+            hierarchy: hierarchy,
+            get: function(path) {
+            	if (!path) return [];
+            	var list = this.hierarchy;
+            	path.split("/").forEach(function(p){
+            		if (!list) return false;
+            		list = list[p];
+            	});
+            	if (!list) return [];
+
+            	var that = this;
+            	var views = [];
+            	mollify.utils.getKeys(list).forEach(function(v) {
+            		var view = that.all[v];
+            		if (!view) return;
+            		if (view.requiresAuthentication && !_m.session.user) return;
+            		if (view.requiresAdmin && !_m.session.user.admin) return;
+            		views.push(view);
+            	});
+            	return views;
+            }
         };
 
         setupModuleViews(hierarchy, allViews, App, _m);

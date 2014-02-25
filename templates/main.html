@@ -12,15 +12,15 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="main-header-nav nav navbar-nav navbar-left">
-						{{header-nav-menu class="mainview" items=navItems titleProperty="translate-key:titleKey" select="selectMainView" selected=currentView}}
+						{{header-nav-menu class="mainview" items=navItems titleKey="titleKey" titleTranslate=true select="selectMainView" selected=currentView}}
 						{{outlet "header-nav"}}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						{{header-nav-menu class="user" items=controller.sessionActions titleProperty="translate-key:titleKey" fa="fa-user" select="doAction"}}
+						{{header-nav-menu class="user" items=controller.sessionActions titleKey="titleKey" titleTranslate=true fa="fa-user" select="doAction"}}
 						<!--li><a href="#">fa-icon class="fa-user"</a></li-->
 					</ul>
 					<form class="navbar-form navbar-right">
-						<input type="text" class="form-control" placeholder="Search...">
+						<input type="text" class="form-control" placeholder="TODO">
 					</form>
 					{{outlet "header-tools"}}
 				</div>
@@ -57,7 +57,7 @@
 				{{/if}}
 			{{/if}}
 			<span class="title">
-			{{val selected titleProperty}}
+			{{val selected keyBinding=titleKey translateBinding=titleTranslate}}
 		{{else}}
 			{{#if fa}}
 				{{fa-icon class=fa}}
@@ -73,7 +73,7 @@
 					{{#if fa}}
 						{{fa-icon class=fa}}
 					{{/if}}
-					{{val this controller.titleProperty}}
+					{{val this keyBinding=controller.titleKey translateBinding=controller.titleTranslate}}
 				</a>
 			</li>
 		{{/each}}

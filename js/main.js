@@ -34,16 +34,13 @@
                     var that = this;
 
                     // get main views and create nav items
-                    var mainViewKeys = mollify.utils.getKeys(this.ui.views.hierarchy.main);
-                    var mainViews = [];
+                    var mainViews = this.ui.views.get("main");
                     var navItems = [];
-                    $.each(mainViewKeys, function(i, k) {
-                        var view = that.ui.views.all[k];
-                        mainViews.push(view);
-
+                    mainViews.forEach(function(view) {
                         var navItem = {
                             view: view
                         };
+
                         if (view.ui) {
                             navItem.titleKey = view.ui.titleKey;
                             if (view.ui.fa) navItem.fa = view.ui.fa;
@@ -93,27 +90,6 @@
 
         // module setup
         setup: function(App) {
-            Ember.Handlebars.registerBoundHelper('val', function(value, prop) {
-                if (!value) return "";
-                var v = value;
-                var translate = false;
-                if (prop && typeof(prop) == "string") {
-                    var p = prop.split(":");
-                    if (p.length == 1)
-                        v = value[prop];
-                    else {
-                        translate = p[0].startsWith('translate');
-                        if (p[0].endsWith('property'))
-                            v = value.get(p[1]);
-                        else if (p[0].endsWith('key')) v = value[p[1]];
-                    }
-                }
-
-                if (!v) return "-";
-                if (translate) return Ember.I18n.t(v);
-                return new Handlebars.SafeString(v);
-            });
-
             App.HeaderNavMenuComponent = Ember.Component.extend({
                 tagName: 'li',
                 classNames: ['dropdown'],

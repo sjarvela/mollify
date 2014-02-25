@@ -46,8 +46,8 @@
         "errorDialogMessage_212": "Insufficient permissions",
 
         "dialogs": {
-        	"cancel": "Cancel",
-        	"ok": "OK"
+            "cancel": "Cancel",
+            "ok": "OK"
         },
 
         "login-view": {
@@ -70,14 +70,14 @@
         },
 
         "change-password": {
-        	"title": "Change Password",
-        	"instructions": "Enter new password",
-        	"old-password": "Old password",
-        	"new-password": "New password",
-        	"confirm-password": "Confirm password",
-        	"change-action": "Change",
-        	"failure" : "Could not change password, old password did not match",
-        	"success" : "Your password has been changed"
+            "title": "Change Password",
+            "instructions": "Enter new password",
+            "old-password": "Old password",
+            "new-password": "New password",
+            "confirm-password": "Confirm password",
+            "change-action": "Change",
+            "failure": "Could not change password, old password did not match",
+            "success": "Your password has been changed"
         },
 
         "files-view": {
@@ -87,9 +87,20 @@
         "config-view": {
             "title": "Configuration",
 
-            "account" : {
-            	"title": "Account",
-            	"username": "Name"
+            "list": {
+            	"id": "ID"
+            },
+
+            "account": {
+                "title": "Account",
+                "username": "Name"
+            },
+
+            "users": {
+                "title": "Users",
+                "list" : {
+                	"name" : "Username"
+                }
             }
         },
 

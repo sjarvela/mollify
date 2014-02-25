@@ -34,17 +34,12 @@
                     var that = this;
 
                     // get config views and create nav items
-                    var configViewKeys = mollify.utils.getKeys(this.ui.views.hierarchy.main.config);
-                    var configViews = [];
+                    var configViews = this.ui.views.get("main/config");
                     var navItems = [];
-                    $.each(configViewKeys, function(i, k) {
-                        var view = that.ui.views.all[k];
-                        configViews.push(view);
-
+                    configViews.forEach(function(view) {
                         var navItem = {
                             view: view
                         };
-
                         if (view.ui) {
                             navItem.titleKey = view.ui.titleKey;
                             if (view.ui.fa) navItem.fa = view.ui.fa;
@@ -86,9 +81,6 @@
                     before: function(_m, transition) {
                         this.transitionTo("account");
                     }
-                },
-
-                setup: function(App) {
                 }
             },
 
@@ -112,7 +104,78 @@
                         needs: ['main', 'config']
                     });
                 }
+            },
+
+            // user admin view
+            users: {
+                parent: "config",
+                template: 'config/users',
+                path: "/users",
+                requiresAdmin: true,
+
+                ui: {
+                    titleKey: 'config-view.users.title',
+                    fa: 'fa-users'
+                },
+
+                model: function() {
+                    return this.service.get('configuration/users');
+                },
+                controller: function() {
+                    return Ember.ObjectController.extend({
+                        needs: ['main', 'config'],
+                        actions: {
+                            colAction: function(col, user) {
+                                window.alert("edit "+user.id);
+                            }
+                        },
+                        cols: [{
+                            id: 'id',
+                            titleKey: 'config-view.list.id'
+                        }, {
+                            id: 'name',
+                            titleKey: 'config-view.users.list.name'
+                        }, {
+                            id: 'edit',
+                            type: 'action',
+                            action: 'edit',
+                            actionTitle: 'foo'
+                        }]
+                    });
+                }
             }
+        },
+
+        setup: function(App) {
+            App.ConfigListComponent = Ember.Component.extend({
+                tagName: 'table',
+                actions: {
+                    colAction: function(col, item) {
+                        this.sendAction("colAction", col, item);
+                    }
+                }
+            });
+            App.ConfigListRowComponent = Ember.Component.extend({
+                tagName: 'tr',
+                actions: {
+                    colAction: function(col, item) {
+                        this.sendAction("colAction", col, item);
+                    }
+                }
+            });
+            App.ConfigListCellComponent = Ember.Component.extend({
+                tagName: 'td',
+                init: function() {
+                    this._super();
+                    var col = this.get('col');
+                    this.set('isAction', 'action' == col.type);
+                },
+                actions: {
+                    doColAction: function() {
+                        this.sendAction("colAction", this.get('col'), this.get('item'));
+                    }
+                }
+            });
         }
     });
 }(window.jQuery, window.mollify);
