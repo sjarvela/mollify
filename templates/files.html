@@ -61,3 +61,11 @@
 		{{/each}}
 	</ul>
 </script>
+
+<script type="text/x-handlebars" data-template-name="files-sidebar-nav">
+	<ul class="nav nav-sidebar">
+		{{#each roots}}
+			<li><a {{action "gotoFolder" this}}>{{name}}</a></li>
+		{{/each}}
+	</ul>
+</script>

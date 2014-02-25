@@ -29,6 +29,10 @@
                         into: 'main',
                         outlet: 'header-tools'
                     });
+                    this.render('files-sidebar-nav', {
+                        into: 'main',
+                        outlet: 'sidebar-nav'
+                    });
                 },
                 model: function() {
                     return {
@@ -42,6 +46,10 @@
                         actions: {
                             changeViewtype: function(t) {
                                 this.set('viewType', t);
+                            },
+                            gotoFolder: function(item) {
+                                if (item.is_file) return;
+                                this.transitionToRoute("item", item.id);
                             }
                         },
 
@@ -132,10 +140,6 @@
                                 if (customAction) action = customAction;
                             }
                             return action;
-                        },
-                        gotoFolder: function(item) {
-                            if (item.is_file) return;
-                            this.transitionToRoute("item", item.id);
                         },
                         showPopupMenu: function(item, src) {
                             var that = this;
@@ -273,7 +277,7 @@
                 },
 
                 click: function(evt) {
-                	if (this.clickAction) return;
+                    if (this.clickAction) return;
                     var that = this;
                     this.clickAction = Ember.run.later({}, function() {
                         that.clickAction = false;
