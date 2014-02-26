@@ -65,6 +65,8 @@
 
         // module setup
         setup: function(App) {
+        	var _m = this;
+        	
             Ember.Handlebars.registerBoundHelper('val', function(value, options) {
                 if (!value) return "";
 
@@ -85,9 +87,9 @@
             });
 
             Ember.Handlebars.registerHelper('ifvalue', function(v, options) {
-            	var c = options.contexts[0][v];
-            	//if (options.hash.value) c = c[options.hash.value];
-            	console.log("if " + c + "="+options.hash.matches);
+                var c = options.contexts[0][v];
+                //if (options.hash.value) c = c[options.hash.value];
+                console.log("if " + c + "=" + options.hash.matches);
                 if (options.hash.matches === c) {
                     return options.fn(this)
                 } else {
@@ -151,6 +153,78 @@
                             } else this.handled = false;
                         });
                     }
+                }
+            });
+
+            //dnd
+            App.Draggable = Ember.Mixin.create({
+                attributeBindings: 'draggable',
+                classNameBindings: ['dragged:dragged'],
+                draggable: 'true',
+                dragged: false,
+
+                init: function(type, o) {
+                    this._super();
+                    this.dragType = type;
+                    this.dragObj = o;
+                },
+
+                dragStart: function(evt) {
+                    console.log("drag" + this.dragObj);
+                    _m.ui.dnd.dragged = {
+                        type: this.dragType,
+                        obj: this.dragObj
+                    };
+                    this.set('dragged', true);
+                },
+                dragEnd: function(evt) {
+                    console.log("drag end " + this.dragObj);
+                    _m.ui.dnd.dragged = false;
+                    this.set('dragged', false);
+                }
+            });
+
+            App.Droppable = Ember.Mixin.create({
+                droppable: false,
+                dragOver: false,
+                classNameBindings: ['dragOver:drag-over'],
+
+                canDrop: function(o) {
+                    return false;
+                },
+                onDrop: function(o) {
+                    // nothing here
+                },
+
+                dragOver: function(evt) {
+                    if (!this.droppable || !_m.ui.dnd.dragged) return;
+                    if (!this.canDrop(_m.ui.dnd.dragged)) return;
+                    this.set('dragOver', true);
+                    console.log("over");
+                },
+                dragLeave: function(evt) {
+                    this.set('dragOver', false);
+                },
+
+                drop: function(evt) {
+                    if (!this.droppable || !_m.ui.dnd.dragged) return;
+                    if (!this.canDrop(_m.ui.dnd.dragged)) return;
+                    this.onDrop(_m.ui.dnd.dragged);
+                }
+            });
+
+            App.FilesystemItemDraggable = Ember.Mixin.create(App.Draggable, {
+                init: function(item) {
+                    this._super("filesystem-item", item);
+                }
+            });
+
+            App.FilesystemItemDroppable = Ember.Mixin.create(App.Droppable, {
+                canDrop: function(o) {
+                    return (o && 'filesystem-item' == o.type);
+                },
+                onDrop: function(o) {
+                    this.sendAction("draganddropFilesystemItem", o.obj);
                 }
             });
         }

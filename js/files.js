@@ -168,6 +168,8 @@
 
         // module setup
         setup: function(App) {
+            var _m = this;
+
             App.FileListViewComponent = Ember.Component.extend({
                 needs: ['application'],
                 tagName: 'table',
@@ -229,40 +231,11 @@
                 }
             });
 
-            App.Draggable = Ember.Mixin.create({
-                attributeBindings: 'draggable',
-                draggable: 'true',
-
-                init: function(type, o) {
-                    this._super();
-                    this.dragType = type;
-                    this.dragObj = o;
-                },
-
-                dragStart: function(evt) {
-                    console.log("drag" + this.dragObj);
-                },
-            });
-
-            App.Droppable = Ember.Mixin.create({
-                droppable: false,
-
-                canDrop: function(type, o) {
-                    return false;
-                },
-
-                dragOver: function(evt) {
-                    if (!this.droppable) return;
-                    //if (!this.canDrop())
-                    console.log("over");
-                },
-            });
-
-            App.FileListRowComponent = Ember.Component.extend(App.Draggable, App.Droppable, {
+            App.FileListRowComponent = Ember.Component.extend(App.FilesystemItemDraggable, App.FilesystemItemDroppable, {
                 tagName: 'tr',
                 init: function() {
                     var item = this.get('item');
-                    this._super('filesystem-item', item);
+                    this._super(item);
                     this._ctx = this.get('targetObject._ctx');
                     if (!item.is_file) this.droppable = true;
                 },

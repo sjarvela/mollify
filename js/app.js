@@ -855,6 +855,10 @@
             }
         };
 
+        this.dnd = {
+        	dragged: false
+        };
+
         /*var processPopupActions = function(l) {
             $.each(l, function(i, item) {
                 if (item.type == 'submenu') {
