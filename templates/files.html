@@ -22,9 +22,7 @@
 	</thead>
 	<tbody>			
 		{{#each item in sorted}}
-		<tr id="item-{{id}}" class="item">
 			{{file-list-row item=item cols=cols clickItem="clickItem"}}
-		</tr>
 		{{/each}}
 	</tbody>
 </script>
@@ -41,7 +39,7 @@
 
 <script type="text/x-handlebars" data-template-name="components/file-icon-view">
 	{{#each items}}
-	<div id="item-{{id}}" class="item">
+	<div class="item">
 		{{name}}
 	</div>
 	{{/each}}

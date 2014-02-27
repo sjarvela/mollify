@@ -113,11 +113,12 @@
                                 if (ia == 'open_menu')
                                     this.showPopupMenu(item, src[0]);
                                 else if (ia == 'go_into_folder')
-                                    this.gotoFolder(item);
+                                    this.send("gotoFolder", item);
                                 else if (ia == 'open_info')
                                     this.showInfo(item);
                                 else if (ia == 'download' && item.is_file)
                                     this.send("doAction", this._m.actions.all.download, item);
+                                //TODO "view" and other action shortcuts
                             }
                         },
 
@@ -233,11 +234,20 @@
 
             App.FileListRowComponent = Ember.Component.extend(App.FilesystemItemDraggable, App.FilesystemItemDroppable, {
                 tagName: 'tr',
+                classNames: ['item'],
+                classNameBindings: [],
                 init: function() {
                     var item = this.get('item');
                     this._super(item);
                     this._ctx = this.get('targetObject._ctx');
-                    if (!item.is_file) this.droppable = true;
+
+                    if (item.is_file) {
+                        this.classNames.push('file');
+                        this.droppableInit(false);
+                    }else {
+                        this.classNames.push('folder')
+                        this.droppableInit(item);
+                    }
                 },
                 getActionSource: function() {
                     return {
@@ -254,6 +264,8 @@
 
             App.FileListCellComponent = Ember.Component.extend({
                 tagName: 'td',
+                classNames: ['file-list-cell'],
+                classNameBindings: ['colId'],
                 item: false,
                 col: false,
                 contentKey: '',
@@ -264,6 +276,7 @@
                     var item = this.get('item');
                     var col = this.get('col');
                     this.set('contentKey', item.id + '_' + col.id);
+                    this.set('colId', col.id);
                 },
                 content: function() {
                     var item = this.get('item');

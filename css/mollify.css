@@ -7477,3 +7477,12 @@ button.close {
 #mollify .main-view > .container-fluid {
   margin-top: 30px;
 }
+#mollify .main-view .file-list-view .item.folder td {
+  background-color: #a9f9f9;
+}
+#mollify .main-view .file-list-view .item.dragged td {
+  background-color: green;
+}
+#mollify .main-view .file-list-view .item.drag-over td {
+  background-color: red;
+}

@@ -152,12 +152,11 @@
         App._m = _m;
         App.ApplicationController = Ember.Controller.extend({
             actions: {
-                click: function() {
-                    console.log('click');
+                dndDropFilesystemItem: function(item, to) {
+                    window.alert("drop "+item.name + " to " + to.name);
                 }
             },
             init: function() {
-                console.log("app init");
                 var that = this;
                 $(window).click(function() {
                     if (that.activePopup) that.activePopup.close();
@@ -840,6 +839,11 @@
             return df;
         };
 
+        this.download = function(url) {
+            //TODO mobile
+            $("#mollify-download-frame").attr("src", url);
+        };
+
         this.notification = {
             info: function(text) {
                 this.success(text);
@@ -1063,7 +1067,7 @@
             if (!item.is_file) return false;
             var url = _m.service.url("filesystem/" + item.id, true);
             if (_m.mobile)
-                url = url + ((url.indexOf('?') >= 0) ? "&" : "?") + "m=1";
+                url = mollify.utils.urlWithParam(url, "m=1");
             return url;
         };
 

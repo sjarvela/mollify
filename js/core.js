@@ -47,7 +47,8 @@
                     return this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
-                    window.alert(item.id);
+                    if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
+                    this._m.ui.download(this._m.filesystem.getDownloadUrl(item));
                 }
             },
 
@@ -65,8 +66,8 @@
 
         // module setup
         setup: function(App) {
-        	var _m = this;
-        	
+            var _m = this;
+
             Ember.Handlebars.registerBoundHelper('val', function(value, options) {
                 if (!value) return "";
 
@@ -170,12 +171,13 @@
                 },
 
                 dragStart: function(evt) {
-                    console.log("drag" + this.dragObj);
+                    console.log("drag start " + this.dragObj);
                     _m.ui.dnd.dragged = {
                         type: this.dragType,
                         obj: this.dragObj
                     };
                     this.set('dragged', true);
+                    evt.dataTransfer.effectAllowed = "copyMove";
                 },
                 dragEnd: function(evt) {
                     console.log("drag end " + this.dragObj);
@@ -184,10 +186,27 @@
                 }
             });
 
+            /*$("body").bind('dragover', function(e) {
+                console.log("body dragover");
+                if (e.preventDefault) e.preventDefault();
+                e.dataTransfer.dropEffect = "none";
+                return false;
+            });*/
+
             App.Droppable = Ember.Mixin.create({
                 droppable: false,
+                dropObj: null,
                 dragOver: false,
-                classNameBindings: ['dragOver:drag-over'],
+                classNames: [],
+                //classNameBindings: ['dragOver:drag-over'],
+
+                droppableInit: function(o) {
+                    //this.set('dragOver', false);
+                    if (!o) return;
+                    this.droppable = true;
+                    this.dropObj = o;
+                    this.classNames.push('droppable');
+                },
 
                 canDrop: function(o) {
                     return false;
@@ -196,20 +215,38 @@
                     // nothing here
                 },
 
+                dragEnter: function(evt) {
+                    console.log("enter "+evt.target);
+                    evt.preventDefault();
+                    //evt.stopPropagation();
+                    return false;
+                },
                 dragOver: function(evt) {
                     if (!this.droppable || !_m.ui.dnd.dragged) return;
                     if (!this.canDrop(_m.ui.dnd.dragged)) return;
-                    this.set('dragOver', true);
-                    console.log("over");
+                    evt.preventDefault();
+                    //evt.stopPropagation();
+                    //this.set('dragOver', true);
+                    //console.log("over"+evt.target);
+                    //evt.dataTransfer.dropEffect = "copy";
+                    return false;
                 },
                 dragLeave: function(evt) {
-                    this.set('dragOver', false);
+                    //this.set('dragOver', false);
+                    //console.log("out"+evt.target);
+                    //evt.preventDefault();
+                    //evt.stopPropagation();
+                    //return false;
                 },
 
                 drop: function(evt) {
+                    //if (evt.stopPropagation) evt.stopPropagation();
+                    //console.log("drop");
                     if (!this.droppable || !_m.ui.dnd.dragged) return;
                     if (!this.canDrop(_m.ui.dnd.dragged)) return;
+                    //evt.preventDefault();
                     this.onDrop(_m.ui.dnd.dragged);
+                    //return false;
                 }
             });
 
@@ -221,10 +258,12 @@
 
             App.FilesystemItemDroppable = Ember.Mixin.create(App.Droppable, {
                 canDrop: function(o) {
-                    return (o && 'filesystem-item' == o.type);
+                    //console.log("canDrop" + (this.droppable && o && 'filesystem-item' == o.type));
+                    return (this.droppable && o && 'filesystem-item' == o.type && o.obj != this.dropObj);
                 },
                 onDrop: function(o) {
-                    this.sendAction("draganddropFilesystemItem", o.obj);
+                    console.log("ondrop");
+                    this.sendAction("dndDropFilesystemItem", o.obj, this.dropObj);
                 }
             });
         }
