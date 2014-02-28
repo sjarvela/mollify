@@ -6,7 +6,7 @@
 	<h2>{{folder.name}}</h2>
 
 	{{#if controllers.files.isListView}}
-		{{file-list-view items=items clickItem="clickItem"}}
+		{{file-list-view items=items clickItem="clickItem" dndDropFilesystemItem="dndDropFilesystemItem"}}
 	{{else}}
 		{{file-icon-view items=items click-item="gotoFolder" large=controllers.files.isIconViewLarge}}
 	{{/if}}
@@ -22,7 +22,7 @@
 	</thead>
 	<tbody>			
 		{{#each item in sorted}}
-			{{file-list-row item=item cols=cols clickItem="clickItem"}}
+			{{file-list-row item=item cols=cols clickItem="clickItem" dndDropFilesystemItem="dndDropFilesystemItem"}}
 		{{/each}}
 	</tbody>
 </script>

@@ -119,6 +119,9 @@
                                 else if (ia == 'download' && item.is_file)
                                     this.send("doAction", this._m.actions.all.download, item);
                                 //TODO "view" and other action shortcuts
+                            },
+                            dndDropFilesystemItem: function(item, to) {
+                                console.log("dndDropFilesystemItem "+item.name);
                             }
                         },
 
@@ -191,6 +194,9 @@
                                 sortAsc: true
                             });
                         }
+                    },
+                    dndDropFilesystemItem: function(item, to) {
+                        this.sendAction("dndDropFilesystemItem", item, to);
                     }
                 },
                 sorted: function() {

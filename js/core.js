@@ -171,7 +171,6 @@
                 },
 
                 dragStart: function(evt) {
-                    console.log("drag start " + this.dragObj);
                     _m.ui.dnd.dragged = {
                         type: this.dragType,
                         obj: this.dragObj
@@ -180,28 +179,20 @@
                     evt.dataTransfer.effectAllowed = "copyMove";
                 },
                 dragEnd: function(evt) {
-                    console.log("drag end " + this.dragObj);
                     _m.ui.dnd.dragged = false;
                     this.set('dragged', false);
                 }
             });
 
-            /*$("body").bind('dragover', function(e) {
-                console.log("body dragover");
-                if (e.preventDefault) e.preventDefault();
-                e.dataTransfer.dropEffect = "none";
-                return false;
-            });*/
-
             App.Droppable = Ember.Mixin.create({
                 droppable: false,
                 dropObj: null,
-                dragOver: false,
+                draggedOver: false,
                 classNames: [],
-                //classNameBindings: ['dragOver:drag-over'],
+                classNameBindings: ['draggedOver:drag-over'],
 
                 droppableInit: function(o) {
-                    //this.set('dragOver', false);
+                    this.set('draggedOver', false);
                     if (!o) return;
                     this.droppable = true;
                     this.dropObj = o;
@@ -218,35 +209,25 @@
                 dragEnter: function(evt) {
                     console.log("enter "+evt.target);
                     evt.preventDefault();
-                    //evt.stopPropagation();
                     return false;
                 },
                 dragOver: function(evt) {
                     if (!this.droppable || !_m.ui.dnd.dragged) return;
                     if (!this.canDrop(_m.ui.dnd.dragged)) return;
                     evt.preventDefault();
-                    //evt.stopPropagation();
-                    //this.set('dragOver', true);
-                    //console.log("over"+evt.target);
-                    //evt.dataTransfer.dropEffect = "copy";
+                    this.set('draggedOver', true);
+                    evt.dataTransfer.dropEffect = "copy";   //TODO switch mode
                     return false;
                 },
                 dragLeave: function(evt) {
-                    //this.set('dragOver', false);
-                    //console.log("out"+evt.target);
-                    //evt.preventDefault();
-                    //evt.stopPropagation();
-                    //return false;
+                    this.set('draggedOver', false);
                 },
 
                 drop: function(evt) {
-                    //if (evt.stopPropagation) evt.stopPropagation();
-                    //console.log("drop");
                     if (!this.droppable || !_m.ui.dnd.dragged) return;
                     if (!this.canDrop(_m.ui.dnd.dragged)) return;
-                    //evt.preventDefault();
+                    this.set('draggedOver', false);
                     this.onDrop(_m.ui.dnd.dragged);
-                    //return false;
                 }
             });
 
@@ -258,11 +239,10 @@
 
             App.FilesystemItemDroppable = Ember.Mixin.create(App.Droppable, {
                 canDrop: function(o) {
-                    //console.log("canDrop" + (this.droppable && o && 'filesystem-item' == o.type));
+                    // allow dropping only filesystem items, that are not same as itself
                     return (this.droppable && o && 'filesystem-item' == o.type && o.obj != this.dropObj);
                 },
                 onDrop: function(o) {
-                    console.log("ondrop");
                     this.sendAction("dndDropFilesystemItem", o.obj, this.dropObj);
                 }
             });
