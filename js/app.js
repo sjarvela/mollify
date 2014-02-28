@@ -153,7 +153,7 @@
         App.ApplicationController = Ember.Controller.extend({
             actions: {
                 dndDropFilesystemItem: function(item, to) {
-                    window.alert("drop "+item.name + " to " + to.name);
+                    window.alert("drop " + item.name + " to " + to.name);
                 }
             },
             init: function() {
@@ -404,24 +404,24 @@
             all: allViews,
             hierarchy: hierarchy,
             get: function(path) {
-            	if (!path) return [];
-            	var list = this.hierarchy;
-            	path.split("/").forEach(function(p){
-            		if (!list) return false;
-            		list = list[p];
-            	});
-            	if (!list) return [];
+                if (!path) return [];
+                var list = this.hierarchy;
+                path.split("/").forEach(function(p) {
+                    if (!list) return false;
+                    list = list[p];
+                });
+                if (!list) return [];
 
-            	var that = this;
-            	var views = [];
-            	mollify.utils.getKeys(list).forEach(function(v) {
-            		var view = that.all[v];
-            		if (!view) return;
-            		if (view.requiresAuthentication && !_m.session.user) return;
-            		if (view.requiresAdmin && !_m.session.user.admin) return;
-            		views.push(view);
-            	});
-            	return views;
+                var that = this;
+                var views = [];
+                mollify.utils.getKeys(list).forEach(function(v) {
+                    var view = that.all[v];
+                    if (!view) return;
+                    if (view.requiresAuthentication && !_m.session.user) return;
+                    if (view.requiresAdmin && !_m.session.user.admin) return;
+                    views.push(view);
+                });
+                return views;
             }
         };
 
@@ -503,7 +503,7 @@
                 }
             });
             that._clientPlugins = plugins;
-            //initialize plugins	
+            //initialize plugins    
         };
 
         this.resourceUrl = function(u) {
@@ -547,7 +547,7 @@
 
         this.openView = function(path) {
             //var viewId = id || 'main';
-            //that._fh.openView(viewId);	
+            //that._fh.openView(viewId);    
         };
 
         this.permissions = {
@@ -622,8 +622,8 @@
         }
     });
 
-    /**	
-     *	TemplateLoader, loads view templates dynamically
+    /** 
+     *  TemplateLoader, loads view templates dynamically
      **/
     var TemplateLoader = function(path) {
         var that = this;
@@ -731,16 +731,16 @@
                 clear: function() {
                     this.locale = null;
                     Em.I18n.translations = {};
-                    //this._pluginTextsLoaded = [];		
+                    //this._pluginTextsLoaded = [];     
                 },
 
                 /*loadPlugin : function(pluginId) {
-					if (this._pluginTextsLoaded.indexOf(pluginId) >= 0) return $.Deferred().resolve();
-					
-					return this._load(_m.plugins.getLocalizationUrl(pluginId), $.Deferred()).done(function() {
-						this._pluginTextsLoaded.push(pluginId);
-					});
-				},*/
+                    if (this._pluginTextsLoaded.indexOf(pluginId) >= 0) return $.Deferred().resolve();
+                    
+                    return this._load(_m.plugins.getLocalizationUrl(pluginId), $.Deferred()).done(function() {
+                        this._pluginTextsLoaded.push(pluginId);
+                    });
+                },*/
 
                 _load: function(u, df) {
                     var url = _m.resourceUrl(u);
@@ -860,7 +860,7 @@
         };
 
         this.dnd = {
-        	dragged: false
+            dragged: false
         };
 
         /*var processPopupActions = function(l) {
@@ -1120,10 +1120,10 @@
         };
 
         this.copy = function(i, to) {
-            if (!i) return;
+            if (!i || !to) return;
 
             if (window.isArray(i) && i.length > 1) {
-                if (!to) {
+                /*if (!to) {
                     var df = $.Deferred();
                     _m.ui.dialogs.folderSelector({
                         title: _m.ui.texts.get('copyMultipleFileDialogTitle'),
@@ -1139,15 +1139,22 @@
                         }
                     });
                     return df.promise();
-                } else
-                    return that._copyMany(i, to);
-
-                return;
+                } else*/
+                return _m.service.post("filesystem/items/", {
+                    action: 'copy',
+                    items: i,
+                    to: to
+                }).done(function(r) {
+                    _m.events.dispatch('filesystem/copy', {
+                        items: i,
+                        to: to
+                    });
+                });
             }
 
             if (window.isArray(i)) i = i[0];
 
-            if (!to) {
+            /*if (!to) {
                 var df2 = $.Deferred();
                 _m.ui.dialogs.folderSelector({
                     title: _m.ui.texts.get('copyFileDialogTitle'),
@@ -1163,14 +1170,21 @@
                     }
                 });
                 return df2.promise();
-            } else
-                return that._copy(i, to);
+            } else*/
+            return _m.service.post("filesystem/" + i.id + "/copy/", {
+                folder: to.id
+            }).done(function(r) {
+                _m.events.dispatch('filesystem/copy', {
+                    items: [i],
+                    to: to
+                });
+            });
         };
 
         this.copyHere = function(item, name) {
-            if (!item) return;
+            if (!item || !name) return;
 
-            if (!name) {
+            /*if (!name) {
                 var df = $.Deferred();
                 _m.ui.dialogs.input({
                     title: _m.ui.texts.get('copyHereDialogTitle'),
@@ -1188,15 +1202,22 @@
                     }
                 });
                 return df.promise();
-            } else {
-                return that._copyHere(item, name);
-            }
+            } else {*/
+
+            return _m.service.post("filesystem/" + i.id + "/copy/", {
+                name: name
+            }).done(function(r) {
+                _m.events.dispatch('filesystem/copy', {
+                    items: [i],
+                    name: name
+                });
+            });
         };
 
         this.canCopyTo = function(item, to) {
             if (window.isArray(item)) {
                 for (var i = 0, j = item.length; i < j; i++)
-                    if (!mfs.canCopyTo(item[i], to)) return false;
+                    if (!this.canCopyTo(item[i], to)) return false;
                 return true;
             }
 
@@ -1214,7 +1235,7 @@
         this.canMoveTo = function(item, to) {
             if (window.isArray(item)) {
                 for (var i = 0, j = item.length; i < j; i++)
-                    if (!mfs.canMoveTo(item[i], to)) return false;
+                    if (!this.canMoveTo(item[i], to)) return false;
                 return true;
             }
 
@@ -1232,46 +1253,12 @@
             return true;
         };
 
-        this._copyHere = function(i, name) {
-            return _m.service.post("filesystem/" + i.id + "/copy/", {
-                name: name
-            }).done(function(r) {
-                _m.events.dispatch('filesystem/copy', {
-                    items: [i],
-                    name: name
-                });
-            });
-        };
-
-        this._copy = function(i, to) {
-            return _m.service.post("filesystem/" + i.id + "/copy/", {
-                folder: to.id
-            }).done(function(r) {
-                _m.events.dispatch('filesystem/copy', {
-                    items: [i],
-                    to: to
-                });
-            });
-        };
-
-        this._copyMany = function(i, to) {
-            return _m.service.post("filesystem/items/", {
-                action: 'copy',
-                items: i,
-                to: to
-            }).done(function(r) {
-                _m.events.dispatch('filesystem/copy', {
-                    items: i,
-                    to: to
-                });
-            });
-        };
-
         this.move = function(i, to) {
-            if (!i) return;
+            if (!i || !to) return;
 
             if (window.isArray(i) && i.length > 1) {
-                if (!to) {
+                //TODO away to some controller
+                /*if (!to) {
                     var df = $.Deferred();
                     _m.ui.dialogs.folderSelector({
                         title: _m.ui.texts.get('moveMultipleFileDialogTitle'),
@@ -1287,13 +1274,23 @@
                         }
                     });
                     return df.promise();
-                } else
-                    return mfs._moveMany(i, to);
+                } else*/
+                return _m.service.post("filesystem/items/", {
+                    action: 'move',
+                    items: i,
+                    to: to
+                }).done(function(r) {
+                    _m.events.dispatch('filesystem/move', {
+                        items: i,
+                        to: to
+                    });
+                });
             }
 
             if (window.isArray(i)) i = i[0];
 
-            if (!to) {
+            //TODO away to some controller
+            /*if (!to) {
                 var df2 = $.Deferred();
                 _m.ui.dialogs.folderSelector({
                     title: _m.ui.texts.get('moveFileDialogTitle'),
@@ -1309,11 +1306,7 @@
                     }
                 });
                 return df2.promise();
-            } else
-                return mfs._move(i, to);
-        };
-
-        this._move = function(i, to) {
+            } else*/
             return _m.service.post("filesystem/" + i.id + "/move/", {
                 id: to.id
             }).done(function(r) {
@@ -1324,21 +1317,10 @@
             });
         };
 
-        this._moveMany = function(i, to) {
-            return _m.service.post("filesystem/items/", {
-                action: 'move',
-                items: i,
-                to: to
-            }).done(function(r) {
-                _m.events.dispatch('filesystem/move', {
-                    items: i,
-                    to: to
-                });
-            });
-        };
-
         this.rename = function(item, name) {
-            if (!name || name.length === 0) {
+            if (!name || name.length === 0) return;
+            //TODO away to some controller
+            /*
                 var df = $.Deferred();
                 _m.ui.dialogs.input({
                     title: _m.ui.texts.get(item.is_file ? 'renameDialogTitleFile' : 'renameDialogTitleFolder'),
@@ -1361,7 +1343,7 @@
             }
         };
 
-        this._rename = function(item, name) {
+        this._rename = function(item, name) {*/
             return _m.service.put("filesystem/" + item.id + "/name/", {
                 name: name
             }).done(function(r) {
@@ -1427,7 +1409,7 @@
 
             var df = $.Deferred();
             if (window.isArray(i) && i.length > 1) {
-                mfs._delMany(i).done(df.resolve).fail(function(e) {
+                this._delMany(i).done(df.resolve).fail(function(e) {
                     // request denied
                     if (e.code == 109 && e.data && e.data.items) {
                         this.handled = true;
@@ -1442,7 +1424,7 @@
             }
 
             if (window.isArray(i)) i = i[0];
-            mfs._del(i).done(df.resolve).fail(function(e) {
+            this._del(i).done(df.resolve).fail(function(e) {
                 // request denied
                 if (e.code == 109 && e.data && e.data.items) {
                     this.handled = true;
@@ -1600,11 +1582,11 @@
 
             var ts = new Date();
             /*ts.setUTCFullYear(time.substring(0,4));
-			ts.setUTCMonth(time.substring(4,6) - 1);
-			ts.setUTCDate(time.substring(6,8));
-			ts.setUTCHours(time.substring(8,10));
-			ts.setUTCMinutes(time.substring(10,12));
-			ts.setUTCSeconds(time.substring(12,14));*/
+            ts.setUTCMonth(time.substring(4,6) - 1);
+            ts.setUTCDate(time.substring(6,8));
+            ts.setUTCHours(time.substring(8,10));
+            ts.setUTCMinutes(time.substring(10,12));
+            ts.setUTCSeconds(time.substring(12,14));*/
             ts.setYear(time.substring(0, 4));
             ts.setMonth(time.substring(4, 6) - 1);
             ts.setDate(time.substring(6, 8));
@@ -1618,12 +1600,12 @@
             if (!time) return null;
 
             /*var year = pad(""+time.getUTCFullYear(), 4, '0', STR_PAD_LEFT);
-			var month = pad(""+(time.getUTCMonth() + 1), 2, '0', STR_PAD_LEFT);
-			var day = pad(""+time.getUTCDate(), 2, '0', STR_PAD_LEFT);
-			var hour = pad(""+time.getUTCHours(), 2, '0', STR_PAD_LEFT);
-			var min = pad(""+time.getUTCMinutes(), 2, '0', STR_PAD_LEFT);
-			var sec = pad(""+time.getUTCSeconds(), 2, '0', STR_PAD_LEFT);
-			return year + month + day + hour + min + sec;*/
+            var month = pad(""+(time.getUTCMonth() + 1), 2, '0', STR_PAD_LEFT);
+            var day = pad(""+time.getUTCDate(), 2, '0', STR_PAD_LEFT);
+            var hour = pad(""+time.getUTCHours(), 2, '0', STR_PAD_LEFT);
+            var min = pad(""+time.getUTCMinutes(), 2, '0', STR_PAD_LEFT);
+            var sec = pad(""+time.getUTCSeconds(), 2, '0', STR_PAD_LEFT);
+            return year + month + day + hour + min + sec;*/
             //var timeUTC = new Date(Date.UTC(time.getYear(), time.getMonth(), time.getDay(), time.getHours(), time.getMinutes(), time.getSeconds()));
             return window.mollify.utils.formatDateTime(time, 'yyyyMMddHHmmss');
         },

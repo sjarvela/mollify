@@ -41,15 +41,17 @@
                         roots: this.filesystem.roots
                     };
                 },
+                routeActions: {
+                    gotoFolder: function(item) {
+                        if (item.is_file) return;
+                        this.transitionTo("item", item.id);
+                    }
+                },
                 controller: function() {
                     return Ember.ObjectController.extend({
                         actions: {
                             changeViewtype: function(t) {
                                 this.set('viewType', t);
-                            },
-                            gotoFolder: function(item) {
-                                if (item.is_file) return;
-                                this.transitionToRoute("item", item.id);
                             }
                         },
 
@@ -119,9 +121,6 @@
                                 else if (ia == 'download' && item.is_file)
                                     this.send("doAction", this._m.actions.all.download, item);
                                 //TODO "view" and other action shortcuts
-                            },
-                            dndDropFilesystemItem: function(item, to) {
-                                console.log("dndDropFilesystemItem "+item.name);
                             }
                         },
 
@@ -153,6 +152,10 @@
                         },
                         showInfo: function(item) {
                             alert('info');
+                        },
+                        onEvent: function(e) {
+                            if (!e.type.startsWith('filesystem/')) return;
+                            alert(e.type);
                         }
                     });
                 },
@@ -166,6 +169,7 @@
                             uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
                         }
                     };
+                    this.events.addEventHandler(controller.onEvent);
                 }
             }
         },
@@ -194,9 +198,6 @@
                                 sortAsc: true
                             });
                         }
-                    },
-                    dndDropFilesystemItem: function(item, to) {
-                        this.sendAction("dndDropFilesystemItem", item, to);
                     }
                 },
                 sorted: function() {
@@ -250,7 +251,7 @@
                     if (item.is_file) {
                         this.classNames.push('file');
                         this.droppableInit(false);
-                    }else {
+                    } else {
                         this.classNames.push('folder')
                         this.droppableInit(item);
                     }

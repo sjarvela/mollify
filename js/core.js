@@ -202,12 +202,14 @@
                 canDrop: function(o) {
                     return false;
                 },
+                dropType: function(o) {
+                    return "move";
+                },
                 onDrop: function(o) {
                     // nothing here
                 },
 
                 dragEnter: function(evt) {
-                    console.log("enter "+evt.target);
                     evt.preventDefault();
                     return false;
                 },
@@ -216,7 +218,7 @@
                     if (!this.canDrop(_m.ui.dnd.dragged)) return;
                     evt.preventDefault();
                     this.set('draggedOver', true);
-                    evt.dataTransfer.dropEffect = "copy";   //TODO switch mode
+                    evt.dataTransfer.dropEffect = this.dropType(_m.ui.dnd.dragged);
                     return false;
                 },
                 dragLeave: function(evt) {
@@ -240,10 +242,51 @@
             App.FilesystemItemDroppable = Ember.Mixin.create(App.Droppable, {
                 canDrop: function(o) {
                     // allow dropping only filesystem items, that are not same as itself
-                    return (this.droppable && o && 'filesystem-item' == o.type && o.obj != this.dropObj);
+                    if (!this.droppable || !o || !'filesystem-item' == o.type || o.obj == this.dropObj) return false;
+
+                    var itm = o.obj;
+                    var to = this.dropObj;
+                    var single = false;
+                    if (!window.isArray(itm)) single = itm;
+                    else if (itm.length === 0) single = itm[0];
+
+                    if (single)
+                        return this.dropType(o) == "copy" ? _m.filesystem.canCopyTo(single, to) : _m.filesystem.canMoveTo(single, to);
+
+                    var can = true;
+                    for (var i = 0; i < itm.length; i++) {
+                        var item = itm[i];
+                        if (!(this.dropType(to, item) == "copy" ? _m.filesystem.canCopyTo(item, to) : _m.filesystem.canMoveTo(item, to))) {
+                            can = false;
+                            break;
+                        }
+                    }
+                    return can;
+                },
+                dropType: function(o) {
+                    var i = o.obj;
+                    var to = this.dropObj;
+                    var single = false;
+                    if (!window.isArray(i)) single = i;
+                    else if (i.length === 0) single = i[0];
+
+                    var copy = (!single || to.root_id != single.root_id);
+                    return copy ? "copy" : "move";
                 },
                 onDrop: function(o) {
-                    this.sendAction("dndDropFilesystemItem", o.obj, this.dropObj);
+                    var single = false;
+                    var i = o.obj;
+                    var to = this.dropObj;
+                    var dropType = this.dropType(o);
+                    if (!window.isArray(i)) single = i;
+                    else if (i.length === 0) single = i[0];
+
+                    if (single) {
+                        if (dropType == 'copy') _m.filesystem.copy(single, to);
+                        else _m.filesystem.move(single, to);
+                    } else {
+                        //TODO multi
+                    }
                 }
             });
         }
