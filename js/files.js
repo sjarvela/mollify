@@ -160,7 +160,7 @@
                             //TODO formatted message
                             if (i.length == 1) desc = i[0].name;
                             else desc = i.length;
-                            this._m.ui.notification.success(e.type + " " + desc);
+                            this._m.ui.notification.growlInfo(e.type + " " + desc);
 
                             //TODO update only changed items
                             this.send("gotoFolder", this.get('folder'));

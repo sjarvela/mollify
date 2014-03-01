@@ -856,6 +856,18 @@
             },
             error: function(text) {
                 Bootstrap.NM.push(text, 'danger');
+            },
+            growlInfo: function(text, title) {
+                Bootstrap.GNM.push(title || 'Mollify', text, 'info');
+            },
+            growlSuccess: function(text, title) {
+                Bootstrap.GNM.push(title || 'Mollify', text, 'success');
+            },
+            growlWarning: function(text, title) {
+                Bootstrap.GNM.push(title || 'Mollify', text, 'warning');
+            },
+            growlError: function(text, title) {
+                Bootstrap.GNM.push(title || 'Mollify', text, 'danger');
             }
         };
 
