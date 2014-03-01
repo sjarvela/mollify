@@ -177,7 +177,10 @@
                             uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
                         }
                     };
-                    this.events.addEventHandler($.proxy(controller.onEvent, controller));
+                    if (!controller.eventHandler) {
+                        this.events.addEventHandler($.proxy(controller.onEvent, controller));
+                        controller.eventHandler = true;
+                    }
                 }
             }
         },
