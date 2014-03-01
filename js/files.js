@@ -155,7 +155,15 @@
                         },
                         onEvent: function(e) {
                             if (!e.type.startsWith('filesystem/')) return;
-                            alert(e.type);
+                            var i = e.payload.items;
+
+                            //TODO formatted message
+                            if (i.length == 1) desc = i[0].name;
+                            else desc = i.length;
+                            this._m.ui.notification.success(e.type + " " + desc);
+
+                            //TODO update only changed items
+                            this.send("gotoFolder", this.get('folder'));
                         }
                     });
                 },
@@ -169,7 +177,7 @@
                             uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
                         }
                     };
-                    this.events.addEventHandler(controller.onEvent);
+                    this.events.addEventHandler($.proxy(controller.onEvent, controller));
                 }
             }
         },
@@ -177,6 +185,22 @@
         // module setup
         setup: function(App) {
             var _m = this;
+
+            App.FileHeaderNavMenuComponent = Ember.Component.extend(App.FilesystemItemDroppable, {
+                tagName: 'li',
+                classNames: ['dropdown'],
+                titleProperty: false,
+                init: function() {
+                    this._super();
+                    var sel = this.get('selected');
+                    this.droppableInit(sel);
+                },
+                actions: {
+                    select: function(item) {
+                        this.sendAction("select", item);
+                    }
+                }
+            });
 
             App.FileListViewComponent = Ember.Component.extend({
                 needs: ['application'],

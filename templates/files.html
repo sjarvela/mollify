@@ -46,10 +46,44 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-nav-items">
-	{{header-nav-menu class="root" items=controllers.files.roots titleKey="name" select="gotoFolder" fa="fa-folder" selected=root}}
+	{{file-header-nav-menu class="root" items=controllers.files.roots titleKey="name" select="gotoFolder" fa="fa-folder" selected=root}}
 	{{#each hierarchy}}
 		<li><a {{action 'gotoFolder' this}}>{{name}}</a></li>
 	{{/each}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="components/file-header-nav-menu">
+	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+		{{#if selected}}
+			{{#if selected.fa}}
+				{{fa-icon class=selected.fa}}
+			{{else}}
+				{{#if fa}}
+					{{fa-icon class=fa}}
+				{{/if}}
+			{{/if}}
+			<span class="title">
+			{{val selected keyBinding=titleKey translateBinding=titleTranslate}}
+		{{else}}
+			{{#if fa}}
+				{{fa-icon class=fa}}
+			{{/if}}
+			{{title}}
+		{{/if}}
+		<b class="caret"></b>
+	</a>
+	<ul class="dropdown-menu">
+		{{#each items}}
+			<li>
+				<a {{action "select" this}}>
+					{{#if fa}}
+						{{fa-icon class=fa}}
+					{{/if}}
+					{{val this keyBinding=controller.titleKey translateBinding=controller.titleTranslate}}
+				</a>
+			</li>
+		{{/each}}
+	</ul>
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-tools">

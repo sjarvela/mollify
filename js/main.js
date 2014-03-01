@@ -94,6 +94,9 @@
                 tagName: 'li',
                 classNames: ['dropdown'],
                 titleProperty: false,
+                init: function() {
+                    this._super();
+                },
                 actions: {
                     select: function(item) {
                         this.sendAction("select", item);
