@@ -185,6 +185,21 @@
             }
         },
 
+        actions: {
+            // goto folder
+            gotoFolder: {
+                titleKey: 'actions.file.goto-folder',
+                fa: 'fa-folder',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return !item.is_file;
+                },
+                handler: function(item) {
+                    this.goto('item/'+item.id);
+                }
+            }
+        },
+
         // module setup
         setup: function(App) {
             var _m = this;

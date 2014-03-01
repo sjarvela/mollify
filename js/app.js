@@ -23,6 +23,16 @@
         "limited-http-methods": false,
         "file-view": {
             "default-view-mode": false,
+            "quick-actions": {
+                "view": {
+                    action: "view",
+                    fa: "fa-eye"
+                },
+                "goto-folder": {
+                    action: "goto-folder",
+                    fa: "fa-folder"
+                }
+            },
             "list-view-columns": {
                 "name": {
                     width: 250
@@ -152,9 +162,6 @@
         App._m = _m;
         App.ApplicationController = Ember.Controller.extend({
             actions: {
-                dndDropFilesystemItem: function(item, to) {
-                    window.alert("drop " + item.name + " to " + to.name);
-                }
             },
             init: function() {
                 var that = this;
@@ -171,6 +178,16 @@
                 var path = this.get('currentPath');
                 if (!window.def(n)) return path;
                 return path.split('.')[n - 1];
+            },
+
+            goto: function(p) {
+                var parts = p.split("/");
+                var path = parts[0];
+                var id = parts.length > 1 ? parts[1] : undefined;
+                if (id)
+                    this.transitionToRoute(path, id);
+                else
+                    this.transitionToRoute(p);
             },
 
             openModal: function(name, o) {
@@ -259,13 +276,7 @@
         App.ApplicationRoute = Ember.Route.extend({
             actions: {
                 goto: function(p) {
-                    var parts = p.split("/");
-                    var path = parts[0];
-                    var id = parts.length > 1 ? parts[1] : undefined;
-                    if (id)
-                        this.transitionTo(path, id);
-                    else
-                        this.transitionTo(path);
+                    this.controller.goto(p);
                 },
                 doAction: function(a, ctx) {
                     var action = a;
@@ -275,7 +286,8 @@
                     var that = this;
                     action.handler.apply({
                         _m: _m,
-                        openModal: $.proxy(this.controller.openModal, this.controller)
+                        openModal: $.proxy(this.controller.openModal, this.controller),
+                        goto: $.proxy(this.controller.goto, this.controller)
                     }, [ctx]);
                 }
             },

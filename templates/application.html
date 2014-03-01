@@ -46,9 +46,6 @@
 	{{#each items}}
 		<li role="presentation">
 			<a role="menuitem" tabindex="-1" {{action "select" this}}>
-				{{#if fa}}
-					{{fa-icon class=fa}}
-				{{/if}}
 				{{val titleKey translate=true}}
 			</a>
 		</li>
