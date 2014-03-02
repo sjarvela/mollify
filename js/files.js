@@ -124,10 +124,11 @@
                                     this.send("doAction", this._m.actions.all.view, item);
                             },
                             mouseOverItem: function(item, src) {
-                                var that = this;
-                                if (this._ctx.qa) this.closeQuickActions();
+                                var that = this;                                
 
                                 this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
+                                    if (that._ctx.qa) that.closeQuickActions();
+
                                     that.set('quickActions', l); //TODO cache?
                                     that.set('quickActionCtx', item);
                                     

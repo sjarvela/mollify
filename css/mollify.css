@@ -7490,8 +7490,10 @@ button.close {
 #mollify .quick-actions {
   float: left;
   margin-left: -100%;
-  margin-top: 10px;
+  margin-top: 1px;
   padding-right: 8px;
+  background: #ffffff;
+  padding: 8px;
 }
 #mollify .quick-actions > .quick-action {
   display: block;
@@ -7499,4 +7501,5 @@ button.close {
   width: 20px;
   height: 20px;
   cursor: pointer;
+  text-align: center;
 }
