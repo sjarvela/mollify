@@ -161,8 +161,7 @@
     var setupApp = function(App, _m) {
         App._m = _m;
         App.ApplicationController = Ember.Controller.extend({
-            actions: {
-            },
+            actions: {},
             init: function() {
                 var that = this;
                 $(window).click(function() {
@@ -222,10 +221,6 @@
 
             showPopupMenu: function($e, items, ctx, cb) {
                 var that = this;
-                if (this.activePopup) this.activePopup.close();
-
-                var view = false;
-
                 var open = function(list) {
                     var controller = Ember.ObjectController.extend({
                         actions: {
@@ -237,38 +232,57 @@
                         items: list,
                         ctx: ctx
                     });
-
-                    var template = that.container.lookup("template:core-popup-menu");
-                    Ember.assert("Template core-popup-menu could not be found.", template);
-
-                    view = Ember.View.create({
-                        template: template,
-                        controller: controller,
-                        didInsertElement: function() {
-                            var pos = $e.offset();
-                            this.$().css({
-                                position: "absolute",
-                                top: (pos.top + $e.outerHeight()) + "px",
-                                left: pos.left
-                            }).find(".dropdown-menu").show();
+                    that.showPopupElement("core-popup-menu", controller, {
+                        $e: $e,
+                        onShow: function($el) {
+                            $el.find(".dropdown-menu").show();
                         }
                     });
-                    view.appendTo(that.namespace.rootElement);
-                }
+                };
+
                 if (items.done) items.done(open);
                 else open(items);
+            },
+            showPopupElement: function(viewName, controller, o) {
+                var that = this;
+                var independent = o && o.independent;
+                if (!independent && this.activePopup) this.activePopup.close();
+
+                var view = false;
+                var template = that.container.lookup("template:" + viewName);
+                Ember.assert("Template core-popup-menu could not be found.", template);
+
+                view = Ember.View.create({
+                    template: template,
+                    controller: controller,
+                    didInsertElement: function() {
+                        var $el = this.$();
+                        if (o.pos) o.pos($el);
+                        else if (o.$e) {
+                            var pos = o.$e.offset();
+                            $el.css({
+                                position: "absolute",
+                                top: (pos.top + o.$e.outerHeight()) + "px",
+                                left: pos.left + "px"
+                            });
+                        }
+                        if (o.onShow) o.onShow($el);
+                    }
+                });
+                view.appendTo(that.namespace.rootElement);
 
                 var api = {
                     close: function() {
                         if (!view) return;
                         view.remove();
-                        that.activePopup = false;
+                        if (!independent) that.activePopup = false;
                         view = false;
                     }
                 };
-                Ember.run.later(this, function() {
-                    this.activePopup = api;
-                }, 0);
+                if (!independent)
+                    Ember.run.later(this, function() {
+                        this.activePopup = api;
+                    }, 0);
 
                 return api;
             }

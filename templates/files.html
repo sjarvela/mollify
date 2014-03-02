@@ -102,3 +102,15 @@
 		{{/each}}
 	</ul>
 </script>
+
+<script type="text/x-handlebars" data-template-name="filelist-quick-actions">
+	<div class="quick-actions">
+		{{#each quickActions}}
+			{{#if fa}}
+				<i class="fa fa-{{fa}}"></i>
+			{{else}}
+				<i class="fa fa-toggle-right"></i>
+			{{/if}}
+		{{/each}}
+	</div>
+</script>
