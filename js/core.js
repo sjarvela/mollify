@@ -38,29 +38,6 @@
                 handler: function() {
                     this.openModal('core-change-password');
                 }
-            },
-
-            download: {
-                titleKey: 'actions.filesystem.download',
-                type: 'filesystem-item',
-                isApplicable: function(item) {
-                    return this.hasPermission('filesystem_item_access', item, 'r');
-                },
-                handler: function(item) {
-                    if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
-                    this._m.ui.download(this._m.filesystem.getDownloadUrl(item));
-                }
-            },
-
-            copy: {
-                titleKey: 'actions.filesystem.copy',
-                type: 'filesystem-item',
-                isApplicable: function(item) {
-                    return this.hasPermission('filesystem_item_access', item, 'r');
-                },
-                handler: function(item) {
-                    window.alert(item.id);
-                }
             }
         },
 

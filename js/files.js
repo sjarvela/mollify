@@ -188,7 +188,7 @@
         actions: {
             // goto folder
             gotoFolder: {
-                titleKey: 'actions.file.goto-folder',
+                titleKey: 'actions.filesystem.goto-folder',
                 fa: 'fa-folder',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
@@ -196,6 +196,30 @@
                 },
                 handler: function(item) {
                     this.goto('item/' + item.id);
+                }
+            },
+            // download
+            download: {
+                titleKey: 'actions.filesystem.download',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return this.hasPermission('filesystem_item_access', item, 'r');
+                },
+                handler: function(item) {
+                    if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
+                    this._m.ui.download(this._m.filesystem.getDownloadUrl(item));
+                }
+            },
+
+            //copy
+            copy: {
+                titleKey: 'actions.filesystem.copy',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return this.hasPermission('filesystem_item_access', item, 'r');
+                },
+                handler: function(item) {
+                    window.alert(item.id);
                 }
             }
         },
@@ -314,12 +338,16 @@
                     var that = this;
                     if (!this.quickActions) {
                         this.quickActions = [];
-                        this._ctx._m.actions.filesystem(this.get('item')).done(function(l) {
-                            that.set('quickActions', l);    
+                        this._ctx._m.actions.filesystem(this.get('item'), this._ctx._m.settings["file-view"]["quick-actions"]).done(function(l) {
+                            that.set('quickActions', l);
                         });
                     }
+                    if (this._ctx.qa) {
+                        this._ctx.qa.close();
+                        this._ctx.qa = false;
+                    }
                     var $e = this.$();
-                    this.qa = this._ctx.app.showPopupElement("filelist-quick-actions", this, {
+                    this._ctx.qa = this._ctx.app.showPopupElement("filelist-quick-actions", this, {
                         independent: true,
                         pos: function($el) {
                             var pos = $e.offset();
@@ -332,9 +360,13 @@
                     });
                 },
                 mouseLeave: function(e) {
-                    if (this.qa) {
-                        this.qa.close();
-                        this.qa = false;
+                    if (this._ctx.qa) {
+                        var $t = $(e.toElement || e.relatedTarget);
+                        var isQa = (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0]));
+                        if (!isQa) {
+                            this._ctx.qa.close();
+                            this._ctx.qa = false;
+                        }
                     }
                 }
             });

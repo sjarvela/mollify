@@ -23,16 +23,7 @@
         "limited-http-methods": false,
         "file-view": {
             "default-view-mode": false,
-            "quick-actions": {
-                "view": {
-                    action: "view",
-                    fa: "fa-eye"
-                },
-                "goto-folder": {
-                    action: "goto-folder",
-                    fa: "fa-folder"
-                }
-            },
+            "quick-actions": ['gotoFolder', 'download', 'view', 'info'],
             "list-view-columns": {
                 "name": {
                     width: 250
@@ -248,6 +239,7 @@
                 var independent = o && o.independent;
                 if (!independent && this.activePopup) this.activePopup.close();
 
+                var api = false;
                 var view = false;
                 var template = that.container.lookup("template:" + viewName);
                 Ember.assert("Template core-popup-menu could not be found.", template);
@@ -267,11 +259,12 @@
                             });
                         }
                         if (o.onShow) o.onShow($el);
+                        api.$e = $el;
                     }
                 });
                 view.appendTo(that.namespace.rootElement);
 
-                var api = {
+                api = {
                     close: function() {
                         if (!view) return;
                         view.remove();
@@ -364,6 +357,7 @@
         var actionsByType = {};
         $.each(actionKeys, function(i, k) {
             var a = allActions[k];
+            a.key = k;
             var t = a.type;
             if (!t) return;
             if (!actionsByType[t]) actionsByType[t] = [];
@@ -385,7 +379,7 @@
                 });
                 return list;
             },
-            getApplicableByType: function(type, ctx) {
+            getApplicableByType: function(type, ctx, keys) {
                 var requestCache = {};
                 var p = {
                     _m: _m,
@@ -403,6 +397,7 @@
                 var wait = [];
                 var df = $.Deferred();
                 $.each(this.getByType(type), function(i, a) {
+                    if (keys && keys.indexOf(a.key) < 0) return;
                     if (!a.isApplicable) return;
                     var applicable = a.isApplicable.apply(p, [ctx]);
                     if (!applicable) return;
@@ -419,10 +414,10 @@
                 if (wait.length === 0) df.resolve(list);
                 return df;
             },
-            filesystem: function(i) {
+            filesystem: function(i, keys) {
                 if (window.isArray(i))
-                    return this.getApplicableByType("filesystem-item-list", i);
-                return this.getApplicableByType("filesystem-item", i);
+                    return this.getApplicableByType("filesystem-item-list", i, keys);
+                return this.getApplicableByType("filesystem-item", i, keys);
             }
         };
 
