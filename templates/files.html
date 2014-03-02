@@ -6,7 +6,7 @@
 	<h2>{{folder.name}}</h2>
 
 	{{#if controllers.files.isListView}}
-		{{file-list-view items=items clickItem="clickItem"}}
+		{{file-list-view items=items clickItem="clickItem" mouseOverItem="mouseOverItem" mouseOut="mouseOutFileComponent"}}
 	{{else}}
 		{{file-icon-view items=items click-item="gotoFolder" large=controllers.files.isIconViewLarge}}
 	{{/if}}
@@ -22,7 +22,7 @@
 	</thead>
 	<tbody>			
 		{{#each item in sorted}}
-			{{file-list-row item=item cols=cols clickItem="clickItem"}}
+			{{file-list-row item=item cols=cols clickItem="clickItem" mouseOver="mouseOverItem"}}
 		{{/each}}
 	</tbody>
 </script>
@@ -105,13 +105,15 @@
 
 <script type="text/x-handlebars" data-template-name="filelist-quick-actions">
 	<div class="quick-actions">
-		{{#each quickActions}}
-			{{#if fa}}
-				<i class="fa fa-{{fa}}"></i>
+		{{#each a in quickActions}}
+			<a {{action "doAction" a quickActionCtx}}
+			{{#if a.fa}}
+				<i class="fa fa-{{unbound a.fa}}"></i>
 			{{else}}
 				<i class="fa fa-toggle-right"></i>
 			{{/if}}
-			{{val titleKey translate=true}}
+			{{val a.titleKey translate=true}}
+			</a>
 		{{/each}}
 	</div>
 </script>

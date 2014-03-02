@@ -114,26 +114,61 @@
 
                                 if (ia == 'open_menu')
                                     this.showPopupMenu(item, src[0]);
-                                else if (ia == 'go_into_folder')
+                                else if (ia == 'gotoFolder')
                                     this.send("gotoFolder", item);
-                                else if (ia == 'open_info')
-                                    this.showInfo(item);
+                                else if (ia == 'info')
+                                    this.send("doAction", this._m.actions.all.info, item);
                                 else if (ia == 'download' && item.is_file)
                                     this.send("doAction", this._m.actions.all.download, item);
                                 //TODO "view" and other action shortcuts
+                            },
+                            mouseOverItem: function(item, src) {
+                                var that = this;
+                                this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
+                                    that.set('quickActions', l); //TODO cache?
+                                    that.set('quickActionCtx', item);
+
+                                    if (that._ctx.qa) {
+                                        that._ctx.qa.close();
+                                        that._ctx.qa = false;
+                                    }
+
+                                    that._ctx.qa = that._ctx.app.showPopupElement("filelist-quick-actions", that, {
+                                        independent: true,
+                                        pos: function($el) {
+                                            //TODO pos on component itself?
+                                            var pos = src.element.offset();
+                                            $el.css({
+                                                position: "absolute",
+                                                top: (pos.top) + "px",
+                                                left: (pos.left) + "px"
+                                            });
+                                        }
+                                    });
+                                });
+                            },
+                            mouseOutFileComponent: function($t) {
+                                if (this._ctx.qa) {
+                                    var isQa = ($t && (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0])));
+                                    if (!isQa) {
+                                        this.set('quickActions', []);
+                                        this._ctx.qa.close();
+                                        this._ctx.qa = false;
+                                    }
+                                }
                             }
                         },
 
                         getItemAction: function(item, clickType) {
                             var handler = 'onClick';
-                            var action = item.is_file ? 'open_info' : 'go_into_folder';
+                            var action = item.is_file ? 'info' : 'gotoFolder';
 
                             if (clickType == 'rightclick') {
                                 handler = 'onRightClick';
                                 action = 'open_menu';
                             } else if (clickType == 'doubleclick') {
                                 handler = 'onDblClick';
-                                action = item.is_file ? 'view' : 'go_into_folder';
+                                action = item.is_file ? 'view' : 'gotoFolder';
                             }
 
                             if (this._m.settings['file-view'].actions[handler]) {
@@ -150,9 +185,6 @@
                                 that.send("doAction", action, item);
                             });
                         },
-                        showInfo: function(item) {
-                            alert('info');
-                        },
                         onEvent: function(e) {
                             if (!e.type.startsWith('filesystem/')) return;
                             var i = e.payload.items;
@@ -168,15 +200,17 @@
                     });
                 },
                 setupController: function(controller, model) {
-                    controller._ctx = {
-                        _m: this,
-                        app: controller.get('controllers.application'),
-                        formatters: {
-                            byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('decimalSeparator'))),
-                            timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('shortDateTimeFormat')),
-                            uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
-                        }
-                    };
+                    if (!controller._ctx)
+                        controller._ctx = {
+                            _m: this,
+                            settings: this.settings["file-view"],
+                            app: controller.get('controllers.application'),
+                            formatters: {
+                                byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('decimalSeparator'))),
+                                timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('shortDateTimeFormat')),
+                                uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
+                            }
+                        };
                     if (!controller.eventHandler) {
                         this.events.addEventHandler($.proxy(controller.onEvent, controller));
                         controller.eventHandler = true;
@@ -210,7 +244,18 @@
                     this._m.ui.download(this._m.filesystem.getDownloadUrl(item));
                 }
             },
-
+            // info
+            info: {
+                titleKey: 'actions.filesystem.info',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return this.hasPermission('filesystem_item_access', item, 'r');
+                },
+                handler: function(item) {
+                    if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
+                    alert('info ' + item.name);
+                }
+            },
             //copy
             copy: {
                 titleKey: 'actions.filesystem.copy',
@@ -264,6 +309,9 @@
                                 sortAsc: true
                             });
                         }
+                    },
+                    mouseOverItem: function(item, src) {
+                        this.sendAction("mouseOverItem", item, src);
                     }
                 },
                 sorted: function() {
@@ -302,6 +350,10 @@
                     this.set('cols', cols);
                     this.set('sortCol', cols[0]);
                     this.set('sortAsc', true);
+                },
+
+                mouseLeave: function(e) {
+                    this.sendAction("mouseOut", $(e.toElement || e.relatedTarget));
                 }
             });
 
@@ -324,9 +376,11 @@
                     }
                 },
                 getActionSource: function() {
+                    var $e = this.$();
                     return {
                         type: 'row',
-                        element: this.$()
+                        element: $e,
+                        nameElement: $e.find("td.name")
                     };
                 },
                 actions: {
@@ -335,31 +389,9 @@
                     }
                 },
                 mouseEnter: function(e) {
-                    var that = this;
-                    if (!this.quickActions) {
-                        this.quickActions = [];
-                        this._ctx._m.actions.filesystem(this.get('item'), this._ctx._m.settings["file-view"]["quick-actions"]).done(function(l) {
-                            that.set('quickActions', l);
-                        });
-                    }
-                    if (this._ctx.qa) {
-                        this._ctx.qa.close();
-                        this._ctx.qa = false;
-                    }
-                    var $e = this.$();
-                    this._ctx.qa = this._ctx.app.showPopupElement("filelist-quick-actions", this, {
-                        independent: true,
-                        pos: function($el) {
-                            var pos = $e.offset();
-                            $el.css({
-                                position: "absolute",
-                                top: (pos.top) + "px",
-                                left: (pos.left + $e.find("td.name").outerWidth()) + "px"
-                            });
-                        }
-                    });
-                },
-                mouseLeave: function(e) {
+                    this.sendAction("mouseOver", this.get('item'), this.getActionSource());
+                }
+                /*mouseLeave: function(e) {
                     if (this._ctx.qa) {
                         var $t = $(e.toElement || e.relatedTarget);
                         var isQa = (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0]));
@@ -368,7 +400,7 @@
                             this._ctx.qa = false;
                         }
                     }
-                }
+                }*/
             });
 
             App.FileListCellComponent = Ember.Component.extend({
