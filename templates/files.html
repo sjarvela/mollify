@@ -104,9 +104,9 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="filelist-quick-actions">
-	<div class="quick-actions">
+	<div class="quick-actions {{unbound viewType}}">
 		{{#each a in quickActions}}
-			<a {{action "doAction" a quickActionCtx}}
+			<a class="quick-action" {{action "doAction" a quickActionCtx}}
 			{{#if a.fa}}
 				<i class="fa fa-{{unbound a.fa}}"></i>
 			{{else}}

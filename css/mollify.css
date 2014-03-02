@@ -7487,3 +7487,16 @@ button.close {
 #mollify .main-view .file-list-view .item.drag-over td {
   background-color: red;
 }
+#mollify .quick-actions {
+  float: left;
+  margin-left: -100%;
+  margin-top: 10px;
+  padding-right: 8px;
+}
+#mollify .quick-actions > .quick-action {
+  display: block;
+  float: left;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
