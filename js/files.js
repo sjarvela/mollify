@@ -171,9 +171,9 @@
                                 action = item.is_file ? 'view' : 'gotoFolder';
                             }
 
-                            if (this._m.settings['file-view'].actions[handler]) {
+                            if (this._ctx.settings.actions[handler]) {
                                 var ctx = {}; //TODO
-                                var customAction = this._m.settings['file-view'].actions[handler](item, ctx);
+                                var customAction = this._ctx.settings.actions[handler](item, ctx);
                                 if (customAction === true) return true;
                                 if (customAction) action = customAction;
                             }
@@ -223,7 +223,7 @@
             // goto folder
             gotoFolder: {
                 titleKey: 'actions.filesystem.goto-folder',
-                fa: 'fa-folder',
+                fa: 'folder',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
                     return !item.is_file;
@@ -235,9 +235,10 @@
             // download
             download: {
                 titleKey: 'actions.filesystem.download',
+                fa: 'download',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
-                    return this.hasPermission('filesystem_item_access', item, 'r');
+                    return item.is_file && this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
                     if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
@@ -247,6 +248,7 @@
             // info
             info: {
                 titleKey: 'actions.filesystem.info',
+                fa: 'info',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
                     return this.hasPermission('filesystem_item_access', item, 'r');
@@ -259,6 +261,7 @@
             //copy
             copy: {
                 titleKey: 'actions.filesystem.copy',
+                fa: 'copy',
                 type: 'filesystem-item',
                 isApplicable: function(item) {
                     return this.hasPermission('filesystem_item_access', item, 'r');
