@@ -84,6 +84,10 @@
                         into: 'main',
                         outlet: 'header-nav'
                     });
+                    this.render('files-header-nav-tools', {
+                        into: 'main',
+                        outlet: 'header-tools-inner'
+                    });                    
                 },
                 model: function(p) {
                     var df = $.Deferred();
@@ -153,6 +157,10 @@
                                 }
                             }
                         },
+
+                        isWritable: function() {
+                            return this._m.permissions.hasPermission('filesystem_item_access', this.get('folder'), 'rw');
+                        }.property(),
 
                         closeQuickActions: function() {
                             this.set('quickActions', []);

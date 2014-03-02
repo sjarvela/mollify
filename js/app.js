@@ -461,9 +461,10 @@
         init: function(config, plugins) {
             // instance
             var _m = new MollifyApp(config);
+            var rootElementId = _m.settings["app-element-id"];
 
             window.App = Ember.Application.create({
-                rootElement: '#' + _m.settings["app-element-id"],
+                rootElement: '#' + rootElementId,
                 LOG_ACTIVE_GENERATION: true,
                 LOG_TRANSITIONS_INTERNAL: true,
                 currentPath: ''
@@ -472,26 +473,26 @@
             App.deferReadiness();
             window.registerPopover(App); //TODO away
 
+            var fh = {
+                app: App,
+                run: function() {
+                    App.advanceReadiness();
+                },
+                restart: function() {
+                    console.log('restart');
+                    Ember.Instrumentation.instrument("restart", null, function() {});
+                },
+                showError: function(spec) {
+                    Ember.Instrumentation.instrument("showError", spec, function() {});
+                }
+            };
             setupApp(App, _m);
 
             _m.templateLoader.load('application').done(function() {
-                var fh = {
-                    run: function() {
-                        App.advanceReadiness();
-                    },
-                    restart: function() {
-                        console.log('restart');
-                        Ember.Instrumentation.instrument("restart", null, function() {});
-                    },
-                    showError: function(spec) {
-                        Ember.Instrumentation.instrument("showError", spec, function() {});
-                    }
-                };
-
                 _m.init(fh, plugins);
                 _m.start();
             }).fail(function() {
-                $("body").html("Mollify could not be started");
+                $('#' + rootElementId).html("Mollify could not be started");
             });
         },
         registerModule: function(m) {
@@ -735,6 +736,7 @@
         this.init = function() {
             that.showError = _m._fh.showError;
             that.element = $("#" + _m.settings['app-element-id']);
+            that.uploader = new mollify.uploader.html5(_m); //TODO settings?
 
             that.texts = {
                 locale: null,

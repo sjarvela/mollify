@@ -52,6 +52,25 @@
 	{{/each}}
 </script>
 
+<script type="text/x-handlebars" data-template-name="files-header-nav-tools">
+	{{#if isWritable}}
+	<ul class="nav navbar-nav navbar-right">
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+				+
+				<b class="caret"></b>
+			</a>
+			<ul class="dropdown-menu">
+				<li>
+					<a href="javascript: void()">{{uploader-file-selector folder=folder}}</a>
+				</li>
+				<li><a {{action 'createFolder' this}}>TODO create folder</a></li>
+			</ul>
+		</li>
+	</ul>
+	{{/if}}
+</script>
+
 <script type="text/x-handlebars" data-template-name="components/file-header-nav-menu">
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 		{{#if selected}}
