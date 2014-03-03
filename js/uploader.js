@@ -29,6 +29,30 @@
             var $form = $('<form enctype="multipart/form-data"></form>').appendTo($container);
             var $input = $('<input type="file" class="mollify-mainview-uploader-input" name="uploader-html5[]" multiple="multiple"></input>').appendTo($form);
             initInput($input, folder, listener);
+            //initDropZoneEffects($e);
+        };
+
+        var initDropZoneEffects = function($e) {
+            $e.bind('dragover', function(e) {
+                e.stopPropagation();
+                var dropZone = $e
+                var timeout = window.dropZoneTimeout;
+
+                if (!timeout)
+                    dropZone.addClass('in');
+                else
+                    clearTimeout(timeout);
+
+                if (e.target === dropZone[0])
+                    dropZone.addClass('hover');
+                else
+                    dropZone.removeClass('hover');
+
+                window.dropZoneTimeout = setTimeout(function() {
+                    window.dropZoneTimeout = null;
+                    dropZone.removeClass('in hover');
+                }, 100);
+            });
         };
 
         var initInput = function($input, folder, listener) {
@@ -73,13 +97,13 @@
                 },
                 stop: function() {
                     //console.log("all done");
-                    started = false;
-                    rejected = false;
-                    if (listener.finished) listener.finished();
                     _m.events.dispatch('filesystem/upload', {
                         files: started,
                         to: folder
                     });
+                    started = false;
+                    rejected = false;
+                    if (listener.finished) listener.finished();
                 },
                 fail: function(e, data) {
                     var r = data.response();
@@ -92,7 +116,7 @@
                     //started = false;
                 }
             }, settings));
-        }
+        };
 
         App.UploaderFileSelectorComponent = Ember.Component.extend({
             classNames: ['uploader-file-selector'],

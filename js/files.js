@@ -216,6 +216,9 @@
                             start: function(files) {
                                 console.log("start");
                             },
+                            progress: function(progress, bitrate) {
+                                console.log("progress "+progress);
+                            },
                             finished: function() {
                                 console.log("finished");
                             },
@@ -294,6 +297,18 @@
                 },
                 handler: function(item) {
                     window.alert(item.id);
+                }
+            },
+            //delete
+            delete: {
+                titleKey: 'actions.filesystem.delete',
+                fa: 'delete',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return this.hasPermission('filesystem_item_access', item, 'rw');
+                },
+                handler: function(item) {
+                    this._m.filesystem.del(item);
                 }
             }
         },

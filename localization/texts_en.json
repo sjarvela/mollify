@@ -108,6 +108,12 @@
             "session": {
                 "logout": "Logout",
                 "change-password": "Change password..."
+            },
+            "filesystem": {
+                "download": "Download",
+                "copy": "Copy",
+                "info": "Show info",
+                "delete": "Delete"
             }
         },
 
