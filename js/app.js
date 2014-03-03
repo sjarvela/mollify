@@ -897,63 +897,6 @@
         this.dnd = {
             dragged: false
         };
-
-        /*var processPopupActions = function(l) {
-            $.each(l, function(i, item) {
-                if (item.type == 'submenu') {
-                    processPopupActions(item.items);
-                    return;
-                }
-                if (item.title) return;
-                if (item["titleKey"]) item.title = that.texts.get(item['titleKey']);
-            });
-        };
-        var createPopupItems = function(itemList) {
-            var list = itemList || [];
-            processPopupActions(list);
-
-            var buffer = [];
-            Ember.TEMPLATES['core-popupmenu-item']({
-                1: 2
-            }, {
-                data: {
-                    view: {
-                        container: {
-                            foo: "bar"
-                        },
-                        registerObserver: function() {},
-                        appendChild: function(c) {
-                            console.log(c);
-                        }
-                    },
-                    buffer: buffer
-                }
-            });
-            return $(buffer.join(""));
-            //TODO handlebar template: return mollify.dom.template("mollify-tmpl-popupmenu", {items:list});
-        };*/
-        /*var initPopupItems = function($p, l, onItem) {
-            $p.find(".dropdown-item").click(function() {
-                var $e = $(this);
-                var $top = $p.find(".dropdown-menu");
-                var path = [];
-                while (true) {
-                    if (!$e.hasClass("dropdown-menu"))
-                        path.push($e.index());
-                    $e = $e.parent();
-                    if ($e[0] == $top[0]) break;
-                }
-                var item = false;
-                var parent = l;
-                $.each(path.reverse(), function(i, ind) {
-                    item = parent[ind];
-                    if (item.type == 'submenu') parent = item.items;
-                });
-                if (onItem) onItem(item, item.callback ? item.callback() : null);
-                else if (item.callback) item.callback();
-                return false;
-            });
-        };*/
     };
 
     /* SERVICE */

@@ -87,7 +87,7 @@
                     this.render('files-header-nav-tools', {
                         into: 'main',
                         outlet: 'header-tools-inner'
-                    });                    
+                    });
                 },
                 model: function(p) {
                     var df = $.Deferred();
@@ -128,14 +128,14 @@
                                     this.send("doAction", this._m.actions.all.view, item);
                             },
                             mouseOverItem: function(item, src) {
-                                var that = this;                                
+                                var that = this;
 
                                 this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
                                     if (that._ctx.qa) that.closeQuickActions();
 
                                     that.set('quickActions', l); //TODO cache?
                                     that.set('quickActionCtx', item);
-                                    
+
                                     that._ctx.qa = that._ctx.app.showPopupElement("filelist-quick-actions", that, {
                                         independent: true,
                                         pos: function($el) {
@@ -196,15 +196,32 @@
                         },
                         onEvent: function(e) {
                             if (!e.type.startsWith('filesystem/')) return;
-                            var i = e.payload.items;
 
                             //TODO formatted message
-                            if (i.length == 1) desc = i[0].name;
-                            else desc = i.length;
+                            var desc = '';
+                            if (e.type == 'filesystem/upload') {
+                                desc = e.payload.files.length;
+                            } else {
+                                var i = e.payload.items;
+
+                                if (i.length == 1) desc = i[0].name;
+                                else desc = i.length;
+                            }
                             this._m.ui.notification.growlInfo(e.type + " " + desc);
 
                             //TODO update only changed items
                             this.send("gotoFolder", this.get('folder'));
+                        },
+                        uploadListener: {
+                            start: function(files) {
+                                console.log("start");
+                            },
+                            finished: function() {
+                                console.log("finished");
+                            },
+                            failed: function() {
+                                console.log("failed");
+                            }
                         }
                     });
                 },
@@ -351,17 +368,21 @@
                     this._ctx = this.get('targetObject._ctx');
 
                     var cols = [];
-                    $.each(mollify.utils.getKeys(this._ctx._m.settings["file-view"]["list-view-columns"]), function(i, k) {
+                    $.each(mollify.utils.getKeys(this._ctx.settings["list-view-columns"]), function(i, k) {
                         var spec = mollify.filelist.columnsById[k];
                         if (!spec) return;
 
                         spec = $.extend({}, spec);
-                        spec.opts = $.extend({}, spec.opts, that._ctx._m.settings["file-view"]["list-view-columns"][k]);
+                        spec.opts = $.extend({}, spec.opts, that._ctx.settings["list-view-columns"][k]);
                         cols.push(spec);
                     });
                     this.set('cols', cols);
                     this.set('sortCol', cols[0]);
                     this.set('sortAsc', true);
+                },
+
+                didInsertElement: function() {
+                    if (this._ctx._m.ui.uploader.initDesktopDND) this._ctx._m.ui.uploader.initDesktopDND(this.$(), this.get('folder'), this.get('targetObject'));
                 },
 
                 mouseLeave: function(e) {
