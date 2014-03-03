@@ -7492,7 +7492,7 @@ button.close {
   margin-left: -100%;
   margin-top: 1px;
   padding-right: 8px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.1);
   padding: 8px;
 }
 #mollify .quick-actions > .quick-action {

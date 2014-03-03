@@ -210,6 +210,32 @@
                 return api;
             },
 
+            openInputDialog: function(spec) {
+                var controller = Ember.ObjectController.extend({
+                    val: '',
+                    actions: {
+                        yes: function() {
+                            var v = this.get('val');
+                            if (spec.isAcceptable && !spec.isAcceptable(v)) return;
+                            spec.onAccept(t);
+                        }
+                    }
+                }).create({
+                    title: spec.title,
+                    message: spec.message,
+                    buttons: [{
+                        titleKey: spec.yesTitle,
+                        clicked: 'yes'
+                    }, {
+                        titleKey: spec.noTitle,
+                        dismiss: 'modal'
+                    }]
+                });
+                controller.container = this.container;
+                controller.namespace = this.namespace;
+                this.openModal('core-input-dialog', { controller: controller });
+            },
+
             showPopupMenu: function($e, items, ctx, cb) {
                 var that = this;
                 var open = function(list) {
@@ -294,6 +320,7 @@
                     action.handler.apply({
                         _m: _m,
                         openModal: $.proxy(this.controller.openModal, this.controller),
+                        openInputDialog: $.proxy(this.controller.openInputDialog, this.controller),
                         goto: $.proxy(this.controller.goto, this.controller)
                     }, [ctx]);
                 }
@@ -514,6 +541,7 @@
         this.plugins = PluginManager.create();
 
         this.init = function(fh, plugins) {
+            this.pageUrl = this.request.getBaseUrl();
             that._fh = fh;
             this.ui.init();
 
@@ -570,6 +598,19 @@
         this.openView = function(path) {
             //var viewId = id || 'main';
             //that._fh.openView(viewId);    
+        };
+
+        this.request = {
+            getParam: function(name) {
+                if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+                    return decodeURIComponent(name[1]);
+            },
+            getParams: function() {
+                return window.mollify.utils.getUrlParams(location.search);
+            },
+            getBaseUrl: function() {
+                return window.mollify.utils.getBaseUrl(location.search);
+            }
         };
 
         this.permissions = {
@@ -1528,6 +1569,14 @@
                 params: window.mollify.utils.getUrlParams(u),
                 paramsString: (parts.length > 1 ? ("?" + parts[1]) : "")
             };
+        },
+
+        getBaseUrl: function(url) {
+            var param = url.lastIndexOf('?');
+            if (param >= 0) url = url.substring(0, param + 1);
+
+            var dash = url.lastIndexOf('/');
+            return url.substring(0, dash + 1);
         },
 
         getUrlParams: function(u) {

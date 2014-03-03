@@ -111,6 +111,9 @@
                     return Ember.ObjectController.extend({
                         needs: ['application', 'main', 'files'],
                         actions: {
+                            createFolder: function() {
+                                this.send("doAction", this._m.actions.all.createFolder, this.get('folder'));
+                            },
                             clickItem: function(item, type, src) {
                                 // TODO action spec in settings
                                 var ia = this.getItemAction(item, type);
@@ -309,6 +312,30 @@
                 },
                 handler: function(item) {
                     this._m.filesystem.del(item);
+                }
+            },
+            //create folder
+            createFolder: {
+                titleKey: 'actions.filesystem.create-folder',
+                fa: 'folder',
+                type: 'filesystem-item',
+                isApplicable: function(item) {
+                    return !item.is_file && this.hasPermission('filesystem_item_access', item, 'rw');
+                },
+                handler: function(item) {
+                    var that = this;
+                    this.openInputDialog({
+                        title: "title",
+                        message: "message",
+                        yesTitle: "yes",
+                        noTitle: "no",
+                        isAcceptable: function(val) {
+                            return val && val.length > 0;
+                        },
+                        onAccept: function(name) {
+                            that._m.filesystem.createFolder(name);
+                        }
+                    });
                 }
             }
         },
