@@ -72,41 +72,44 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="components/file-header-nav-menu">
-	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		{{#if selected}}
-			{{#if selected.fa}}
-				{{fa-icon class=selected.fa}}
+	<div class="btn-group navbar-btn">
+		<button class="btn item" {{action "select" selected}}>
+			{{#if selected}}
+				{{#if selected.fa}}
+					{{fa-icon class=selected.fa}}
+				{{else}}
+					{{#if fa}}
+						{{fa-icon class=fa}}
+					{{/if}}
+				{{/if}}
+				<span class="title">
+				{{val selected keyBinding=titleKey translateBinding=titleTranslate}}
 			{{else}}
 				{{#if fa}}
 					{{fa-icon class=fa}}
 				{{/if}}
+				{{title}}
 			{{/if}}
-			<span class="title">
-			{{val selected keyBinding=titleKey translateBinding=titleTranslate}}
-		{{else}}
-			{{#if fa}}
-				{{fa-icon class=fa}}
-			{{/if}}
-			{{title}}
-		{{/if}}
-		<b class="caret"></b>
-	</a>
-	<ul class="dropdown-menu">
-		{{#each items}}
-			<li>
-				<a {{action "select" this}}>
-					{{#if fa}}
-						{{fa-icon class=fa}}
-					{{/if}}
-					{{val this keyBinding=controller.titleKey translateBinding=controller.titleTranslate}}
-				</a>
-			</li>
-		{{/each}}
-	</ul>
+		</button>
+        <button data-toggle="dropdown" class="btn dropdown-toggle"><span class="caret"></span></button>
+
+		<ul class="dropdown-menu">
+			{{#each items}}
+				<li>
+					<a {{action "select" this}}>
+						{{#if fa}}
+							{{fa-icon class=fa}}
+						{{/if}}
+						{{val this keyBinding=controller.titleKey translateBinding=controller.titleTranslate}}
+					</a>
+				</li>
+			{{/each}}
+		</ul>
+	</div>
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-header-tools">
-	{{bs-pills contentBinding="viewTypes" selectedBinding="viewType" class="navbar-right"}}
+	{{bs-pills contentBinding="viewTypes" selectedBinding="viewType" class="navbar-nav navbar-right"}}
 	<!--ul class="nav navbar-nav navbar-right">		
 		<!--each viewTypes
 			<li><a action "changeViewtype" this>this</a></li>

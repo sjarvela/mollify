@@ -119,16 +119,12 @@
                                 var ia = this.getItemAction(item, type);
                                 if (ia === true) return;
 
-                                if (ia == 'open_menu')
+                                if (ia == 'menu')
                                     this.showPopupMenu(item, src[0]);
                                 else if (ia == 'gotoFolder')
                                     this.send("gotoFolder", item);
-                                else if (ia == 'info')
-                                    this.send("doAction", this._m.actions.all.info, item);
-                                else if (ia == 'download' && item.is_file)
-                                    this.send("doAction", this._m.actions.all.download, item);
-                                else if (ia == 'view' && item.is_file)
-                                    this.send("doAction", this._m.actions.all.view, item);
+                                else if (this._m.actions.all[ia])
+                                    this.send("doAction", this._m.actions.all[ia], item);
                             },
                             mouseOverItem: function(item, src) {
                                 var that = this;
@@ -177,7 +173,7 @@
 
                             if (clickType == 'rightclick') {
                                 handler = 'onRightClick';
-                                action = 'open_menu';
+                                action = 'menu';
                             } else if (clickType == 'doubleclick') {
                                 handler = 'onDblClick';
                                 action = item.is_file ? 'view' : 'gotoFolder';
@@ -346,7 +342,7 @@
 
             App.FileHeaderNavMenuComponent = Ember.Component.extend(App.FilesystemItemDroppable, {
                 tagName: 'li',
-                classNames: ['dropdown'],
+                classNames: ['file-nav dropdown'],
                 titleProperty: false,
                 init: function() {
                     this._super();
