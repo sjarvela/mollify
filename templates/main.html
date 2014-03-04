@@ -37,6 +37,7 @@
 				{{outlet}}
 			</div>
 		</div>
+		{{outlet "popup"}}
 	</div>
 </div>
 </script>
@@ -73,4 +74,16 @@
 			</li>
 		{{/each}}
 	</ul>
+</script>
+
+<script type="text/x-handlebars" data-template-name="main-progress-bar">
+	<div class="main-popup panel panel-default">
+		<div class="panel-body">
+			<div class="header">
+				<span class="title">{{progressTitle}}</span>
+				<span class="message">{{progressMessage}}</span>
+			</div>
+			{{bs-progress progressBinding="progressValue"}}
+		</div>
+	</div>
 </script>

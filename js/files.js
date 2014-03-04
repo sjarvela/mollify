@@ -35,9 +35,19 @@
                     });
                 },
                 model: function() {
+                    var viewTypes = [{
+                        id: 'list',
+                        icon: 'list'
+                    }, {
+                        id: 'icon-small',
+                        icon: 'th'
+                    }, {
+                        id: 'icon-large',
+                        icon: 'th-large'
+                    }];
                     return {
-                        viewTypes: ['list', 'icon-small', 'icon-large'],
-                        viewType: 'list',
+                        viewTypes: viewTypes,
+                        viewType: viewTypes[0],
                         roots: this.filesystem.roots
                     };
                 },
@@ -56,10 +66,10 @@
                         },
 
                         isListView: function() {
-                            return this.get('viewType') == 'list';
+                            return this.get('viewType').id == 'list';
                         }.property('viewType'),
                         isIconViewLarge: function() {
-                            return this.get('viewType') == 'icon-large';
+                            return this.get('viewType').id == 'icon-large';
                         }.property('viewType')
                     });
                 },
@@ -150,7 +160,7 @@
                                 });
                             },
                             mouseOutFileComponent: function($t) {
-                                if (this._ctx.qa) {
+                                if (this._ctx.qa && this._ctx.qa.$e) {
                                     var isMouseOverQa = ($t && (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0])));
                                     if (!isMouseOverQa) this.closeQuickActions();
                                 }
@@ -210,24 +220,12 @@
 
                             //TODO update only changed items
                             this.send("gotoFolder", this.get('folder'));
-                        },
-                        uploadListener: {
-                            start: function(files) {
-                                console.log("start");
-                            },
-                            progress: function(progress, bitrate) {
-                                console.log("progress "+progress);
-                            },
-                            finished: function() {
-                                console.log("finished");
-                            },
-                            failed: function() {
-                                console.log("failed");
-                            }
                         }
                     });
                 },
                 setupController: function(controller, model) {
+                    var _m = this;
+
                     if (!controller._ctx)
                         controller._ctx = {
                             _m: this,
@@ -242,6 +240,28 @@
                     if (!controller.eventHandler) {
                         this.events.addEventHandler($.proxy(controller.onEvent, controller));
                         controller.eventHandler = true;
+                    }
+                    if (!controller.uploadListener) {
+                        controller.uploadListener = {
+                            start: function(files) {
+                                console.log("start");
+                                controller.send("showProgress", _m.ui.texts.get('main.files.upload.title', files.length));
+                            },
+                            progress: function(progress, bitrate) {
+                                controller.set('controllers.main.progressMessage', progress + '%');
+                                console.log("progress " + progress);
+                            },
+                            finished: function() {
+                                console.log("finished");
+                                Ember.run.later(controller, function() {
+                                    this.send("hideProgress");
+                                }, 2500)
+                            },
+                            failed: function() {
+                                console.log("failed");
+                                _m.ui.notification.growlError("todo upload failed");
+                            }
+                        };
                     }
                 }
             }
@@ -340,6 +360,23 @@
         setup: function(App) {
             var _m = this;
 
+            App.BsIconPill = Bootstrap.ItemView.extend(Bootstrap.NavItem, Bootstrap.ItemSelection, {
+                template: Ember.Handlebars.compile('{{#if view.content.linkTo}}\n    {{#if view.parentView.dynamicLink}}\n        {{#link-to view.content.linkTo model}}{{view.title}}{{/link-to}}\n    {{else}}\n        {{#linkTo view.content.linkTo}}{{view.title}}{{/linkTo}}\n    {{/if}}\n{{else}}\n    {{view view.pillAsLinkView}}\n{{/if}}'),
+                pillAsLinkView: Ember.View.extend({
+                    tagName: 'a',
+                    template: Ember.Handlebars.compile('{{#if view.parentView.content.icon}}<i class="fa fa-{{unbound view.parentView.content.icon}}"></i>{{else}}{{view.parentView.title}}{{/if}}'),
+                    attributeBindings: ['href'],
+                    href: "#"
+                })
+            });
+            App.BsIconPills = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
+                navType: 'pills',
+                classNameBindings: ['stacked:nav-stacked', 'justified:nav-justified'],
+                attributeBindings: ['style'],
+                itemViewClass: App.BsIconPill
+            });
+            Ember.Handlebars.helper('bs-icon-pills', App.BsIconPills);
+
             App.FileHeaderNavMenuComponent = Ember.Component.extend(App.FilesystemItemDroppable, {
                 tagName: 'li',
                 classNames: ['file-nav dropdown'],
@@ -359,7 +396,7 @@
             App.FileListViewComponent = Ember.Component.extend({
                 needs: ['application'],
                 tagName: 'table',
-                classNames: ['file-list-view table table-striped'],
+                classNames: ['file-list-view table table-striped table-responsive'],
                 actions: {
                     clickItem: function(item, type, src) {
                         var source = src || [];

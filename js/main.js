@@ -16,10 +16,26 @@
                 path: "/",
 
                 routeActions: {
-                    showHeadertools: function(name) {
+                    /*showHeadertools: function(name) {
                         return this.render(name, {
                             into: 'main',
                             outlet: 'header-tools'
+                        });
+                    }*/
+
+                    showProgress: function(title) {
+                        this.controller.set('progressTitle', title);
+                        this.controller.set('progressMessage', '');
+                        this.controller.set('progressValue', 0);
+                        return this.render('main-progress-bar', {
+                            into: 'main',
+                            outlet: 'popup'
+                        });
+                    },
+                    hideProgress: function() {
+                        this.disconnectOutlet({
+                            outlet: 'popup',
+                            parentView: 'main'
                         });
                     }
                 },

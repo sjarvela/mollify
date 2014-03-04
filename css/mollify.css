@@ -7490,6 +7490,13 @@ button.close {
 #mollify .main-view .file-list-view .item.drag-over td {
   background-color: red;
 }
+#mollify .main-view .main-popup {
+  position: absolute;
+  bottom: 0;
+  margin: 0 10%;
+  width: 80%;
+  z-index: 1001;
+}
 #mollify .quick-actions {
   float: left;
   margin-left: -100%;

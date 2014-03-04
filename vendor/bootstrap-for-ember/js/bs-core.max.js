@@ -237,7 +237,7 @@ An extra 'active' css class will be assigned to the Item (this) if this is a sel
       }
       content = this.get('content');
       if (typeof content === 'object') {
-        if (content.get('disabled')) {
+        if (content.get && content.get('disabled')) {
           return;
         }
       }
