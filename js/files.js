@@ -139,30 +139,39 @@
                             mouseOverItem: function(item, src) {
                                 var that = this;
 
-                                this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
-                                    if (that._ctx.qa) that.closeQuickActions();
+                                if (that._ctx.qa) that.closeQuickActions();
+                                if (this.pendingQuickAction) {
+                                    Ember.run.cancel(this.pendingQuickAction);
+                                    this.pendingQuickAction = false;
+                                }
+                                this.pendingQuickAction = Ember.run.later(this, function() {
+                                    this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
+                                        that.set('quickActions', l); //TODO cache?
+                                        that.set('quickActionCtx', item);
 
-                                    that.set('quickActions', l); //TODO cache?
-                                    that.set('quickActionCtx', item);
-
-                                    that._ctx.qa = that._ctx.app.showPopupElement("filelist-quick-actions", that, {
-                                        independent: true,
-                                        pos: function($el) {
-                                            //TODO pos on component itself?
-                                            var pos = src.nameElement.offset();
-                                            $el.css({
-                                                position: "absolute",
-                                                top: (pos.top) + "px",
-                                                left: (pos.left + src.nameElement.outerWidth()) + "px"
-                                            });
-                                        }
+                                        that._ctx.qa = that._ctx.app.showPopupElement("filelist-quick-actions", that, {
+                                            independent: true,
+                                            pos: function($el) {
+                                                //TODO pos on component itself?
+                                                var pos = src.nameElement.offset();
+                                                $el.css({
+                                                    position: "absolute",
+                                                    top: (pos.top) + "px",
+                                                    left: (pos.left + src.nameElement.outerWidth()) + "px"
+                                                });
+                                            }
+                                        });
                                     });
-                                });
+                                }, 400);
                             },
                             mouseOutFileComponent: function($t) {
                                 if (this._ctx.qa && this._ctx.qa.$e) {
                                     var isMouseOverQa = ($t && (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0])));
                                     if (!isMouseOverQa) this.closeQuickActions();
+                                }
+                                if (this.pendingQuickAction) {
+                                    Ember.run.cancel(this.pendingQuickAction);
+                                    this.pendingQuickAction = false;
                                 }
                             }
                         },
@@ -237,6 +246,7 @@
                                 uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('dataRateKbps'), this.ui.texts.get('decimalSeparator'))
                             }
                         };
+                    if (controller._ctx.qa) controller.closeQuickActions();
                     if (!controller.eventHandler) {
                         this.events.addEventHandler($.proxy(controller.onEvent, controller));
                         controller.eventHandler = true;
