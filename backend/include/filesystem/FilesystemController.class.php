@@ -213,12 +213,12 @@
 		
 		private function createFilesystem($folderDef) {
 			if ($folderDef == NULL) throw new ServiceException("INVALID_CONFIGURATION", "Invalid root folder definition");
-
+			
 			$id = isset($folderDef['id']) ? $folderDef['id'] : '';
 			$type = isset($folderDef['type']) ? $folderDef['type'] : NULL;
-			
+
 			if ($type == NULL or !isset($this->filesystems[$type]))
-				throw new ServiceException("INVALID_CONFIGURATION", "Invalid root folder definition (".$id."), type unknown");
+				throw new ServiceException("INVALID_CONFIGURATION", "Invalid root folder definition (".$id."), type unknown [".$type."]");
 			
 			//TODO this is hack, support real filesystem types
 			/*if (array_key_exists("S3FS", $this->filesystems)) {
@@ -229,10 +229,6 @@
 			$factory = $this->filesystems[$type];
 			return $factory->createFilesystem($id, $folderDef, $this);
 		}
-		
-		//private function filesystemType($folderDef) {
-		//	return MollifyFilesystem::TYPE_LOCAL;	// include type in definition when more types are supported
-		//}
 		
 		public function getSessionInfo() {
 			$result = array();

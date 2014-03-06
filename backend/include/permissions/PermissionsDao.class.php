@@ -276,7 +276,7 @@
 		}
 
 		public function addPermission($name, $subject, $userId, $value = "1") {
-			$query = sprintf("INSERT INTO ".$this->db->table("permission")." (name, subject, user_id, permission) VALUES (%s, %s, %s)", $this->db->string($name, TRUE), $this->db->string($subject, TRUE), $this->db->string($userId, TRUE), $this->db->string(strtolower($value), TRUE));
+			$query = sprintf("INSERT INTO ".$this->db->table("permission")." (name, subject, user_id, value) VALUES (%s, %s, %s, %s)", $this->db->string($name, TRUE), $this->db->string($subject, TRUE), $this->db->string($userId, TRUE), $this->db->string(strtolower($value), TRUE));
 			$this->db->update($query);							
 			return TRUE;
 		}

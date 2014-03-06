@@ -167,7 +167,7 @@
 		private function createUser($registration) {
 			$db = $this->env->db();
 			$plugin = $this->env->plugins()->getPlugin("Registration");
-			$permission = $plugin->getSetting("permission", Authentication::PERMISSION_VALUE_READONLY);
+			$permission = $plugin->getSetting("permission", FilesystemController::PERMISSION_LEVEL_READ);
 			
 			$lang = $this->getPluginSetting("language", NULL);
 			$id = $this->env->configuration()->addUser($registration['name'], $lang, $registration['email'], $permission, NULL);
@@ -216,8 +216,13 @@
 			$folderName = $name;
 			if (isset($userFolder["folder_name"])) $folderName = $userFolder["folder_name"];
 			$folderPath = rtrim($basePath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$name;
+			$type = "local";
 			
-			$fs = $this->env->filesystem()->filesystem(array("path" => $folderPath, "name" => $folderName), FALSE);
+			$fs = $this->env->filesystem()->filesystem(array(
+				"type" => $type,
+				"path" => $folderPath,
+				"name" => $folderName
+			), FALSE);
 			if ($fs->exists()) {
 				Logging::logError("Registration: user folder [".$folderPath."] already exists, not added");
 				return;
@@ -230,8 +235,8 @@
 			$folderId = $this->env->configuration()->addFolder($name, $folderPath);
 			$this->env->configuration()->addUserFolder($id, $folderId, $folderName);
 			
-			$fs = $this->env->filesystem()->filesystem(array("id" => $folderId, "path" => $folderPath, "name" => $folderName), FALSE);
-			$this->env->configuration()->addItemPermission($fs->root()->id(), Authentication::PERMISSION_VALUE_READWRITE, $id);
+			$fs = $this->env->filesystem()->filesystem(array("id" => $folderId, "type" => $type, "path" => $folderPath, "name" => $folderName), FALSE);
+			$this->env->permissions()->addFilesystemPermission($fs->root(), "filesystem_item_access", $id, FilesystemController::PERMISSION_LEVEL_READWRITE);
 			
 			if (isset($userFolder["add_to_users"]) and count($userFolder["add_to_users"]) > 0) {
 				$users = $userFolder["add_to_users"];

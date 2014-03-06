@@ -273,6 +273,10 @@
 			//TODO validate			
 			return $this->dao->updatePermissions($permissionData);
 		}
+		
+		public function addFilesystemPermission($item, $name, $userId, $value = "1") {
+			$this->dao->addPermission($name, $item->id(), $userId, $value);
+		}
 
 		public function removeFilesystemPermissions($item, $name = NULL) {
 			$this->dao->removeFilesystemPermissions($name, $item);
