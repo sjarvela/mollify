@@ -59,7 +59,10 @@
 				//else $this->processConfirmById($this->path[1]);
 			} else if (count($this->path) == 2 and $this->path[0] === 'approve') {
 				$requireApproval = $this->getPluginSetting("require_approval", TRUE);
-				if (!$requireApproval) throw $this->invalidRequestException();
+				if (!$requireApproval) {
+					$this->response()->success(array());
+					return;
+				}
 				$this->env->authentication()->assertAdmin();				
 				$this->processApprove($this->path[1]);
 			}

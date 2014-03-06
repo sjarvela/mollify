@@ -34,6 +34,22 @@
 						that._cv.showLoading(false);
 					});
 				};
+
+				var cols = [
+					{ type:"selectrow" },
+					{ id: "icon", title:"", valueMapper: function(r) {
+						return (r.confirmed) ? '<i class="icon-ok"></i>' : '<i class="icon-pencil"></i>';
+					} },
+//							{ id: "icon", title:"", type:"static", content: '<i class="icon-pencil"></i>' },
+					{ id: "name", title: mollify.ui.texts.get('pluginRegistrationAdminNameTitle') },
+					{ id: "email", title: mollify.ui.texts.get('pluginRegistrationAdminEmailTitle') },
+					{ id: "key", title: mollify.ui.texts.get('pluginRegistrationAdminKeyTitle') },
+					{ id: "time", title: mollify.ui.texts.get('pluginRegistrationAdminTimeTitle'), formatter: that._timestampFormatter },
+					{ id: "confirmed", title: mollify.ui.texts.get('pluginRegistrationAdminConfirmedTitle'), formatter: that._timestampFormatter },
+				];
+				//if ()
+				cols.push({ id: "approve", title: mollify.ui.texts.get('pluginRegistrationAdminApproveTitle'), type: "action", content: '<i class="icon-thumbs-up"></i>' });
+				cols.push({ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' });
 	
 				listView = new mollify.view.ConfigListView($c, {
 					actions: [
@@ -45,20 +61,7 @@
 						id: "config-admin-registrations",
 						key: "id",
 						narrow: true,
-						columns: [
-							{ type:"selectrow" },
-							{ id: "icon", title:"", valueMapper: function(r) {
-								return (r.confirmed) ? '<i class="icon-ok"></i>' : '<i class="icon-pencil"></i>';
-							} },
-//							{ id: "icon", title:"", type:"static", content: '<i class="icon-pencil"></i>' },
-							{ id: "name", title: mollify.ui.texts.get('pluginRegistrationAdminNameTitle') },
-							{ id: "email", title: mollify.ui.texts.get('pluginRegistrationAdminEmailTitle') },
-							{ id: "key", title: mollify.ui.texts.get('pluginRegistrationAdminKeyTitle') },
-							{ id: "time", title: mollify.ui.texts.get('pluginRegistrationAdminTimeTitle'), formatter: that._timestampFormatter },
-							{ id: "confirmed", title: mollify.ui.texts.get('pluginRegistrationAdminConfirmedTitle'), formatter: that._timestampFormatter },
-							{ id: "approve", title: mollify.ui.texts.get('pluginRegistrationAdminApproveTitle'), type: "action", content: '<i class="icon-thumbs-up"></i>' },
-							{ id: "remove", title: mollify.ui.texts.get('configAdminActionRemoveTitle'), type: "action", content: '<i class="icon-trash"></i>' }
-						],
+						columns: cols,
 						onRow: function($r, r) {
 							if (r.confirmed) $r.addClass("success");
 							else $r.addClass("warning");
