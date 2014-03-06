@@ -1,53 +1,61 @@
 {
     "locale": "en",
     "texts": {
-        "language_en": "English",
-        "language_de": "Deutsch",
+        "lang": {
+            "en": "English",
+            "de": "Deutsch"
+        },
 
-        "decimalSeparator": ".",
-        "groupingSeparator": ",",
-        "zeroDigit": "0",
-        "plusSign": "+",
-        "minusSign": "-",
+        "number": {
+            "decimal-separator": ".",
+            "grouping-separator": ",",
+            "zero-digit": "0",
+            "plus-sign": "+",
+            "minus-sign": "-"
+        },
 
-        "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "daysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        "daysMin": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
-        "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-        "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        "today": "Today",
-        "weekStart": 1,
+        "file-size": {
+            "fmt": "#.#",
+            "bytes": "{0} bytes",
+            "one-b": "1 byte",
+            "one-kb": "1 kB",
+            "kb": "{0} kB",
+            "mb": "{0} MB",
+            "gb": "{0} GB",
+            "kbs": "kb/s"
+        },
 
-        "fileSizeFormat": "#.#",
-        "sizeInBytes": "{0} bytes",
-        "sizeOneByte": "1 byte",
-        "sizeOneKilobyte": "1 kB",
-        "sizeInKilobytes": "{0} kB",
-        "sizeInMegabytes": "{0} MB",
-        "sizeInGigabytes": "{0} GB",
-        "dataRateKbps": "kb/s",
-
-        "shortDateTimeFormat": "M/d/yyyy h:mm:ss tt",
-        "shortDateFormat": "M/d/yyyy",
-        "timeFormat": "h:mm:ss a",
+        "datetime": {
+            "fmt": {
+                "datetime-short": "M/d/yyyy h:mm:ss tt",
+                "date-short": "M/d/yyyy",
+                "time": "h:mm:ss a"
+            },
+            "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "days-short": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            "days-min": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+            "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            "months-short": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            "today": "Today",
+            "weekStart": 1
+        },
 
         "pleaseWait": "Please wait...",
-        "yes": "Yes",
-        "no": "No",
-        "ok": "OK",
-        "dialogCancelButton": "Cancel",
-        "dialogCancel": "Cancel",
-        "dialogClose": "Close",
-        "dialogSave": "Save",
-        "errorDialogTitle": "Mollify",
-        "errorDialogUnknownError": "Request failed",
-        "errorDialogMessage_204": "File already exists.",
-        "errorDialogMessage_205": "Folder already exists.",
-        "errorDialogMessage_212": "Insufficient permissions",
 
         "dialogs": {
             "cancel": "Cancel",
-            "ok": "OK"
+            "ok": "OK",
+            "yes": "Yes",
+            "no": "No",
+            "save": "Save"
+        },
+
+        "error": {
+            "title": "Mollify",
+            "unknown": "Request failed",
+            "204": "File already exists.",
+            "205": "Folder already exists.",
+            "212": "Insufficient permissions"
         },
 
         "login-view": {
@@ -88,7 +96,7 @@
             "title": "Configuration",
 
             "list": {
-            	"id": "ID"
+                "id": "ID"
             },
 
             "account": {
@@ -98,8 +106,8 @@
 
             "users": {
                 "title": "Users",
-                "list" : {
-                	"name" : "Username"
+                "list": {
+                    "name": "Username"
                 }
             }
         },

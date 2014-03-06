@@ -1505,20 +1505,20 @@
                 } else if (typeof(b) !== "number") return "";
 
                 if (bytes < 1024)
-                    return (bytes == 1 ? texts.get('sizeOneByte') : texts.get('sizeInBytes', nf.format(bytes)));
+                    return (bytes == 1 ? texts.get('file-size.one-byte') : texts.get('file-size.bytes', nf.format(bytes)));
 
                 if (bytes < (1024 * 1024)) {
                     var kilobytes = bytes / 1024;
-                    return (kilobytes == 1 ? texts.get('sizeOneKilobyte') : texts.get('sizeInKilobytes', nf.format(kilobytes)));
+                    return (kilobytes == 1 ? texts.get('file-size.one-kb') : texts.get('file-size.kb', nf.format(kilobytes)));
                 }
 
                 if (bytes < (1024 * 1024 * 1024)) {
                     var megabytes = bytes / (1024 * 1024);
-                    return texts.get('sizeInMegabytes', nf.format(megabytes));
+                    return texts.get('file-size.mb', nf.format(megabytes));
                 }
 
                 var gigabytes = bytes / (1024 * 1024 * 1024);
-                return texts.get('sizeInGigabytes', nf.format(gigabytes));
+                return texts.get('file-size.gb', nf.format(gigabytes));
             };
         },
         Timestamp: function(fmt) {
