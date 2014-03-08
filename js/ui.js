@@ -1030,9 +1030,12 @@
 				if (col.type == 'selectrow') {
 					var $sel = $('<input class="mollify-tableselect" type="checkbox"></input>').appendTo($cell.empty());
 				} else if (col.type == 'action') {
-					var html = col.content;
-					if (col.formatter) html = col.formatter(item, v);
-					if (html) $("<a class='mollify-tableaction' title='"+col.title+"'></a>").html(html).appendTo($cell.empty());
+					var html = '';
+					if (!col.visible || col.visible(item)) {
+						html = col.content;
+						if (col.formatter) html = col.formatter(item, v);
+						if (html) $("<a class='mollify-tableaction' title='"+col.title+"'></a>").html(html).appendTo($cell.empty());
+					}
 				} else if (col.type == "input") {
 					var $s = $cell[0].ctrl;
 					if (!$s) {

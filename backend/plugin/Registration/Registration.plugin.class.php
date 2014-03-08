@@ -29,6 +29,10 @@
 		public function versionHistory() {
 			return array("1_0", "1_1");
 		}
+		
+		public function getSessionInfo() {
+			return array("require_approval" => $this->getSetting("require_approval", TRUE));
+		}
 				
 		public function __toString() {
 			return "RegistrationPlugin";
