@@ -671,6 +671,7 @@
 			$this->assertUploadFileType($name);
 			
 			$append = ($range != NULL);
+			
 			//TODO check for max post size, range etc
 			$target = $folder->fileWithName($name);
 			if (!$append and $target->exists()) {
@@ -697,7 +698,7 @@
 			//if ($size != NULL && $target->size() == $size) {
 			//}
 			
-			if (!$append)
+			if (!$append or ($range[2] >= $range[3]-1))
 				$this->env->events()->onEvent(FileEvent::upload($target));
 		}
 		
@@ -878,10 +879,10 @@
 		}
 				
 		public function details() {
-			$f = $this->item->id()." (".$this->item->filesystem()->name().")";
+			$f = $this->item->id();
 			
 			if ($this->subType() === self::RENAME or $this->subType() === self::COPY or $this->subType() === self::MOVE)
-				return 'item id='.$f.';to='.$this->info->id()." (".$this->info->filesystem()->name().")";
+				return 'item id='.$f.';to='.$this->info->id();
 			return 'item id='.$f;
 		}
 		
