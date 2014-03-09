@@ -37,17 +37,20 @@
                 model: function() {
                     var viewTypes = [{
                         id: 'list',
+                        type: 'list',
                         icon: 'list'
                     }, {
                         id: 'icon-small',
+                        type: 'icon',
                         icon: 'th'
                     }, {
                         id: 'icon-large',
+                        type: 'icon',
                         icon: 'th-large'
                     }];
                     return {
                         viewTypes: viewTypes,
-                        viewType: viewTypes[0],
+                        viewType: null,
                         roots: this.filesystem.roots
                     };
                 },
@@ -59,14 +62,35 @@
                 },
                 controller: function() {
                     return Ember.ObjectController.extend({
+                        needs: ['application', 'main'],
                         actions: {
-                            changeViewtype: function(t) {
+                            /*changeViewtype: function(t) {
                                 this.set('viewType', t);
-                            }
+                            }*/
                         },
 
+                        onViewTypeChange: function() {
+                            var t = this.get('viewType');
+                            if (!t) return;
+
+                            var that = this;
+                            if (t.type == 'list') {
+                                var cols = [];
+                                $.each(mollify.utils.getKeys(this._ctx.settings["list-view-columns"]), function(i, k) {
+                                    var spec = mollify.filelist.columnsById[k];
+                                    if (!spec) return;
+
+                                    spec = $.extend({}, spec);
+                                    spec.opts = $.extend({}, spec.opts, that._ctx.settings["list-view-columns"][k]);
+                                    cols.push(spec);
+                                });
+                                this._ctx.filelist = {
+                                    cols: cols
+                                }
+                            }
+                        }.observes('viewType'),
                         isListView: function() {
-                            return this.get('viewType').id == 'list';
+                            return this.get('viewType').type == 'list';
                         }.property('viewType'),
                         isIconViewLarge: function() {
                             return this.get('viewType').id == 'icon-large';
@@ -77,6 +101,22 @@
                     before: function(_m, transition) {
                         if (_m.filesystem.roots.length === 0) return;
                         this.transitionTo("item", _m.filesystem.roots[0].id);
+                    }
+                },
+                setupController: function(controller, model) {
+                    var _m = this;
+
+                    // first setup
+                    if (!controller._ctx) {
+                        var settings = _m.settings['file-view'];
+
+                        controller._ctx = {
+                            _m: this,
+                            settings: settings,
+                            app: controller.get('controllers.application')
+                        };
+
+                        controller.set('viewType', controller.get('viewTypes')[0]);
                     }
                 }
             },
@@ -132,11 +172,11 @@
                                     this.pendingQuickAction = false;
                                 }
                                 this.pendingQuickAction = Ember.run.later(this, function() {
-                                    this._ctx._m.actions.filesystem(item, this._ctx.settings["quick-actions"]).done(function(l) {
+                                    this._ctx._m.actions.filesystem(item, this._ctx.fileview.settings["quick-actions"]).done(function(l) {
                                         that.set('quickActions', l); //TODO cache?
                                         that.set('quickActionCtx', item);
 
-                                        that._ctx.qa = that._ctx.app.showPopupElement("filelist-quick-actions", that, {
+                                        that._ctx.qa = that._ctx.fileview.app.showPopupElement("filelist-quick-actions", that, {
                                             independent: true,
                                             pos: function($el) {
                                                 //TODO pos on component itself?
@@ -177,9 +217,13 @@
                         reload: function() {
                             this.set('loading', true);
 
-                            var data = {
-                                foo: 'bar'
-                            }; //TODO get from plugins/list component
+                            var data = {};
+                            if (this.get('controllers.files.isListView')) {
+
+                            } else {
+                                //icon
+                            }
+                            //TODO get from plugins/list component
                             var that = this;
                             var id = this.get('model.id');
 
@@ -222,9 +266,9 @@
                                 action = item.is_file ? 'view' : 'gotoFolder';
                             }
 
-                            if (this._ctx.settings.actions[handler]) {
+                            if (this._ctx.fileview.settings.actions[handler]) {
                                 var ctx = {}; //TODO
-                                var customAction = this._ctx.settings.actions[handler](item, ctx);
+                                var customAction = this._ctx.fileview.settings.actions[handler](item, ctx);
                                 if (customAction === true) return true;
                                 if (customAction) action = customAction;
                             }
@@ -232,7 +276,7 @@
                         },
                         showPopupMenu: function(item, src) {
                             var that = this;
-                            this._ctx.app.showPopupMenu(src.element, this._m.actions.filesystem(item), item, function(action) {
+                            this._ctx.fileview.app.showPopupMenu(src.element, this._m.actions.filesystem(item), item, function(action) {
                                 that.send("doAction", action, item);
                             });
                         },
@@ -266,8 +310,9 @@
 
                         controller._ctx = {
                             _m: this,
-                            settings: settings,
-                            app: controller.get('controllers.application'),
+                            fileview: controller.get('controllers.files')._ctx,
+                            //settings: settings,
+                            //app: controller.get('controllers.application'),
                             formatters: {
                                 byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('number.decimal-separator'))),
                                 timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('datetime.fmt.date-short')),
@@ -479,15 +524,7 @@
                     var that = this;
                     this._ctx = this.get('targetObject._ctx');
 
-                    var cols = [];
-                    $.each(mollify.utils.getKeys(this._ctx.settings["list-view-columns"]), function(i, k) {
-                        var spec = mollify.filelist.columnsById[k];
-                        if (!spec) return;
-
-                        spec = $.extend({}, spec);
-                        spec.opts = $.extend({}, spec.opts, that._ctx.settings["list-view-columns"][k]);
-                        cols.push(spec);
-                    });
+                    var cols = that._ctx.fileview.filelist.cols;
                     this.set('cols', cols);
                     this.set('sortCol', cols[0]);
                     this.set('sortAsc', true);
