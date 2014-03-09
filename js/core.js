@@ -219,7 +219,7 @@
             App.FilesystemItemDroppable = Ember.Mixin.create(App.Droppable, {
                 canDrop: function(o) {
                     // allow dropping only filesystem items, that are not same as itself
-                    if (!this.droppable || !o || !'filesystem-item' == o.type || o.obj == this.dropObj) return false;
+                    if (!this.droppable || !o || 'filesystem-item' != o.type || o.obj == this.dropObj) return false;
 
                     var itm = o.obj;
                     var to = this.dropObj;

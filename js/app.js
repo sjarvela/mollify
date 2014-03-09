@@ -68,7 +68,7 @@
             var cv = allViews[current];
             if (cv.templateFile) list.push(cv.templateFile);
             current = cv.parent;
-        };
+        }
         return list;
     };
 
@@ -233,7 +233,9 @@
                 });
                 controller.container = this.container;
                 controller.namespace = this.namespace;
-                this.openModal('core-input-dialog', { controller: controller });
+                this.openModal('core-input-dialog', {
+                    controller: controller
+                });
             },
 
             showPopupMenu: function($e, items, ctx, cb) {

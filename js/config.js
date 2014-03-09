@@ -126,7 +126,7 @@
                         needs: ['main', 'config'],
                         actions: {
                             colAction: function(col, user) {
-                                window.alert("edit "+user.id);
+                                window.alert("edit " + user.id);
                             }
                         },
                         cols: [{
