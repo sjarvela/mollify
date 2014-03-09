@@ -16,13 +16,6 @@
                 path: "/",
 
                 routeActions: {
-                    /*showHeadertools: function(name) {
-                        return this.render(name, {
-                            into: 'main',
-                            outlet: 'header-tools'
-                        });
-                    }*/
-
                     showProgress: function(title) {
                         this.controller.set('progressTitle', title);
                         this.controller.set('progressMessage', '');

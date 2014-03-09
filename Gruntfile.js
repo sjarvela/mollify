@@ -43,7 +43,7 @@ module.exports = function (grunt) {
         src: []//TODO clean up 'Gruntfile.js']
       },
       src: {
-        src: 'js/*.js'
+        src: ['js/main.js', 'js/files.js']
       },
       test: {
         src: []//'js/tests/unit/*.js'
