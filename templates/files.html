@@ -6,7 +6,7 @@
 	<h2>{{folder.name}}</h2>
 
 	{{#if controllers.files.isListView}}
-		{{file-list-view items=items clickItem="clickItem" mouseOverItem="mouseOverItem" mouseOut="mouseOutFileComponent"}}
+		{{file-list-view model=model clickItem="clickItem" mouseOverItem="mouseOverItem" mouseOut="mouseOutFileComponent"}}
 	{{else}}
 		{{file-icon-view items=items click-item="gotoFolder" large=controllers.files.isIconViewLarge}}
 	{{/if}}
@@ -22,14 +22,14 @@
 	</thead>
 	<tbody>			
 		{{#each item in sorted}}
-			{{file-list-row item=item cols=cols clickItem="clickItem" mouseOver="mouseOverItem"}}
+			{{file-list-row item=item cols=cols data=model.data clickItem="clickItem" mouseOver="mouseOverItem"}}
 		{{/each}}
 	</tbody>
 </script>
 
 <script type="text/x-handlebars" data-template-name="components/file-list-row">
 	{{#each col in cols}}
-		{{file-list-cell item=item col=col clickItem="clickItem"}}
+		{{file-list-cell item=item col=col data=data clickItem="clickItem"}}
 	{{/each}}
 </script>
 
@@ -109,10 +109,6 @@
 
 <script type="text/x-handlebars" data-template-name="files-header-tools">
 	{{bs-icon-pills contentBinding="viewTypes" selectedBinding="viewType" class="navbar-nav navbar-right"}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="bs-icon-pill">
-	icon-pill
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-sidebar-nav">

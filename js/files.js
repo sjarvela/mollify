@@ -64,9 +64,6 @@
                     return Ember.ObjectController.extend({
                         needs: ['application', 'main'],
                         actions: {
-                            /*changeViewtype: function(t) {
-                                this.set('viewType', t);
-                            }*/
                         },
 
                         onViewTypeChange: function() {
@@ -115,9 +112,8 @@
                             settings: settings,
                             app: controller.get('controllers.application')
                         };
-
-                        controller.set('viewType', controller.get('viewTypes')[0]);
                     }
+                    controller.set('viewType', controller.get('viewTypes')[0]);
                 }
             },
 
@@ -152,7 +148,6 @@
                                 this.send("doAction", this._m.actions.all.createFolder, this.get('folder'));
                             },
                             clickItem: function(item, type, src) {
-                                // TODO action spec in settings
                                 var ia = this.getItemAction(item, type);
                                 if (ia === true) return;
 
@@ -219,7 +214,9 @@
 
                             var data = {};
                             if (this.get('controllers.files.isListView')) {
-
+                                $.each(this._ctx.fileview.filelist.cols, function(i, c){
+                                    if (c.dataId) data[c.dataId] = {};
+                                });
                             } else {
                                 //icon
                             }
@@ -503,13 +500,13 @@
                 sorted: function() {
                     var sortCol = this.get('sortCol');
                     var asc = this.get('sortAsc');
-                    var items = this.get('items');
+                    var items = this.get('model.items');
                     var sorted = items ? items.slice(0) : [];
                     if (sortCol.sort) sorted.sort(function(i1, i2) {
                         return sortCol.sort(i1, i2, asc ? 1 : -1);
                     });
                     return sorted;
-                }.property('sortCol', 'sortAsc', 'items'),
+                }.property('sortCol', 'sortAsc', 'model'),
 
                 getActionSource: function() {
                     return {
@@ -573,16 +570,6 @@
                 mouseEnter: function(e) {
                     this.sendAction("mouseOver", this.get('item'), this.getActionSource());
                 }
-                /*mouseLeave: function(e) {
-                    if (this._ctx.qa) {
-                        var $t = $(e.toElement || e.relatedTarget);
-                        var isQa = (this._ctx.qa.$e == $t || $.contains(this._ctx.qa.$e[0], $t[0]));
-                        if (!isQa) {
-                            this._ctx.qa.close();
-                            this._ctx.qa = false;
-                        }
-                    }
-                }*/
             });
 
             App.FileListCellComponent = Ember.Component.extend({
@@ -604,8 +591,9 @@
                 content: function() {
                     var item = this.get('item');
                     var col = this.get('col');
+                    var data = this.get('data');
 
-                    return col.content.apply(this._ctx, [item]);
+                    return col.content.apply(this._ctx, [item, data]);
                 }.property('contentKey'), //TODO bind to actual property
 
                 getActionSource: function() {
@@ -695,7 +683,7 @@
     });
     mollify.filelist.registerColumn({
         id: "file-modified",
-        requestId: "core-file-modified",
+        dataId: "core-file-modified",
         titleKey: "fileListColumnTitleLastModified",
         opts: {
             "width": 180
@@ -710,7 +698,7 @@
         },
         content: function(item, data) {
             if (!item.id || !item.is_file || !data || !data["core-file-modified"] || !data["core-file-modified"][item.id]) return "";
-            return this.formatters.timestamp.format(mollify.helpers.parseInternalTime(data["core-file-modified"][item.id]));
+            return this.formatters.timestamp.format(mollify.utils.parseInternalTime(data["core-file-modified"][item.id]));
         }
     });
 }(window.jQuery, window.mollify);
