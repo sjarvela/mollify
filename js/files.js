@@ -312,7 +312,7 @@
                             //app: controller.get('controllers.application'),
                             formatters: {
                                 byteSize: new mollify.formatters.ByteSize(this.ui.texts, new mollify.formatters.Number(2, false, this.ui.texts.get('number.decimal-separator'))),
-                                timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('datetime.fmt.date-short')),
+                                timestamp: new mollify.formatters.Timestamp(this.ui.texts.get('datetime.fmt.datetime-short')),
                                 uploadSpeed: new mollify.formatters.Number(1, this.ui.texts.get('file-size.kbps'), this.ui.texts.get('number.decimal-separator'))
                             }
                         };

@@ -36,7 +36,7 @@
 			}
 			
 			$toAddress = '';
-			$headers = $isHtml ? ('MIME-Version: 1.0' . "\r\n" . 'Content-type: text/html; charset=utf-8' . "\r\n") : "";
+			$headers = $isHtml ? ('MIME-Version: 1.0' . "\r\n" . 'Content-type: text/html; charset=utf-8' . "\r\n") : ('MIME-Version: 1.0' . "\r\n" . 'Content-type: text/plain; charset=utf-8' . "\r\n");
 			$headers .= 'From:'.$f;
 			
 			if (count($validRecipients) == 1) {
