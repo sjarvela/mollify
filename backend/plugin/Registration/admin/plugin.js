@@ -93,7 +93,7 @@
                                 title: mollify.ui.texts.get('pluginRegistrationAdminApproveTitle'),
                                 type: "action",
                                 content: '<i class="icon-thumbs-up"></i>',
-                                visible: function(r) {
+                                enabled: function(r) {
                                     return mollify.session.plugins.Registration.require_approval && r.confirmed;
                                 }
                             }, {
