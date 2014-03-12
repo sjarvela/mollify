@@ -275,7 +275,7 @@
 		}
 		
 		public function addFilesystemPermission($item, $name, $userId, $value = "1") {
-			$this->dao->addPermission($name, $item->id(), $userId, $value);
+			$this->dao->addPermission($name, $item != NULL ? $item->id() : "", $userId, $value);
 		}
 
 		public function removeFilesystemPermissions($item, $name = NULL) {
