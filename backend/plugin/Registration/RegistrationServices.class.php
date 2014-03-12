@@ -170,12 +170,12 @@
 		private function createUser($registration) {
 			$db = $this->env->db();
 			$plugin = $this->env->plugins()->getPlugin("Registration");
-			$permission = $plugin->getSetting("permission", FilesystemController::PERMISSION_LEVEL_READ);
+			$defaultPermission = $plugin->getSetting("permission", NULL);
 			
 			$lang = $this->getPluginSetting("language", NULL);
 			$id = $this->env->configuration()->addUser($registration['name'], $lang, $registration['email'], NULL, NULL);
 			$this->env->configuration()->storeUserAuth($id, $registration['name'], NULL, $registration['password']);
-			$this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $id, $permission);
+			if ($defaultPermission != NULL) $this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $id, $defaultPermission);
 			
 			$db->update("DELETE from ".$db->table("registration")." where `id`=".$db->string($registration['id'],TRUE));
 			
