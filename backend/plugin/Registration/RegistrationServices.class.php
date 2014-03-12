@@ -173,8 +173,10 @@
 			$permission = $plugin->getSetting("permission", FilesystemController::PERMISSION_LEVEL_READ);
 			
 			$lang = $this->getPluginSetting("language", NULL);
-			$id = $this->env->configuration()->addUser($registration['name'], $lang, $registration['email'], $permission, NULL);
+			$id = $this->env->configuration()->addUser($registration['name'], $lang, $registration['email'], NULL, NULL);
 			$this->env->configuration()->storeUserAuth($id, $registration['name'], NULL, $registration['password']);
+			$this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $id, $permission);
+			
 			$db->update("DELETE from ".$db->table("registration")." where `id`=".$db->string($registration['id'],TRUE));
 			
 			$this->addUserProperties($id, $registration['name'], $plugin);
