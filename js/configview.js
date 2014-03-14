@@ -733,6 +733,7 @@
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-user"></i>' },
+						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
 						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle') },
 						{ id: "description", title: mollify.ui.texts.get('configAdminGroupsDescriptionTitle') },
 						{ id: "edit", title: mollify.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },
