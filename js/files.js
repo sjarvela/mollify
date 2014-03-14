@@ -381,8 +381,7 @@
                     return this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
-                    if (!this._m.permissions.hasPermission('filesystem_item_access', item, 'r')) return;
-                    alert('info ' + item.name);
+                    this.openModal('files-item-info', {model: item});
                 }
             },
             //copy
@@ -626,6 +625,13 @@
             App.FileIconViewComponent = Ember.Component.extend({
                 classNames: ['file-icon-view'],
                 classNameBindings: ['large:large']
+            });
+
+           // item info
+            App.FilesItemInfoController = Ember.ObjectController.extend({
+                titleKey: 'item-info.title',
+                actions: {
+                }
             });
         }
     });
