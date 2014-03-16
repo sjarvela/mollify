@@ -90,10 +90,10 @@
 			if ($this->subType() == self::REGISTER) {
 				$values["registration_id"] = $this->registrationId;
 				$values["registration_key"] = $this->registrationKey;
-				$values["admin_approve_link"] = $formatter->getServiceUrl("registration", ["approve", $this->registrationId]);
+				$values["registration_approve_link"] = $formatter->getClientUrl("?v=registration/approve&id=".$this->registrationId);
 			} else if ($this->subType() == self::CONFIRM) {
 				$values["registration_id"] = $this->registrationId;	
-				$values["admin_approve_link"] = $formatter->getServiceUrl("registration", ["approve", $this->registrationId]);			
+				$values["registration_approve_link"] = $formatter->getClientUrl("?v=registration/approve&id=".$this->registrationId);
 			}
 			return $values;
 		}

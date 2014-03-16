@@ -165,7 +165,7 @@
 			$requireApproval = $this->getPluginSetting("require_approval", TRUE);
 			if ($requireApproval) $this->notifyApproved($r);
 			
-			$this->response()->success(array());
+			$this->response()->success($r);
 		}
 		
 		private function confirm($registration) {

@@ -3374,7 +3374,7 @@
                     $("#mollify-registration-main").addClass("loading");
                     mollify.service.post("registration/approve/"+urlParams.id, {}).done(function(r) {
                         $("#mollify-registration-main").removeClass("loading");
-                        $("#mollify-registration-approval-success").show();
+                        $("#mollify-registration-approval-success").show().find("p").html(mollify.ui.texts.get('registrationApprovalSuccessMessage', [r.name, r.email]));
                     }).fail(function(error) {
                         $("#mollify-registration-main").removeClass("loading");
                         this.handled = true;

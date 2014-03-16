@@ -329,6 +329,7 @@
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-user"></i>' },
+						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
 						{ id: "name", title: mollify.ui.texts.get('configAdminUsersNameTitle'), sortable: true },
 						{ id: "user_type", title: mollify.ui.texts.get('configAdminUsersTypeTitle'), sortable: true, valueMapper: function(item, type) {
 							if (type == null) return mollify.ui.texts.get("configAdminUsersTypeNormal");

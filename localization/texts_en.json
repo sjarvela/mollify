@@ -437,7 +437,7 @@
 		"registrationContinueButton": "Log into Mollify",
         "registrationInvalidApproval": "Invalid approval request",
         "registrationApprovalSuccessTitle": "Registration approved",
-        "registrationApprovalSuccessMessage": "User account has been created successfully",
+        "registrationApprovalSuccessMessage": "User account created: {0} ({1})",
         "registrationApprovalFailed": "Registration approval failed",
 		
 		"pluginRegistrationAdminNavTitle" : "Registrations",

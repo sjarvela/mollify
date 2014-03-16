@@ -62,47 +62,47 @@
                         key: "id",
                         narrow: true,
                         columns: [{
-                                type: "selectrow"
-                            }, {
-                                id: "icon",
-                                title: "",
-                                valueMapper: function(r) {
-                                    return (r.confirmed) ? '<i class="icon-ok"></i>' : '<i class="icon-pencil"></i>';
-                                }
-                            },
-                            //							{ id: "icon", title:"", type:"static", content: '<i class="icon-pencil"></i>' },
-                            {
-                                id: "name",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminNameTitle')
-                            }, {
-                                id: "email",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminEmailTitle')
-                            }, {
-                                id: "key",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminKeyTitle')
-                            }, {
-                                id: "time",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminTimeTitle'),
-                                formatter: that._timestampFormatter
-                            }, {
-                                id: "confirmed",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminConfirmedTitle'),
-                                formatter: that._timestampFormatter
-                            }, {
-                                id: "approve",
-                                title: mollify.ui.texts.get('pluginRegistrationAdminApproveTitle'),
-                                type: "action",
-                                content: '<i class="icon-thumbs-up"></i>',
-                                enabled: function(r) {
-                                    return mollify.session.plugins.Registration.require_approval && r.confirmed;
-                                }
-                            }, {
-                                id: "remove",
-                                title: mollify.ui.texts.get('configAdminActionRemoveTitle'),
-                                type: "action",
-                                content: '<i class="icon-trash"></i>'
+                            type: "selectrow"
+                        }, {
+                            id: "icon",
+                            title: "",
+                            valueMapper: function(r) {
+                                return (r.confirmed) ? '<i class="icon-ok"></i>' : '<i class="icon-pencil"></i>';
                             }
-                        ],
+                        }, {
+                            id: "id",
+                            title: mollify.ui.texts.get('configAdminTableIdTitle')
+                        }, {
+                            id: "name",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminNameTitle')
+                        }, {
+                            id: "email",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminEmailTitle')
+                        }, {
+                            id: "key",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminKeyTitle')
+                        }, {
+                            id: "time",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminTimeTitle'),
+                            formatter: that._timestampFormatter
+                        }, {
+                            id: "confirmed",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminConfirmedTitle'),
+                            formatter: that._timestampFormatter
+                        }, {
+                            id: "approve",
+                            title: mollify.ui.texts.get('pluginRegistrationAdminApproveTitle'),
+                            type: "action",
+                            content: '<i class="icon-thumbs-up"></i>',
+                            enabled: function(r) {
+                                return mollify.session.plugins.Registration.require_approval && r.confirmed;
+                            }
+                        }, {
+                            id: "remove",
+                            title: mollify.ui.texts.get('configAdminActionRemoveTitle'),
+                            type: "action",
+                            content: '<i class="icon-trash"></i>'
+                        }],
                         onRow: function($r, r) {
                             if (r.confirmed) $r.addClass("success");
                             else $r.addClass("warning");

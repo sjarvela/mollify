@@ -23,5 +23,9 @@
 		public function getServiceUrl($s, $p) {
 			return $this->env->getServiceUrl($s, $p, TRUE);
 		}
+		
+		public function getClientUrl($p) {
+			return $this->env->getClientUrl($p);
+		}
 	}
 ?>
