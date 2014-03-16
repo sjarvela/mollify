@@ -435,6 +435,10 @@
 		"registrationConfirmSuccessWaitApprovalTitle": "Registration complete",
 		"registrationConfirmSuccessWaitApprovalMessage": "Your registration is now complete, but is waiting for approval.",
 		"registrationContinueButton": "Log into Mollify",
+        "registrationInvalidApproval": "Invalid approval request",
+        "registrationApprovalSuccessTitle": "Registration approved",
+        "registrationApprovalSuccessMessage": "User account has been created successfully",
+        "registrationApprovalFailed": "Registration approval failed",
 		
 		"pluginRegistrationAdminNavTitle" : "Registrations",
 		"pluginRegistrationAdminAddRegistrationTitle" : "Add Registration",
