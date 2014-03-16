@@ -10,14 +10,18 @@
 	 */
 
 	class Formatter {
-		private $settings;
+		private $env;
 		 
-		public function __construct($settings) {
-			$this->settings = $settings;
+		public function __construct($env) {
+			$this->env = $env;
 		}
 		
 		public function formatDateTime($t) {
-			return date($this->settings->setting("datetime_format"), $t);
+			return date($this->env->settings()->setting("datetime_format"), $t);
+		}
+		
+		public function getServiceUrl($s, $p) {
+			return $this->env->getServiceUrl($s, $p, TRUE);
 		}
 	}
 ?>

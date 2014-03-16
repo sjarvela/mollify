@@ -50,28 +50,52 @@
 			$eventHandler->registerEventType(Registration::EVENT_TYPE_REGISTRATION, self::USER_CREATED, "Registered user created");
 		}
 		
-		static function registered($name, $email) {
-			return new RegistrationEvent(NULL, $name, self::REGISTER, "email=".$email);
+		static function registered($name, $email, $id, $key) {
+			return new RegistrationEvent(self::REGISTER, NULL, $name, $email, $id, $key);
 		}
 
-		static function confirmed($name, $email) {
-			return new RegistrationEvent(NULL, $name, self::CONFIRM, "email=".$email);
+		static function confirmed($name, $email, $id) {
+			return new RegistrationEvent(self::CONFIRM, NULL, $name, $email, $id);
 		}
 
 		static function userCreated($id, $name) {
-			return new RegistrationEvent($id, $name, self::USER_CREATED);
+			return new RegistrationEvent(self::USER_CREATED, $id, $name);
 		}
+
+		private $registrationId;		
+		private $registrationKey;
 		
-		function __construct($id, $name, $type, $info = "") {
+		function __construct($type, $userId, $username, $email = FALSE, $registrationId = FALSE, $registrationKey = FALSE) {
 			parent::__construct(time(), Registration::EVENT_TYPE_REGISTRATION, $type);
-			$this->user = array("user_id" => $id, "username" => $name);
-			$this->info = $info;
+			$this->user = array("user_id" => $userId, "username" => $username);
+			$this->email = $email;
+			if ($email) $this->user["email"] = $email;
+			
+			$this->registrationId = $registrationId;
+			$this->registrationKey = $registrationKey;
 		}
 		
 		public function setUser($user) {}
-			
+		
 		public function details() {
-			return $this->info;
+			$d = "";
+			if ($this->email) $d.="email=".$this->email.';';
+			if ($this->subType() == self::REGISTER) $d.="registration_id=".$this->registrationId.';'."registration_key=".$this->registrationKey.';';
+			if ($this->subType() == self::CONFIRM) $d.="registration_id=".$this->registrationId.';';
+			return $d;
+		}
+					
+		public function values($formatter) {
+			$values = parent::values($formatter);
+			if ($this->subType() == self::REGISTER) {
+				$values["registration_id"] = $this->registrationId;
+				$values["registration_key"] = $this->registrationKey;
+				$values["admin_approve_link"] = $formatter->getServiceUrl("registration", ["approve", $this->registrationId]);
+			} else if ($this->subType() == self::CONFIRM) {
+				$values["registration_id"] = $this->registrationId;	
+				$values["admin_approve_link"] = $formatter->getServiceUrl("registration", ["approve", $this->registrationId]);			
+			}
+			return $values;
 		}
 	}
 ?>

@@ -144,7 +144,7 @@
 		}
 		
 		public function formatter() {
-			return new Formatter($this->settings);
+			return new Formatter($this);
 		}
 										
 		public function initialize($request = NULL) {

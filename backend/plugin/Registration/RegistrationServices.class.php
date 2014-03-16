@@ -19,12 +19,28 @@
 		}
 		
 		public function processGet() {
-			if (count($this->path) != 1 or $this->path[0] != 'list') throw $this->invalidRequestException();
-			$this->env->authentication()->assertAdmin();
-			
-			$db = $this->env->db();
-			$result = $db->query("select `id`, `name`, `email`, `key`, `time`, `confirmed` from ".$db->table("registration")." order by id asc")->rows();
-			$this->response()->success($result);
+			if (count($this->path) == 1) {
+				if ($this->path[0] != 'list') throw $this->invalidRequestException();
+				$this->env->authentication()->assertAdmin();
+				
+				$db = $this->env->db();
+				$result = $db->query("select `id`, `name`, `email`, `key`, `time`, `confirmed` from ".$db->table("registration")." order by id asc")->rows();
+				$this->response()->success($result);
+				return;
+			} else if (count($this->path) == 2) {
+				if ($this->path[0] != 'approve') throw $this->invalidRequestException();
+				$this->env->authentication()->assertAdmin();
+				$id = $this->path[1];
+				
+				$requireApproval = $this->getPluginSetting("require_approval", TRUE);
+				if (!$requireApproval) {
+					$this->response()->success(array());
+					return;
+				}
+				$this->processApprove($id);
+				return;
+			}
+			throw $this->invalidRequestException();
 		}
 
 		public function processDelete() {
@@ -88,7 +104,7 @@
 			//if (function_exists("onRegisterCustomData")) onRegisterCustomData($registration);
 			
 			$this->notifyRegister($name, $email, $key, $password);
-			$this->env->events()->onEvent(RegistrationEvent::registered($name, $email));
+			$this->env->events()->onEvent(RegistrationEvent::registered($name, $email, $registration["id"], $key));
 			$this->response()->success(array());
 		}
 
@@ -158,9 +174,9 @@
 				$db = $this->env->db();
 				$time = date('YmdHis', time());
 				$db->update("UPDATE ".$db->table("registration")." SET `confirmed`=".$time." where `id`=".$db->string($registration['id'],TRUE));
-				$this->env->events()->onEvent(RegistrationEvent::confirmed($registration['name'], $registration['email']));
+				$this->env->events()->onEvent(RegistrationEvent::confirmed($registration['name'], $registration['email'], $registration["id"]));
 			} else {
-				$this->env->events()->onEvent(RegistrationEvent::confirmed($registration['name'], $registration['email']));
+				$this->env->events()->onEvent(RegistrationEvent::confirmed($registration['name'], $registration['email'], $registration["id"]));
 				$this->createUser($registration);
 			}
 
