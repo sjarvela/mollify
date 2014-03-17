@@ -424,6 +424,7 @@ Views that inherits from this view can be enhanced with:
       if (this.get('content.controller')) {
         itemController = this.get('container').lookup("controller:" + (this.get('content.controller')));
         if (itemController) {
+          itemController.set('model', controller.get('content')); //mollify
           controller = itemController;
         }
       }

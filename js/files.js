@@ -443,10 +443,8 @@
                     return item.is_file;
                 },
                 template: 'item-info-file-details',
-                controller: 'ItemInfoFileDetailsController',
-                title: function(model) {
-                    return "foo";
-                }
+                controller: 'ItemInfoFileDetails',
+                titleKey: 'files-view.file-details.title'
             }
         },
 
@@ -660,7 +658,7 @@
                         var tabs = Ember.A([]);
                         var dt = false;
                         $.each(l, function(i, ii) {
-                            var title = ii.title ? (typeof(ii.title) == 'function' ? ii.title.apply(that._m, [model]) : ii.title) : '';
+                            var title = ii.title ? (typeof(ii.title) == 'function' ? ii.title.apply(that._m, [model]) : ii.title) : (ii.titleKey ? that._m.ui.texts.get(ii.titleKey) : '');
                             if (!dt) dt = title;
                             tabs.push(Ember.Object.create({
                                 title: title,
@@ -668,15 +666,15 @@
                                 controller: ii.controller
                             }));
                         });
-                        that.set('tabsMeta', tabs);
                         that.set('defaultTab', dt);
+                        that.set('tabsMeta', tabs);
                     })
                 }
             });
 
             App.ItemInfoFileDetailsController = Ember.ObjectController.extend({
-                title: function(model) {
-                    return "foo";
+                initx: function(){
+                    this._super();
                 }
             });
         }

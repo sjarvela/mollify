@@ -134,10 +134,12 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-item-info">
-	{{bs-tabs id="item-details" contentBinding="tabsMeta" defaultBinding="defaultTab"}}
-	{{bs-tabs-panes items-id="item-details" contentBinding="tabsMeta"}}
+	{{#if tabsMeta}}
+		{{bs-tabs id="item-details" contentBinding="tabsMeta" defaultBinding="defaultTab"}}
+		{{bs-tabs-panes items-id="item-details" contentBinding="tabsMeta"}}
+	{{/if}}
 </script>
 
 <script type="text/x-handlebars" data-template-name="item-info-file-details">
-	info
+	info {{item.name}}
 </script>
