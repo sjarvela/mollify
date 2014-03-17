@@ -63,8 +63,7 @@
                 controller: function() {
                     return Ember.ObjectController.extend({
                         needs: ['application', 'main'],
-                        actions: {
-                        },
+                        actions: {},
 
                         onViewTypeChange: function() {
                             var t = this.get('viewType');
@@ -214,7 +213,7 @@
 
                             var data = {};
                             if (this.get('controllers.files.isListView')) {
-                                $.each(this._ctx.fileview.filelist.cols, function(i, c){
+                                $.each(this._ctx.fileview.filelist.cols, function(i, c) {
                                     if (c.dataId) data[c.dataId] = {};
                                 });
                             } else {
@@ -381,7 +380,11 @@
                     return this.hasPermission('filesystem_item_access', item, 'r');
                 },
                 handler: function(item) {
-                    this.openModal('files-item-info', {model: item});
+                    this.openModal('files-item-info', {
+                        model: {
+                            item: item
+                        }
+                    });
                 }
             },
             //copy
@@ -430,6 +433,19 @@
                             that._m.filesystem.createFolder(name);
                         }
                     });
+                }
+            }
+        },
+
+        itemInfo: {
+            fileDetails: {
+                isApplicable: function(item) {
+                    return item.is_file;
+                },
+                template: 'item-info-file-details',
+                controller: 'ItemInfoFileDetailsController',
+                title: function(model) {
+                    return "foo";
                 }
             }
         },
@@ -627,10 +643,40 @@
                 classNameBindings: ['large:large']
             });
 
-           // item info
+            // item info
             App.FilesItemInfoController = Ember.ObjectController.extend({
-                titleKey: 'item-info.title',
-                actions: {
+                classNames: ['item-info'],
+                title: function() {
+                    return this.get('item').name;
+                },
+                tabsMeta: Ember.A([]),
+                defaultTab: '',
+                actions: {},
+                onShow: function() {
+                    var that = this;
+                    var model = this.get('model');
+
+                    this._m.itemInfo.getApplicable(this.get('item')).done(function(l) {
+                        var tabs = Ember.A([]);
+                        var dt = false;
+                        $.each(l, function(i, ii) {
+                            var title = ii.title ? (typeof(ii.title) == 'function' ? ii.title.apply(that._m, [model]) : ii.title) : '';
+                            if (!dt) dt = title;
+                            tabs.push(Ember.Object.create({
+                                title: title,
+                                template: ii.template,
+                                controller: ii.controller
+                            }));
+                        });
+                        that.set('tabsMeta', tabs);
+                        that.set('defaultTab', dt);
+                    })
+                }
+            });
+
+            App.ItemInfoFileDetailsController = Ember.ObjectController.extend({
+                title: function(model) {
+                    return "foo";
                 }
             });
         }

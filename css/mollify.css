@@ -7513,3 +7513,6 @@ button.close {
   cursor: pointer;
   text-align: center;
 }
+#mollify .modal.item-info .modal-footer {
+  display: none;
+}

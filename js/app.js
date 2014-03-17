@@ -203,10 +203,11 @@
                     }
                 }
                 var title = opt.title;
-                if (!title && controller.title) title = controller.title;
+                if (!title && controller.title) title = (typeof(controller.title) == 'function') ? controller.title() : controller.title;
                 if (!title && controller.titleKey) title = _m.ui.texts.get(controller.titleKey);
-                Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
-
+                api.modal = Bootstrap.ModalManager.open(name, title || 'Mollify', name, buttons, controller);
+                if (controller.classNames) api.modal.classNames.push(controller.classNames);
+                if (controller.onShow) controller.onShow();
                 return api;
             },
 
@@ -355,6 +356,8 @@
         var hierarchy = {};
         var allViews = {};
         var allActions = {};
+        var allItemInfo = {};
+
         $.each(window.mollify.modules, function(i, module) {
             if (module.actions) {
                 allActions = $.extend(allActions, module.actions);
@@ -375,6 +378,10 @@
                     view._path = (view.parent ? (allViews[view.parent]._path + "/") : "") + viewId;
                     view._emberName = window.mollify.utils.firstLetterUp(viewId);
                 });
+            }
+
+            if (module.itemInfo) {
+                allItemInfo = $.extend(allItemInfo, module.itemInfo);
             }
 
             if (module.setup) module.setup.apply(_m, [App]);
@@ -448,6 +455,42 @@
                     return this.getApplicableByType("filesystem-item-list", i, keys);
                 return this.getApplicableByType("filesystem-item", i, keys);
             }
+        };
+
+        _m.itemInfo = {
+            getApplicable: function(item) {
+                var requestCache = {};
+                var p = {
+                    _m: _m,
+                    hasPermission: function(n, s, r) {
+                        var requestKey = (typeof(s) === "object" ? s.id : s) + "_" + n;
+                        if (requestCache[requestKey])
+                            return requestCache[requestKey];
+                        var pr = _m.permissions.hasPermission(n, s, r);
+                        requestCache[requestKey] = pr;
+                        return pr;
+                    }
+                };
+
+                var list = [];
+                var wait = [];
+                var df = $.Deferred();
+                $.each(allItemInfo, function(i, ii) {
+                    var applicable = !ii.isApplicable || ii.isApplicable.apply(p, [item]);
+                    if (!applicable) return;
+
+                    if (applicable.done) {
+                        wait.push(applicable);
+                        applicable.done(function(ap) {
+                            if (ap) list.push(ii);
+                            wait.remove(applicable);
+                            if (wait.length === 0) df.resolve(list);
+                        }).fail(df.reject);
+                    } else list.push(ii);
+                });
+                if (wait.length === 0) df.resolve(list);
+                return df;
+            },
         };
 
         _m.ui.views = {

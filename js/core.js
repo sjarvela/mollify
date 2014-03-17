@@ -266,6 +266,10 @@
                     }
                 }
             });
+
+            App.ItemInfoFileDetailsController = Ember.ObjectController.extend({
+
+            });
         }
     });
 }(window.jQuery, window.mollify);

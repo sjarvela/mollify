@@ -134,5 +134,10 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="files-item-info">
-	item info: {{name}}
+	{{bs-tabs id="item-details" contentBinding="tabsMeta" defaultBinding="defaultTab"}}
+	{{bs-tabs-panes items-id="item-details" contentBinding="tabsMeta"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="item-info-file-details">
+	info
 </script>
