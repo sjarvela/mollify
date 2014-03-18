@@ -23,7 +23,7 @@
 			if (!isset($data['email']))
 				throw $this->invalidRequestException();
 			
-			$sendHint = ($data['hint'] === TRUE);
+			$sendHint = (isset($data['hint']) and $data['hint'] === TRUE);
 			$allowHint = $this->env->plugins()->getPlugin("LostPassword")->getSetting("enable_hint", FALSE);
 			if ($sendHint && !$allowHint) throw $this->invalidRequestException("Hint not allowed");
 			
