@@ -17,6 +17,7 @@ CREATE TABLE `{TABLE_PREFIX}user_auth` (
   `salt` char(128) NOT NULL,
   `hash` char(128) NOT NULL,
   `a1hash` char(128) NULL,
+  `hint` char(128) NULL,
   PRIMARY KEY (`user_id`),
   KEY `fk_ua_user` (`user_id`)
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify user auth';

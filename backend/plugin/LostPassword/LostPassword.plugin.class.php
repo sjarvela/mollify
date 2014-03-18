@@ -14,6 +14,10 @@
 			$this->addService("lostpassword", "LostPasswordServices");
 			$this->env->features()->addFeature("lost_password");
 		}
+		
+		public function getSessionInfo() {
+			return array("enable_hint" => $this->getSetting("enable_hint", FALSE));
+		}
 				
 		public function __toString() {
 			return "LostPasswordPlugin";

@@ -93,11 +93,12 @@
 			$db = $this->env->db();
 			$name = $registration['name'];
 			$password = base64_decode($registration['password']);
+			$passwordHint = isset($registration['hint']) ? $registration['hint'] : "";
 			$email = $registration['email'];
 			$time = date('YmdHis', time());
 			$key = str_replace(".", "", uniqid("", TRUE));
 			
-			$db->update(sprintf("INSERT INTO ".$db->table("registration")." (`name`, `password`, `email`, `key`, `time`, `confirmed`) VALUES (%s, %s, %s, %s, %s, NULL)", $db->string($name, TRUE), $db->string($password, TRUE), $db->string($email, TRUE), $db->string($key, TRUE), $time));
+			$db->update(sprintf("INSERT INTO ".$db->table("registration")." (`name`, `password`, `password_hint`, `email`, `key`, `time`, `confirmed`) VALUES (%s, %s, %s, %s, %s, %s, NULL)", $db->string($name, TRUE), $db->string($password, TRUE), $db->string($passwordHint, TRUE), $db->string($email, TRUE), $db->string($key, TRUE), $time));
 			$registration["id"] = $db->lastId();
 			
 			//if (file_exists("plugin/Registration/custom/CustomRegistrationHandler.php")) include("custom/CustomRegistrationHandler.php");
@@ -125,7 +126,7 @@
 			$this->assertEmailNotRegistered($confirmation['email']);
 			
 			$db = $this->env->db();
-			$query = "select `id`, `name`, `password`, `email` from ".$db->table("registration")." where `email`=".$db->string($confirmation['email'],TRUE)." and `confirmed` IS NULL and `key`=".$db->string($confirmation['key'],TRUE);
+			$query = "select `id`, `name`, `password`, `password_hint`, `email` from ".$db->table("registration")." where `email`=".$db->string($confirmation['email'],TRUE)." and `confirmed` IS NULL and `key`=".$db->string($confirmation['key'],TRUE);
 			$result = $db->query($query);
 			
 			if ($result->count() != 1) throw new ServiceException("REQUEST_FAILED", "No registration found with email and key");
@@ -155,7 +156,7 @@
 			$this->env->authentication()->assertAdmin();
 			
 			$db = $this->env->db();
-			$query = "select `id`, `name`, `password`, `email` from ".$db->table("registration")." where `id`=".$db->string($id,TRUE);
+			$query = "select `id`, `name`, `password`, `password_hint`, `email` from ".$db->table("registration")." where `id`=".$db->string($id,TRUE);
 			$result = $db->query($query);
 			
 			if ($result->count() != 1) throw new ServiceException("Registration not found");
@@ -190,7 +191,7 @@
 			
 			$lang = $this->getPluginSetting("language", NULL);
 			$id = $this->env->configuration()->addUser($registration['name'], $lang, $registration['email'], NULL, NULL);
-			$this->env->configuration()->storeUserAuth($id, $registration['name'], NULL, $registration['password']);
+			$this->env->configuration()->storeUserAuth($id, $registration['name'], NULL, $registration['password'], $registration['password_hint']);
 			if ($defaultPermission != NULL) $this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $id, $defaultPermission);
 			
 			$db->update("DELETE from ".$db->table("registration")." where `id`=".$db->string($registration['id'],TRUE));

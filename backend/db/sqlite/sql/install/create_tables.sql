@@ -15,6 +15,7 @@ CREATE TABLE user_auth (
   salt char(128) NOT NULL,
   hash char(128) NOT NULL,
   a1hash char(128) NULL,
+  hint char(128) NULL,
   FOREIGN KEY(user_id) REFERENCES user(id)
 );
 CREATE TABLE user_group (

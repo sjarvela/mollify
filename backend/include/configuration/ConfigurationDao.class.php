@@ -67,10 +67,10 @@
 		}
 		
 		public function getUserAuth($id) {
-			return $this->db->query(sprintf("SELECT user_id, type, hash, salt FROM ".$this->db->table("user_auth")." WHERE user_id=%s", $this->db->string($id, TRUE)))->firstRow();
+			return $this->db->query(sprintf("SELECT user_id, type, hash, salt, hint FROM ".$this->db->table("user_auth")." WHERE user_id=%s", $this->db->string($id, TRUE)))->firstRow();
 		}
 		
-		public function storeUserAuth($id, $username, $type, $pw) {
+		public function storeUserAuth($id, $username, $type, $pw, $hint = "") {
 			$transaction = $this->db->isTransaction();
 			if (!$transaction) $this->db->startTransaction();
 			$this->db->update(sprintf("DELETE FROM ".$this->db->table("user_auth")." WHERE user_id=%s", $this->db->string($id, TRUE)));
@@ -78,17 +78,17 @@
 			$hash = $this->env->passwordHash()->createHash($pw);
 			$a1hash = md5($username.":".$this->env->authentication()->realm().":".$pw);
 			
-			$this->db->update(sprintf("INSERT INTO ".$this->db->table("user_auth")." (user_id, type, hash, salt, a1hash) VALUES (%s, %s, %s, %s, %s)", $this->db->string($id, TRUE), $this->db->string($type, TRUE), $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE)));
+			$this->db->update(sprintf("INSERT INTO ".$this->db->table("user_auth")." (user_id, type, hash, salt, a1hash, hint) VALUES (%s, %s, %s, %s, %s, %s)", $this->db->string($id, TRUE), $this->db->string($type, TRUE), $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE), $this->db->string($hint, TRUE)));
 			if (!$transaction) $this->db->commit();
 		}
 		
-		public function updateUserAuth($id, $username, $pw, $type=FALSE) {
+		public function updateUserAuth($id, $username, $pw, $hint, $type=FALSE) {
 			$hash = $this->env->passwordHash()->createHash($pw);
 			$a1hash = md5($username.":".$this->env->authentication()->realm().":".$pw);
 			if ($type !== FALSE)
-				$this->db->update(sprintf("UPDATE ".$this->db->table("user_auth")." SET hash=%s, salt=%s, a1hash=%s, type=%s WHERE user_id=%s", $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE), $this->db->string($type, TRUE), $this->db->string($id, TRUE)));
+				$this->db->update(sprintf("UPDATE ".$this->db->table("user_auth")." SET hash=%s, salt=%s, a1hash=%s, hint=%s, type=%s WHERE user_id=%s", $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE), $this->db->string($hint, TRUE), $this->db->string($type, TRUE), $this->db->string($id, TRUE)));
 			else
-				$this->db->update(sprintf("UPDATE ".$this->db->table("user_auth")." SET hash=%s, salt=%s, a1hash=%s WHERE user_id=%s", $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE), $this->db->string($id, TRUE)));
+				$this->db->update(sprintf("UPDATE ".$this->db->table("user_auth")." SET hash=%s, salt=%s, a1hash=%s, hint=%s WHERE user_id=%s", $this->db->string($hash["hash"], TRUE), $this->db->string($hash["salt"], TRUE), $this->db->string($a1hash, TRUE), $this->db->string($hint, TRUE), $this->db->string($id, TRUE)));
 		}
 		
 		public function updateUserAuthType($id, $type) {

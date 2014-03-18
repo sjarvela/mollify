@@ -223,11 +223,12 @@
 			var $old = false;
 			var $new1 = false;
 			var $new2 = false;
+			var $hint = false;
 			var errorTextMissing = mollify.ui.texts.get('mainviewChangePasswordErrorValueMissing');
 			var errorConfirm = mollify.ui.texts.get('mainviewChangePasswordErrorConfirm');
 
-			var doChangePassword = function(oldPw, newPw, successCb) {
-				mollify.service.put("configuration/users/current/password/", {old:window.Base64.encode(oldPw), "new": window.Base64.encode(newPw) }).done(function(r) {
+			var doChangePassword = function(oldPw, newPw, hint, successCb) {
+				mollify.service.put("configuration/users/current/password/", {old:window.Base64.encode(oldPw), "new": window.Base64.encode(newPw), hint: hint }).done(function(r) {
 					successCb();
 					mollify.ui.dialogs.notification({message:mollify.ui.texts.get('mainviewChangePasswordSuccess')});
 				}).fail(function(e) {
@@ -249,6 +250,7 @@
 					var old = false;
 					var new1 = false;
 					var new2 = false;
+					var hint = false;
 					
 					if (btn.id === 'yes') {
 						$dlg.find(".control-group").removeClass("error");
@@ -258,6 +260,7 @@
 						old = $old.find("input").val();
 						new1 = $new1.find("input").val();
 						new2 = $new2.find("input").val();
+						hint = $hint.find("input").val();
 						
 						if (!old) {
 							$old.addClass("error");
@@ -280,7 +283,7 @@
 						if (!old || !new1 || !new2 || new1 != new2) return;
 					}
 
-					if (btn.id === 'yes') doChangePassword(old, new1, d.close);
+					if (btn.id === 'yes') doChangePassword(old, new1, hint || '', d.close);
 					else d.close();
 				},
 				"on-show": function(h, $d) {
@@ -288,6 +291,7 @@
 					$old = $("#mollify-mainview-changepassword-old");
 					$new1 = $("#mollify-mainview-changepassword-new1");
 					$new2 = $("#mollify-mainview-changepassword-new2");
+					$hint = $("#mollify-mainview-changepassword-hint");
 					
 					$old.find("input").focus();
 				}

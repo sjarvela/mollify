@@ -3230,7 +3230,7 @@
             var vt = this;
 
             this.init = function($c) {
-                mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_create.html"), function() {
+                return mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_create.html"), function() {
                     $("#register-new-button").click(vt.onRegister);
                     $("#registration-new-name").focus();
                 }, ['localize']);
@@ -3243,6 +3243,7 @@
                 var pw = $("#registration-new-pw").val();
                 var confirmPw = $("#registration-new-pw-confirm").val();
                 var email = $("#registration-new-email").val();
+                var hint = $("#registration-new-hint").val();
 
                 var proceed = true;
                 if (!name || name.length === 0) {
@@ -3273,6 +3274,7 @@
                     name: name,
                     password: window.Base64.encode(pw),
                     email: email,
+                    hint: hint || '',
                     data: null
                 }).done(function() {
                     $("#mollify-registration-form").hide();

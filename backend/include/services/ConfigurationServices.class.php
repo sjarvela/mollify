@@ -295,6 +295,10 @@
 						$pw = $this->request->data;
 						if (!isset($pw['new'])) throw $this->invalidRequestException();
 						
+						$hint = "";
+						if (isset($pw["hint"])) $hint = $pw["hint"];
+						if (strlen($hint) > 128) $hint = substr($hint, 0, 128);
+						
 						if ($userId === 'current') {
 							if (!isset($pw['old'])) throw $this->invalidRequestException();
 							$userId = $this->env->session()->userId();
@@ -307,7 +311,7 @@
 							$username = $user["name"];
 						}
 						
-						$this->response()->success($this->env->configuration()->updateUserAuth($userId, $username, base64_decode($pw['new']), FALSE));
+						$this->response()->success($this->env->configuration()->updateUserAuth($userId, $username, base64_decode($pw['new']), $hint, FALSE));
 						return;
 				}				
 			}
