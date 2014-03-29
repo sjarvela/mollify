@@ -531,9 +531,7 @@
 	}
 
 	mollify.admin.plugins.Notificator = {
-		resources : {
-			texts: true
-		},
+		resources : {},
 		views: [
 			new mollify.view.config.admin.Notificator.NotificationsView()
 		]
