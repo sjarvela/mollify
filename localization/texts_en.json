@@ -207,6 +207,8 @@
 		"pluginPermissionsNoEffectiveUserPermission": "User has no permissions related to this item, and permission defaults to: \"<strong>{0}</strong>\"",
 		"pluginPermissionsEffectiveUserRelatedPermissions": "Related permissions in priority order:",
 		"pluginPermissionsEditDialogUnsaved" : "Unsaved modifications",
+		"configAdminPermissionsRemoveConfirmationTitle": "Remove permissions",
+		"configAdminPermissionsRemoveConfirmationMessage": "Are you sure you want to remove selected permissions?",
 										
 		"pluginPermissionsEditColUser": "User",
 		"pluginPermissionsPermissionName": "Name",
