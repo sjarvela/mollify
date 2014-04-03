@@ -1018,6 +1018,7 @@
 					columns: [
 						{ type:"selectrow" },
 						{ id: "icon", title:"", type:"static", content: '<i class="icon-folder-close"></i>' },
+						{ id: "id", title: mollify.ui.texts.get('configAdminTableIdTitle') },
 						{ id: "name", title: mollify.ui.texts.get('configAdminFoldersNameTitle') },
 						{ id: "path", title: mollify.ui.texts.get('configAdminFoldersPathTitle') },
 						{ id: "edit", title: mollify.ui.texts.get('configAdminActionEditTitle'), type: "action", content: '<i class="icon-edit"></i>' },

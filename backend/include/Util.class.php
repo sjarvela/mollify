@@ -60,6 +60,10 @@
 			return $r."}";
 		}
 		
+		static function isAssocArray($arr) {
+		    return array_keys($arr) !== range(0, count($arr) - 1);
+		}
+		
 		static function isArrayKey($a, $k) {
 			return $a != NULL and isset($a[$k]) and $a[$k] != NULL;
 		}

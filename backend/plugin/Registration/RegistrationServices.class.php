@@ -217,15 +217,41 @@
 			}
 			
 			$folders = $plugin->getSetting("folders", array());
-			if (count($folders) > 0) {
+			$folderIds = array();
+			$folderProps = array();
+			if (Util::isAssocArray($folders)) {
+				$folderIds = array_keys($folders);
+				$folderProps = $folders;
+			} else {
+				$folderIds = $folders;
+			}
+			if (count($folderIds) > 0) {
 				$existing = array();
 				foreach ($this->env->configuration()->getFolders() as $folder)
-					if (in_array($folder['id'], $folders)) $existing[] = $folder['id'];
+					if (in_array($folder['id'], $folderIds)) $existing[] = $folder['id'];
 
 				if (count($existing) > 0) {
-					$this->env->configuration()->addUserFolders($id, $existing);
+					//$this->env->configuration()->addUserFolders($id, $existing);
 					foreach ($existing as $f) {
+						$fname = NULL;
+						$fp = array_key_exists($f, $folderProps) ? $folderProps[$f] : array();
 						
+						if (array_key_exists("name", $fp)) $fname = $fp["name"];
+						Logging::logDebug("Assigning user folder: ".$f." (".$fname.")");
+						$this->env->configuration()->addUserFolder($id, $f, $fname);
+
+						// add folder permissions
+						if (array_key_exists("permissions", $fp)) {
+							$fs = $this->env->filesystem()->filesystem($this->env->configuration()->getFolder($f));
+							$permissions = $fp["permissions"];
+							if (!is_array($permissions)) $permissions = array("filesystem_item_access" => $permissions);
+							
+							Logging::logDebug("Setting folder ".$f." permissions: ".Util::array2str($permissions));
+							foreach ($permissions as $pk => $pv) {
+								//TODO validate permission key (pv) and value (pv)
+								$this->env->permissions()->addFilesystemPermission($fs->root(), $pk, $id, $pv);
+							}
+						}
 					}
 				}
 			}
@@ -244,11 +270,13 @@
 			$folderPath = rtrim($basePath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$name;
 			$type = "local";
 			
-			$fs = $this->env->filesystem()->filesystem(array(
+			$uf = array(
 				"type" => $type,
 				"path" => $folderPath,
 				"name" => $folderName
-			), FALSE);
+			);
+			Logging::logDebug("Creating user folder ".Util::array2str($uf));
+			$fs = $this->env->filesystem()->filesystem($uf, FALSE);
 			if ($fs->exists()) {
 				Logging::logError("Registration: user folder [".$folderPath."] already exists, not added");
 				return;
@@ -258,10 +286,10 @@
 				return;
 			}
 			
-			$folderId = $this->env->configuration()->addFolder($name, $folderPath);
-			$this->env->configuration()->addUserFolder($id, $folderId, $folderName);
+			$uf["id"] = $this->env->configuration()->addFolder($name, $folderPath);
+			$this->env->configuration()->addUserFolder($id, $uf["id"], $uf["name"]);
 			
-			$fs = $this->env->filesystem()->filesystem(array("id" => $folderId, "type" => $type, "path" => $folderPath, "name" => $folderName), FALSE);
+			$fs = $this->env->filesystem()->filesystem($uf, FALSE);
 			$this->env->permissions()->addFilesystemPermission($fs->root(), "filesystem_item_access", $id, FilesystemController::PERMISSION_LEVEL_READWRITE);
 			
 			if (isset($userFolder["add_to_users"]) and count($userFolder["add_to_users"]) > 0) {
