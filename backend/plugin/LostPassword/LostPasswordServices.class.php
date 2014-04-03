@@ -34,8 +34,8 @@
 			}
 			
 			if ($sendHint) {
-				$hint = $this->env->configuration()->getUserAuth($user['id'])["hint"];
-				$this->notifyHint($data['email'], $user, $hint);
+				$userAuth = $this->env->configuration()->getUserAuth($user['id']);
+				$this->notifyHint($data['email'], $user, $userAuth["hint"]);
 				$this->response()->success(array());
 				return;
 			}
