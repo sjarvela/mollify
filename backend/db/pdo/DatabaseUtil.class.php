@@ -21,7 +21,7 @@
 		}
 		
 		public function getVersionHistory() {
-			return array("1_8_8", "2_0", "2_2", "2_4", "2_5", "2_5_1");
+			return array("1_8_8", "2_0", "2_2", "2_4", "2_5", "2_5_1", "2_5_6");
 		}
 		
 		public function currentVersion() {
