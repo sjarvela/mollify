@@ -386,7 +386,9 @@ var mollifyDefaults = {
 		mollify.filesystem.rootsById = {};
 		
 		if (f && mollify.session.user) {
-			mollify.filesystem.roots = f;
+			mollify.filesystem.roots = f.sort(function(a, b){
+				return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+			});
 			for (var i=0,j=f.length; i<j; i++)
 				mollify.filesystem.rootsById[f[i].id] = f[i];
 			
