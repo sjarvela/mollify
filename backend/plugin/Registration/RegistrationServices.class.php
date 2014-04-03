@@ -222,8 +222,12 @@
 				foreach ($this->env->configuration()->getFolders() as $folder)
 					if (in_array($folder['id'], $folders)) $existing[] = $folder['id'];
 
-				if (count($existing) > 0)
+				if (count($existing) > 0) {
 					$this->env->configuration()->addUserFolders($id, $existing);
+					foreach ($existing as $f) {
+						
+					}
+				}
 			}
 			
 			$userFolder = $plugin->getSetting("user_folder", NULL);
