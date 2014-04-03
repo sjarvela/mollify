@@ -520,7 +520,7 @@
 				
 				$root = $this->env->settings()->setting("published_folders_root");
 				if ($root != NULL) {
-					if (strpos($folder['path'], "/") === 0 or strpos($folder['path'], ":\\") == 1)
+					if (strpos($folder['path'], "/") === 0 or strpos($folder['path'], ":\\") === 1)
 						throw $this->invalidRequestException("Published folders root defined, absolute paths not allowed");
 					$folder['path'] = rtrim($root, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$folder['path'];
 				}
@@ -569,12 +569,19 @@
 			if (count($this->path) != 2 or !$this->request->hasData()) throw $this->invalidRequestException();
 			
 			$id = $this->path[1];
-			$folder = $this->request->data;
-			if (!isset($folder['name']) or !isset($folder['path'])) throw $this->invalidRequestException();
+			$folderData = $this->request->data;			
+			if (!isset($folderData['name']) or !isset($folderData['path'])) throw $this->invalidRequestException();
+			
+			$folder = $this->env->configuration()->getFolder($id);
+			if ($folder == NULL) throw $this->invalidRequestException();
+			
+			$folder["path"] = $folderData["path"];
+			$folder["name"] = $folderData["name"];
+			
 			$root = $this->env->settings()->setting("published_folders_root", TRUE);
 			if ($root != NULL) {
-				if (strpos($folder['path'], "/") == 0 or strpos($folder['path'], ":\\") == 1)
-					throw $this->invalidRequestException("Published folders root defined, absolute paths not allowed");
+				if (strpos($folder['path'], "/") === 0 or strpos($folder['path'], ":\\") === 1)
+					throw $this->invalidRequestException("Published folders root defined, absolute paths not allowed:".$folder['path']);
 				$folder['path'] = rtrim($root, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$folder['path'];
 			}
 			

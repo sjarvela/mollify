@@ -1179,9 +1179,9 @@
 					
 					var folder = {name: name, path: path};
 					var onFail = function(e){
-						if (e.code == 105) {
+						if (e.code == 105 && !f) {
 							this.handled = true;
-							
+
 							mollify.ui.dialogs.confirmation({title:mollify.ui.texts.get('configAdminFoldersFolderDialogAddTitle'), message: mollify.ui.texts.get('configAdminFoldersFolderDialogAddFolderDoesNotExist'), callback: function() {
 								folder.create = true;
 								if (!f)
