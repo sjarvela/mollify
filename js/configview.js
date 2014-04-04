@@ -629,16 +629,20 @@
 					if (!username || username.length === 0) return;
 					var lang = null;
 					if (showLanguages) lang = $language.selected();
+
+					var effectiveAuth = auth;
+					if (!effectiveAuth) effectiveAuth = that._defaultAuthMethod;
 										
 					var user = { name: username, email: email, user_type : type, expiration: expiration, auth: auth, lang: lang };
 					
 					if (u) {	
 						mollify.service.put("configuration/users/"+u.id, user).done(d.close).done(cb);
 					} else {
+						var pwRequired = (effectiveAuth === 'pw');
 						var password = $password.val();
-						if (!password || password.length === 0) return;
+						if (pwRequired && (!password || password.length === 0)) return;
 						
-						user.password = window.Base64.encode(password);
+						user.password = password ? window.Base64.encode(password) : '';
 						mollify.service.post("configuration/users", user).done(d.close).done(cb);
 					}
 				},
