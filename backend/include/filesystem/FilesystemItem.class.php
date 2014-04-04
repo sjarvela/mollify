@@ -17,7 +17,7 @@
 		function __construct($id, $rootId, $path, $name, $filesystem) {
 			$this->id = $id;
 			$this->rootId = $rootId;
-			$this->path = $path;
+			$this->path = ltrim($path, DIRECTORY_SEPARATOR);
 			$this->name = $name;
 			$this->filesystem = $filesystem;
 		}
