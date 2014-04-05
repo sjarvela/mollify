@@ -58,7 +58,7 @@
 		}
 
 		private function publicPath($path) {
-			return substr($path, strlen($this->rootPath));
+			return ltrim(substr($path, strlen($this->rootPath)), DIRECTORY_SEPARATOR);
 		}
 		
 		public function internalPath($item) {
@@ -396,7 +396,9 @@
 		}
 		
 		static function joinPath($item1, $item2) {
-			return self::folderPath($item1).$item2;
+			$i2 = ltrim($item2, DIRECTORY_SEPARATOR);
+			if (strlen($item1) == 0) return $i2;
+			return self::folderPath($item1).$i2;
 		}
 		
 		static function folderPath($path) {
