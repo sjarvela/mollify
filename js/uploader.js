@@ -94,6 +94,7 @@
 			var $dropZone = o.dropElement || $e;
 			var started = false;
 			var rejected = false;
+			var failed = false;
 			var l = o.handler;
 			
 			var $input = $d.find("input");
@@ -120,6 +121,7 @@
 
 					if (!started) {
 						started = true;
+						failed = false;
 						rejected = false;
 						
 						if (l.isUploadAllowed && !l.isUploadAllowed(data.originalFiles)) {
@@ -147,9 +149,12 @@
 					//console.log("all done");
 					started = false;
 					rejected = false;
-					if (l.finished) l.finished();
+					var wasFailed = failed;
+					failed = false;
+					if (!wasFailed && l.finished) l.finished();
 				},
 				fail: function(e, data) {
+					failed = true;
 					var r = data.response();
 					var error = null;
 					if (r && r.jqXHR) {
@@ -176,6 +181,7 @@
 				var $form = $('<form enctype="multipart/form-data"></form>').appendTo($container);
 				var started = false;
 				var rejected = false;
+				var failed = false;
 				var attributes = '';
 				if (t._getUploaderSettings()["allow-folders"]) attributes = "directory webkitdirectory mozdirectory";
 				var $dndUploader = $('<input type="file" class="mollify-mainview-uploader-input" name="uploader-html5[]" multiple="multiple"' + attributes + '></input>').appendTo($form).fileupload($.extend({
@@ -201,6 +207,7 @@
 						if (!started) {
 							started = true;
 							rejected = false;
+							failed = false;
 							
 							if (h.handler.isUploadAllowed && !h.handler.isUploadAllowed(data.originalFiles)) {
 								rejected = true;
@@ -228,9 +235,12 @@
 						//console.log("all done");
 						started = false;
 						rejected = false;
-						if (h.handler.finished) h.handler.finished();
+						var wasFailed = failed;
+						failed = false;
+						if (!wasFailed && h.handler.finished) h.handler.finished();
 					},
 					fail: function(e, data) {
+						failed = true;
 						var r = data.response();
 						var error = null;
 						if (r && r.jqXHR) {
