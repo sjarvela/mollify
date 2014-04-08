@@ -3299,7 +3299,7 @@
             var vt = this;
 
             this.init = function($c) {
-                mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_confirm.html"), function() {
+                return mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_confirm.html"), function() {
                     if (!urlParams.email || urlParams.email.length === 0) {
                         $("#mollify-registration-main").addClass("complete").empty().append(mollify.dom.template("mollify-tmpl-registration-errormessage", {
                             message: mollify.ui.texts.get('registrationInvalidConfirm')
@@ -3366,7 +3366,7 @@
             var vt = this;
 
             this.init = function($c) {
-                mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_approval.html"), function() {
+                return mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_approval.html"), function() {
                     if (!urlParams.id || urlParams.id.length === 0) {
                         $("#mollify-registration-main").addClass("complete").empty().append(mollify.dom.template("mollify-tmpl-registration-errormessage", {
                             message: mollify.ui.texts.get('registrationInvalidApproval')
