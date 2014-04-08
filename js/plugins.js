@@ -3218,7 +3218,8 @@
                     } else if (rqParts[1] == "confirm") {
                         return new that.ConfirmRegistrationView(urlParams);
                     } else if (rqParts[1] == "approve") {
-                        if (!mollify.session || !mollify.session.user || !mollify.session.user.admin) return false;
+                        if (!mollify.session || !mollify.session.user) return false;
+                        if (!mollify.session.user.admin && !mollify.session.user.hasPermission('manage_user_registrations')) return false;
                         return new that.ApproveRegistrationView(urlParams);
                     }
                     return false;
