@@ -18,10 +18,14 @@
 			return FALSE;
 		}
 		
+		private function assertManagementPermission() {
+			if (!$this->env->permissions()->hasPermission("manage_user_registrations")) throw new ServiceException("INSUFFICIENT_PERMISSIONS");
+		}
+		
 		public function processGet() {
 			if (count($this->path) == 1) {
 				if ($this->path[0] != 'list') throw $this->invalidRequestException();
-				$this->env->authentication()->assertAdmin();
+				$this->assertManagementPermission();
 				
 				$db = $this->env->db();
 				$result = $db->query("select `id`, `name`, `email`, `key`, `time`, `confirmed` from ".$db->table("registration")." order by id asc")->rows();
@@ -29,7 +33,7 @@
 				return;
 			} else if (count($this->path) == 2) {
 				if ($this->path[0] != 'approve') throw $this->invalidRequestException();
-				$this->env->authentication()->assertAdmin();
+				$this->assertManagementPermission();
 				$id = $this->path[1];
 				
 				$requireApproval = $this->getPluginSetting("require_approval", TRUE);
@@ -45,7 +49,7 @@
 
 		public function processDelete() {
 			if ($this->path[0] != 'list') throw $this->invalidRequestException();
-			$this->env->authentication()->assertAdmin();
+			$this->assertManagementPermission();
 
 			if (count($this->path) == 1) {
 				$data = $this->request->data;
@@ -79,7 +83,7 @@
 					$this->response()->success(array());
 					return;
 				}
-				$this->env->authentication()->assertAdmin();				
+				$this->assertManagementPermission();
 				$this->processApprove($this->path[1]);
 			}
 			else throw $this->invalidRequestException();
@@ -153,7 +157,7 @@
 		}*/
 
 		private function processApprove($id) {
-			$this->env->authentication()->assertAdmin();
+			$this->env->permissions()->hasPermission("manage_user_registrations");
 			
 			$db = $this->env->db();
 			$query = "select `id`, `name`, `password`, `password_hint`, `email` from ".$db->table("registration")." where `id`=".$db->string($id,TRUE);

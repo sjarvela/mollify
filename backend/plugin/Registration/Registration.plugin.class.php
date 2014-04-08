@@ -16,6 +16,7 @@
 			$this->addService("registration", "RegistrationServices");
 			$this->env->features()->addFeature("registration");
 			RegistrationEvent::register($this->env->events());
+			$this->env->permissions()->registerPermission("manage_user_registrations");
 		}
 		
 		public function hasAdminView() {

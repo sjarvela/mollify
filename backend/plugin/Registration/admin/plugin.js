@@ -14,6 +14,9 @@
     mollify.view.config.admin.Registration = {
         RegistrationsView: function() {
             var that = this;
+
+            // props
+            this.requiresPermission = "manage_user_registrations";
             this.viewId = "registration";
 
             this.init = function(s, cv) {
