@@ -103,6 +103,15 @@
 			return $this->configuration->addUserFolder($userId, $folderId, $name);
 		}
 		
+		public function setUserDefaultFilesystemPermission($userId, $permission) {
+			return $this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $userId, $permission);
+		}
+
+		public function setUserFolderFilesystemPermission($userId, $folderId, $permission) {
+			$fs = $this->env->filesystem()->filesystem($this->env->configuration()->getFolder($folderId));
+			return $this->env->permissions()->addFilesystemPermission($fs->root(), "filesystem_item_access", $userId, $permission);
+		}
+				
 		public function addFilesystemItemAccessPermission($itemId, $permission, $userId) {
 			$item = $this->env->filesystem()->item($itemId);
 			return $this->env->permissions()->addFilesystemPermission($item, "filesystem_item_access", $userId, $permission);
