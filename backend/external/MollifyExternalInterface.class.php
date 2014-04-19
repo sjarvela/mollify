@@ -86,7 +86,9 @@
 		}
 		
 		public function addUser($name, $pw, $email, $userType = NULL, $expiration = NULL) {
-			return $this->configuration->addUser($name, $pw, $email, $userType, $expiration);
+			$userId = $this->configuration->addUser($name, NULL, $email, $userType, $expiration);
+			$this->configuration->storeUserAuth($userId, $name, "pw", $pw);
+			return $userId;
 		}
 		
 		public function removeUser($id) {
