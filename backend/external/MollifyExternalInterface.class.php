@@ -27,6 +27,7 @@
 		private $settings;
 		private $authentication;
 		private $session;
+		private $env;
 		
 		public function __construct($conf) {
 			require_once("include/Settings.class.php");
@@ -50,9 +51,9 @@
 			$db = $f->createConnection($this->settings);
 			$this->configuration = new ConfigurationDao($db);
 
-			$env = new ServiceEnvironment($db, $this->session, new VoidResponseHandler(), $this->configuration, $this->settings);
-			$env->initialize(new Request(TRUE));
-			$this->authentication = $env->authentication();
+			$this->env = new ServiceEnvironment($db, $this->session, new VoidResponseHandler(), $this->configuration, $this->settings);
+			$this->env->initialize(new Request(TRUE));
+			$this->authentication = $this->env->authentication();
 		}
 
 		public function logout() {
@@ -84,8 +85,8 @@
 			return $this->configuration->getUser($id);
 		}
 		
-		public function addUser($name, $pw, $email, $defaultPermission = "RO", $expiration = NULL) {
-			return $this->configuration->addUser($name, $pw, $email, $defaultPermission, $expiration);
+		public function addUser($name, $pw, $email, $userType = NULL, $expiration = NULL) {
+			return $this->configuration->addUser($name, $pw, $email, $userType, $expiration);
 		}
 		
 		public function removeUser($id) {
@@ -100,8 +101,9 @@
 			return $this->configuration->addUserFolder($userId, $folderId, $name);
 		}
 		
-		public function addItemPermission($id, $permission, $userId) {
-			return $this->configuration->addItemPermission($id, $permission, $userId);
+		public function addFilesystemItemAccessPermission($itemId, $permission, $userId) {
+			$item = $this->env->filesystem()->item($itemId);
+			return $this->env->permissions()->addFilesystemPermission($item, "filesystem_item_access", $userId, $permission);
 		}
 	}
 ?>
