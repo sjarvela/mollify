@@ -29,7 +29,7 @@
 
 		public function isAuthenticated() {
 			if ($this->isAuthenticationRequired() and !$this->env->authentication()->isAuthenticated()) return FALSE;
-			if ($this->isAuthenticationRequired() and $this->isAdminRequired() and !$this->env->authentication()->isAdmin()) return FALSE;
+			if ($this->isAdminRequired() and !$this->env->authentication()->isAdmin()) return FALSE;
 			return TRUE;
 		}
 		
