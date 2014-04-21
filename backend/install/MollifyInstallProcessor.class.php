@@ -80,7 +80,9 @@
 		public function registerActionValidator($p) {}
 		
 		public function registerItemCleanupHandler($p) {}
-		
+
+		public function registerPermission($p, $v) {}
+				
 		public function onError($e) {
 			Logging::logException($e);
 		}
