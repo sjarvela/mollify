@@ -6,6 +6,23 @@
 	<p>{{html $item.data.message}}</p>
 </script>
 
+<script id="mollify-tmpl-dialog-confirmation" type="text/x-jquery-tmpl">
+	<p>${message}</p>
+	{{if options}}
+		<p>
+		<div class="control-group">
+			<div class="controls">
+				{{each options}}
+					<label class="checkbox inline">
+						<input type="checkbox" id="mollify-confirmation-option-${key}" class="mollify-confirmation-option"><span>${title}</span>
+					</label>
+				{{/each}}
+			</div>
+		</div>
+		</p>
+	{{/if}}
+</script>
+
 <script id="mollify-tmpl-notification" type="text/x-jquery-tmpl"> 
 	<div class="mollify-notification">
 		<div class="mollify-notification-content">${message}</div>

@@ -1611,16 +1611,27 @@
 	};
 	
 	dh.confirmation = function(spec) {
+		var opts = false;
+		if (spec.options) {
+			opts = [];
+			$.each(mollify.helpers.getKeys(spec.options), function(i, k) {
+				opts.push({key: k, title: spec.options[k]});
+			});
+		}
 		dh.custom({
 			title: spec.title,
-			content: spec.message,
+			content: $("#mollify-tmpl-dialog-confirmation").tmpl({message: spec.message, options: opts}),
 			buttons: [
 				{ id: "yes", "title-key": "yes" },
 				{ id: "no", "title-key": "no" }
 			],
-			"on-button": function(btn, d) {
+			"on-button": function(btn, d, $d) {
+				var checkedOpts = {};
+				$d.find("input.mollify-confirmation-option:checked").each(function(){
+					checkedOpts[$(this).attr('id').substring(28)] = true;
+				});
 				d.close();
-				if (spec.callback && btn.id === 'yes') spec.callback();
+				if (spec.callback && btn.id === 'yes') spec.callback(checkedOpts);
 			}
 		});
 	};
@@ -1726,7 +1737,7 @@
 			e.preventDefault();
 			var ind = $dlg.find(".modal-footer .btn").index($(this));
 			var btn = spec.buttons[ind];
-			if (spec["on-button"]) spec["on-button"](btn, h);
+			if (spec["on-button"]) spec["on-button"](btn, h, $dlg);
 		});
 		if (spec.resizable) {
 			var $header = $dlg.find(".modal-header");

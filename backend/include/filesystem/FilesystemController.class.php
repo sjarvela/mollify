@@ -480,7 +480,7 @@
 		
 		public function delete($item) {
 			Logging::logDebug('deleting ['.$item->id().']');
-			if ($item->isRoot()) throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folders");
+			if ($item->isRoot() and !$this->env->authentication()->isAdmin()) throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folders");
 			
 			$this->assertRights($item, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
 			$this->validateAction(FileEvent::DELETE, $item);
@@ -499,7 +499,7 @@
 		public function deleteItems($items) {
 			Logging::logDebug('deleting '.count($items).' items');
 			foreach($items as $item)
-				if ($item->isRoot()) throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folder:".$item->id());
+				if ($item->isRoot() and !$this->env->authentication()->isAdmin()) throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folder:".$item->id());
 
 			$this->validateAction(FileEvent::DELETE, $items);
 			$this->assertRights($items, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");

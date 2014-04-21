@@ -402,6 +402,7 @@
 		"configAdminFoldersRemoveFoldersConfirmationMessage": "Are you sure you want to remove {0} folders?",
 		"configAdminFoldersRemoveFolderConfirmationTitle": "Remove Folder",
 		"configAdminFoldersRemoveFolderConfirmationMessage": "Are you sure you want to remove folder \"{0}\"?",
+		"configAdminFoldersRemoveFolderContentConfirmation": "Delete folder content",
 
 		"configAdminGroupsDialogAddTitle": "Add Group",
 		"configAdminGroupsDialogEditTitle": "Edit Group",

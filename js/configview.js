@@ -1378,8 +1378,13 @@
                             mollify.ui.dialogs.confirmation({
                                 title: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationTitle"),
                                 message: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationMessage", [f.name]),
-                                callback: function() {
-                                    mollify.service.del("configuration/folders/" + f.id).done(updateFolders);
+                                options: {
+                                	deleteContents: mollify.ui.texts.get("configAdminFoldersRemoveFolderContentConfirmation")
+                                },
+                                callback: function(opts) {
+                                	var p = "configuration/folders/" + f.id;
+                                	if (opts.deleteContents) p += '?delete=true'
+                                    mollify.service.del(p).done(updateFolders);
                                 }
                             });
                         }
