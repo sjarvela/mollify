@@ -913,7 +913,7 @@
                     $ic.removeClass("loading").html(data.result.html);
                     if (data.result.size) {
                         var sp = data.result.size.split(';');
-                        $("#" + data.result.resized_element_id).css({
+                        $("#" + data.result["resized_element_id"]).css({
                             "width": sp[0] + "px",
                             "height": sp[1] + "px"
                         });
