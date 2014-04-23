@@ -472,7 +472,7 @@
 		"pluginNotificatorNotificationEventUsersTitle": "Utilisateurs qui déclenchent la notification",
 		"pluginNotificatorNotificationAddEventUserTitle": "Ajouter les utilisateurs de l'événement",
 		"pluginNotificatorNotificationAddEventUserMessage": "Sélectionnez les utilisateur à ajouter au déclencheur de la notification :",
-		"pluginNotificatorNotificationNoEventUsersMsg": "Sans utilisateur lié la notification, celle-ci s'applique à tous les utilisateurs",
+		"pluginNotificatorNotificationNoEventUsersMsg": "Sans utilisateur lié à la notification, celle-ci s'applique à tous les utilisateurs",
 		"pluginNotificatorNotificationEditEventFilters": "Editer les filtres d'événement",
 		"pluginNotificatorNotificationNewFilter": "Ajouter un nouveau filtre",
 		"pluginNotificatorNotificationEditEventFiltersType": "Type",
