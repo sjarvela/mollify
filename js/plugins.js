@@ -856,6 +856,13 @@
             });
         };
 
+        this.view = function(item) {
+            mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
+                if (!d || !d.plugins || !d.plugins['plugin-fileviewereditor']) return;
+                that.onView(item, [], d.plugins['plugin-fileviewereditor']);
+            });
+        };
+
         this.onView = function(item, all, spec) {
             var loaded = {};
             var list = [{
@@ -985,6 +992,7 @@
         return {
             id: "plugin-fileviewereditor",
             initialize: that.initialize,
+            view: that.view,
             itemContextHandler: function(item, ctx, data) {
                 if (!data) return false;
 
