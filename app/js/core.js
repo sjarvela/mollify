@@ -2,8 +2,9 @@
 
 var core = angular.module('mollify.core', []);
 
-core.factory('Service', [
-    function() {
+core.factory('Service', ['settings',
+    function(settings) {
+    	console.log(settings);
         return {
         	service: 'foo'
         };
