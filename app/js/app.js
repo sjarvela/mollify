@@ -17,7 +17,7 @@ config(['$stateProvider', '$urlRouterProvider',
                 controller: "LoginCtrl",
                 templateUrl: "templates/login.html",
                 data: {
-                	foo: 'bar'
+                    foo: 'bar'
                 }
             })
             .state('main', {
@@ -33,7 +33,14 @@ config(['$stateProvider', '$urlRouterProvider',
             redirectTo: '/login'
         });*/
     }
-]);
+]).config(function($provide) {
+    $provide.factory('settings', function() {
+        var settings = {
+            some: "settings"
+        };
+        return settings;
+    });
+});
 
 app.run(function($rootScope, Session) {
     console.log("run" + Session);
@@ -50,3 +57,10 @@ app.run(function($rootScope, Session) {
             // a 'transition prevented' error
         });
 });
+
+window.mollify = {
+	init: function(opt) {
+	    var $root = $("#mollify").html("<div ui-view></div>");
+	    angular.bootstrap($root, ['mollify']);
+	}
+}

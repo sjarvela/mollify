@@ -2,8 +2,19 @@
 
 var core = angular.module('mollify.core', []);
 
-core.factory('Session', [
+core.factory('Service', [
     function() {
+        return {
+        	service: 'foo'
+        };
+    }
+]);
+
+core.factory('Session', ['Service',
+    function(Service) {
+    	console.log("Session");
+    	console.log(Service);
+
         var session = {
             isLogged: false,
             user: null

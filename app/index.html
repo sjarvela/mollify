@@ -24,9 +24,10 @@
     <script src="js/filters.js"></script>
     <script src="js/directives.js"></script-->
     <script>
-    angular.element(document).ready(function() {
-        var $root = $("#mollify").html("<div ui-view></div>");
-        angular.bootstrap($root, ['mollify']);
+    $(document).ready(function() {
+        mollify.init({
+            my: 'settings'
+        });
     });
     </script>
 </body>
