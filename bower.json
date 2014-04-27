@@ -1,0 +1,14 @@
+{
+    "name": "mollify",
+    "version": "2.0.0",
+    "main": ["./js/mollify.js", "./css/mollify.css"],
+    "dependencies": {
+        "angular": "1.2.x",
+        "angular-route": "1.2.x",
+        "angular-loader": "1.2.x",
+        "angular-mocks": "~1.2.16",
+        "angular-ui-router": "*",
+        "bootstrap": "~3.1.1",
+        "ui-bootstrap": "*"
+    }
+}
