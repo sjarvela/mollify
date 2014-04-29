@@ -328,7 +328,7 @@
 			}
 			
 			$loginLink = $this->env->getClientUrl("");
-			$values = array("name" => $registration["name"], "email" => $registration["email"], "link" => $loginLink);
+			$values = array("username" => $registration["name"], "name" => $registration["name"], "email" => $registration["email"], "link" => $loginLink);
 			
 			$subject = Util::replaceParams($texts["registration_notification_approved_subject"], $values);
 			$msg = Util::replaceParams($texts["registration_notification_approved_message"], $values);

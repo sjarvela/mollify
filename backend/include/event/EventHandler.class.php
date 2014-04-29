@@ -122,6 +122,8 @@
 			if ($this->user != NULL) {
 				$values["user_id"] = $this->user["user_id"];
 				$values["username"] = $this->user["username"];
+				$values["user_name"] = $this->user["username"];
+				$values["user_email"] = $this->user["email"];
 			}
 			return $values;
 		}
