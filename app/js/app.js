@@ -70,21 +70,29 @@
                 });
             });
 
-            app.run(function($rootScope, session) {
-                console.log("run");
-                console.log(session);
+            app.run(function($rootScope, $state, session) {
+                console.log("Mollify started");
 
                 // state interceptor
                 $rootScope.$on('$stateChangeStart',
                     function(event, toState, toParams, fromState, fromParams) {
+                        var s = session.get();
+                        var isAuthenticated = (s && s.user);
                         console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
-                        //TODO check authenticated
-                        //event.preventDefault();
+                        var requiresAuthenticated = (toState && toState.name != 'login');
 
-                        // transitionTo() promise will be rejected with 
-                        // a 'transition prevented' error
+                        if (requiresAuthenticated && !isAuthenticated) {
+                        	console.log("STATECHANGE REJECTED");
+                            event.preventDefault();
+                            //TODO store toState
+                            $state.go("login");
+                        }
                     });
+
+                session.init();
             });
+
+            // start
             var $root = $("#mollify").html("<div ui-view></div>");
             angular.bootstrap($root, ['mollify']);
         }

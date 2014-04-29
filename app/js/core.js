@@ -2,9 +2,12 @@
 
 var core = angular.module('mollify.core', []);
 
-core.factory('service', ['settings',
-    function(settings) {
-    	var _sessionId = false;
+core.factory('service', ['$rootScope', 'settings',
+    function($rootScope, settings) {
+        var _sessionId = false;
+        $rootScope.$on('session/start', function(event, session) {
+            _sessionId = session.id;
+        });
         var limitedHttpMethods = !! settings['limited-http-methods'];
         var urlFn = function(u, full) {
             if (u.startsWith('http')) return u;
@@ -71,10 +74,6 @@ core.factory('service', ['settings',
             }(_sessionId));
         };
         service = {
-            setSessionId: function(id) {
-                _sessionId = id;
-            },
-
             url: urlFn,
 
             get: function(url, s, err) {
@@ -97,28 +96,41 @@ core.factory('service', ['settings',
     }
 ]);
 
-core.factory('session', ['service',
-    function(service) {
-        console.log("Session");
-        console.log(service);
-
-        var session = {
-            id: '',
-            isLogged: false,
-            user: null
+core.factory('session', ['service', '$rootScope',
+    function(service, $rootScope) {
+        var _session = false;
+        var _set = function(s) {
+            if (!s || !s.authenticated) {
+                _session = {
+                    id: false,
+                    user: null
+                }
+            } else {
+                _session = {
+                    id: s.session_id,
+                    user: {
+                        //TODO
+                    }
+                }
+            }
+            $rootScope.$broadcast('session/start', _session);
         };
+        //_set();
         return {
             get: function() {
-                return session;
+                return _session;
+            },
+            init: function() {
+                service.get('session/info').done(function(s) {
+                	if (s) _set(s);
+                });
             },
             authenticate: function(username, pw) {
                 return service.post('session/authenticate', {
                     username: username,
                     password: window.Base64.encode(pw)
                 }).done(function(s) {
-                	service.setSessionId(s.id);	//event?
-                    console.log("session");
-                    console.log(s);
+                    _set(s);
                 });
             }
         };
