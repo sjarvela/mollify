@@ -33,7 +33,7 @@
 		private function getUser($e) {
 			$user = $e->user();
 			if (!$user) return NULL;
-			return $user["username"];
+			return $user["name"];
 		}
 		
 		public function __toString() {

@@ -33,9 +33,11 @@
 		
 		public function onEvent($e) {
 			if ($this->env->authentication()->isAuthenticated()) {
+				$user = $this->env->session()->user();
 				$e->setUser(array(
-					'user_id' => $this->env->session()->userId(),
-					'username' => $this->env->session()->username(),
+					'id' => $user["id"],
+					'name' => $user["name"],
+					'email' => $user["email"]
 				));
 			} else {
 				$e->setUser(NULL);
@@ -120,9 +122,9 @@
 				"event_time" => $formatter->formatDateTime($this->time)
 			);
 			if ($this->user != NULL) {
-				$values["user_id"] = $this->user["user_id"];
-				$values["username"] = $this->user["username"];
-				$values["user_name"] = $this->user["username"];
+				$values["user_id"] = $this->user["id"];
+				$values["username"] = $this->user["name"];
+				$values["user_name"] = $this->user["name"];
 				$values["user_email"] = $this->user["email"];
 			}
 			return $values;

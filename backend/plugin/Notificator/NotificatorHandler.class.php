@@ -110,7 +110,7 @@
 		private function getUserId($e) {
 			$user = $e->user();
 			if (!$user) return NULL;
-			return $user["user_id"];
+			return $user["id"];
 		}
 		
 		public function __toString() {

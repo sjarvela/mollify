@@ -68,7 +68,7 @@
 		
 		function __construct($type, $userId, $username, $email = FALSE, $registrationId = FALSE, $registrationKey = FALSE) {
 			parent::__construct(time(), Registration::EVENT_TYPE_REGISTRATION, $type);
-			$this->user = array("user_id" => $userId, "username" => $username, "email" => $email);
+			$this->user = array("id" => $userId, "name" => $username);
 			$this->email = $email;
 			if ($email) $this->user["email"] = $email;
 			
