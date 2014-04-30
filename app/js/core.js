@@ -76,7 +76,7 @@ core.factory('service', ['$rootScope', 'settings',
         service = {
             url: urlFn,
 
-            get: function(url, s, err) {
+            get: function(url) {
                 return doRequest("GET", url, null);
             },
 
@@ -121,9 +121,12 @@ core.factory('session', ['service', '$rootScope',
                 return _session;
             },
             init: function() {
+                var df = $.Deferred();
                 service.get('session/info').done(function(s) {
-                	if (s) _set(s);
-                });
+                    if (s) _set(s);
+                    df.resolve();
+                }).fail(df.reject);
+                return df.promise();
             },
             authenticate: function(username, pw) {
                 return service.post('session/authenticate', {
@@ -138,15 +141,19 @@ core.factory('session', ['service', '$rootScope',
 ]);
 
 /* Login */
-core.controller('LoginCtrl', ['$scope', '$state', 'session',
-    function($scope, $state, session) {
+core.controller('LoginCtrl', ['$scope', '$rootScope', '$state', 'session',
+    function($scope, $rootScope, $state, session) {
         $scope.username = "";
         $scope.password = "";
 
         $scope.doLogin = function() {
             session.authenticate($scope.username, $scope.password).done(function() {
-                //TODO target from params
-                $state.go("main");
+                if ($rootScope.loginForwardState) {
+                    var goto = $rootScope.loginForwardState;
+                    $rootScope.loginForwardState = null;
+                    $state.go(goto.to.name);
+                } else
+                    $state.go("main");
             });
         }
     }

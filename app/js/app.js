@@ -35,6 +35,10 @@
         }
     };
 
+    var MollifyApp = function(settings) {
+
+    };
+
     window.mollify = {
         init: function(opt) {
             var settings = $.extend({}, opt, mollifyDefaults);
@@ -71,25 +75,44 @@
             });
 
             app.run(function($rootScope, $state, session) {
+                var initialized = false;
+                var pendingStateChange = false;
                 console.log("Mollify started");
 
                 // state interceptor
                 $rootScope.$on('$stateChangeStart',
                     function(event, toState, toParams, fromState, fromParams) {
+                        console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
+
+                        if (!initialized) {
+                            pendingStateChange = {
+                                to: toState,
+                                params: toParams
+                            };
+                            console.log("STATECHANGE CANCELLED: not initialized");
+                            event.preventDefault();
+                            return;
+                        }
+
                         var s = session.get();
                         var isAuthenticated = (s && s.user);
-                        console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
                         var requiresAuthenticated = (toState && toState.name != 'login');
 
                         if (requiresAuthenticated && !isAuthenticated) {
-                        	console.log("STATECHANGE REJECTED");
+                            console.log("STATECHANGE REJECTED: not authenticated");
                             event.preventDefault();
-                            //TODO store toState
+                            $rootScope.loginForwardState = { to: toState, params: toParams };
                             $state.go("login");
                         }
                     });
 
-                session.init();
+                session.init().done(function() {
+                	initialized = true;
+                    if (!pendingStateChange) return;
+                    var stateChange = pendingStateChange;
+                    pendingStateChange = false;
+                    $state.go(stateChange.to.name);
+                });
             });
 
             // start
