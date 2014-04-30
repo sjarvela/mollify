@@ -50,8 +50,10 @@
             ]).
             config(['$stateProvider', '$urlRouterProvider',
                 function($stateProvider, $urlRouterProvider) {
-                    // For any unmatched url, redirect to /state1
-                    $urlRouterProvider.otherwise("/main");
+                	//$urlRouterProvider.when("/files");
+
+                    // For any unmatched url, redirect to /files
+                    $urlRouterProvider.otherwise("/files");
                     //
                     // Now set up the states
                     $stateProvider
@@ -64,8 +66,13 @@
                             }
                         })
                         .state('main', {
-                            url: "/main",
+                        	abstract: true,
+                            //url: "/",
                             templateUrl: "templates/main.html"
+                        }).state('files', {
+                        	parent: "main",
+                            url: "^/files",
+                            templateUrl: "templates/files.html"
                         });
                 }
             ]).config(function($provide) {
@@ -101,13 +108,16 @@
                         if (requiresAuthenticated && !isAuthenticated) {
                             console.log("STATECHANGE REJECTED: not authenticated");
                             event.preventDefault();
-                            $rootScope.loginForwardState = { to: toState, params: toParams };
+                            $rootScope.loginForwardState = {
+                                to: toState,
+                                params: toParams
+                            };
                             $state.go("login");
                         }
                     });
 
                 session.init().done(function() {
-                	initialized = true;
+                    initialized = true;
                     if (!pendingStateChange) return;
                     var stateChange = pendingStateChange;
                     pendingStateChange = false;
