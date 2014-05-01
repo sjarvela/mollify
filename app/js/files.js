@@ -1,8 +1,8 @@
 ! function(mollify) {
     'use strict';
 
-    mollify.plugins.files = {
-        init: function(h, app) {
+    mollify.modules.files = {
+        setup: function(h, ng) {
             h.registerView('files', {
                 parent: "main",
                 url: "^/files",
@@ -10,9 +10,10 @@
                 controller: "FilesCtrl"
             });
 
-            core.controller('FilesCtrl', ['$scope',
+            var files = ng.module('mollify.main.files', []);
+            files.controller('FilesCtrl', ['$scope',
                 function($scope) {
-                	console.log("files");
+                    console.log("files");
                 }
             ]);
         }

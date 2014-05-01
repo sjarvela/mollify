@@ -59,13 +59,13 @@
             });
         });
 
-        $.each(mollify.utils.getKeys(mollify.plugins), function(i, pk) {
-            var plugin = mollify.plugins[pk];
-            plugin.init({
+        $.each(mollify.utils.getKeys(mollify.modules), function(i, pk) {
+            var module = mollify.modules[pk];
+            module.setup({
                 registerView: function(id, v) {
                     views[id] = v;
                 }
-            }, app);
+            }, ng);
             //TODO config plugins
         });
 
@@ -80,11 +80,13 @@
                     var v = views[vk];
                     var vp = {};
                     if (v.url) vp.url = v.url;
-                    if (v.parent) vp.url = v.parent;
+                    if (v.parent) vp.parent = v.parent;
                     vp.templateUrl = function(stateParams) {
                         return 'templates/' + v.template;
                     };
 
+                    console.log("VIEW:"+vk);
+                    console.log(vp);
                     $stateProvider
                         .state(vk, vp);
                 });
@@ -96,12 +98,14 @@
             }
         ])
 
-        app.run(that._onStart);
+        app.run(function($rootScope, $state, session) {
+            that._onStart($rootScope, $state, session);
+        });
 
         this.run = function() {
             // start
             var $root = $("#mollify").html("<div ui-view></div>");
-            angular.bootstrap($root, ['mollify']);
+            ng.bootstrap($root, ['mollify']);
         };
 
         this._onStart = function($rootScope, $state, session) {
@@ -154,7 +158,7 @@
             var _m = new MollifyApp(angular, $.extend({}, opt, mollifyDefaults));
             _m.run();
         },
-        plugins: {},
+        modules: {},
 
         utils: {
             breakUrl: function(u) {
