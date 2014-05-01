@@ -1,4 +1,4 @@
-! function($) {
+! function($, angular) {
     'use strict';
 
     var mollifyDefaults = {
@@ -37,11 +37,6 @@
 
     var MollifyApp = function(ng, settings) {
         var that = this;
-        var app = ng.module('mollify', [
-            'ui.bootstrap',
-            'ui.router',
-            'mollify.core'
-        ]);
         var views = {
             login: {
                 url: "/login",
@@ -53,20 +48,24 @@
                 template: "main.html"
             }
         };
+
+		var deps = ['ui.bootstrap', 'ui.router'];
+        $.each(mollify.modules, function(i, m) {
+        	var mod = ng.module(m.id, m.dependencies || []);
+            m.setup({
+                registerView: function(id, v) {
+                    views[id] = v;
+                }
+            }, mod);
+            deps.push(m.id);
+        });
+
+        var app = ng.module('mollify', deps);
+
         app.config(function($provide) {
             $provide.factory('settings', function() {
                 return settings;
             });
-        });
-
-        $.each(mollify.utils.getKeys(mollify.modules), function(i, pk) {
-            var module = mollify.modules[pk];
-            module.setup({
-                registerView: function(id, v) {
-                    views[id] = v;
-                }
-            }, ng);
-            //TODO config plugins
         });
 
         // views
@@ -81,11 +80,12 @@
                     var vp = {};
                     if (v.url) vp.url = v.url;
                     if (v.parent) vp.parent = v.parent;
+                    if (v.controller) vp.controller = v.controller;
                     vp.templateUrl = function(stateParams) {
-                        return 'templates/' + v.template;
+                        return 'templates/' + v.template; //TODO path from params
                     };
 
-                    console.log("VIEW:"+vk);
+                    console.log("VIEW:" + vk);
                     console.log(vp);
                     $stateProvider
                         .state(vk, vp);
@@ -158,7 +158,7 @@
             var _m = new MollifyApp(angular, $.extend({}, opt, mollifyDefaults));
             _m.run();
         },
-        modules: {},
+        modules: [],
 
         utils: {
             breakUrl: function(u) {
@@ -507,4 +507,4 @@
             return string;
         }
     }
-}(window.jQuery);
+}(window.jQuery, window.angular);
