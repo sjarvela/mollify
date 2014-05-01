@@ -787,6 +787,7 @@
 			} else if (!id || idParts.length == 1) {
 				return mollify.filesystem.folderInfo(id ? idParts[0] : null, true, that.getDataRequest()).done(function(r) {
 					var folder = r.folder;
+					if (folder.id == folder.root_id && mollify.filesystem.rootsById[folder.id]) folder = mollify.filesystem.rootsById[folder.id];
 					var data = r;
 					data.items = r.folders.slice(0).concat(r.files);
 					if (data.hierarchy && mollify.filesystem.rootsById[data.hierarchy[0].id]) data.hierarchy[0] = mollify.filesystem.rootsById[data.hierarchy[0].id];	//replace root item with user instance
