@@ -789,6 +789,7 @@
 					var folder = r.folder;
 					var data = r;
 					data.items = r.folders.slice(0).concat(r.files);
+					if (data.hierarchy && mollify.filesystem.rootsById[data.hierarchy[0].id]) data.hierarchy[0] = mollify.filesystem.rootsById[data.hierarchy[0].id];	//replace root item with user instance
 					
 					that._setFolder(folder, data);
 				}).fail(onFail);
