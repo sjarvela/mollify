@@ -113,10 +113,13 @@
                             _session = {
                                 id: s.session_id,
                                 user: {
-                                    //TODO
+                                    id: s.user_id,
+                                    type: s.user_type,
+                                    name: s.username
                                 }
                             }
                         }
+                        $rootScope.session = _session;
                         $rootScope.$broadcast('session/start', _session);
                     };
                     //_set();
