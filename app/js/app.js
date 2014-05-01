@@ -35,99 +35,233 @@
         }
     };
 
-    var MollifyApp = function(settings) {
+    var MollifyApp = function(ng, settings) {
+        var that = this;
+        var app = ng.module('mollify', [
+            'ui.bootstrap',
+            'ui.router',
+            'mollify.core'
+        ]);
+        var views = {
+            login: {
+                url: "/login",
+                controller: "LoginCtrl",
+                template: "login.html"
+            },
+            main: {
+                abstract: true,
+                template: "main.html"
+            }
+        };
+        app.config(function($provide) {
+            $provide.factory('settings', function() {
+                return settings;
+            });
+        });
 
+        $.each(mollify.utils.getKeys(mollify.plugins), function(i, pk) {
+            var plugin = mollify.plugins[pk];
+            plugin.init({
+                registerView: function(id, v) {
+                    views[id] = v;
+                }
+            }, app);
+            //TODO config plugins
+        });
+
+        // views
+        app.
+        config(['$stateProvider', '$urlRouterProvider',
+            function($stateProvider, $urlRouterProvider) {
+                // For any unmatched url, redirect to /files
+                $urlRouterProvider.otherwise("/files");
+
+                $.each(mollify.utils.getKeys(views), function(i, vk) {
+                    var v = views[vk];
+                    var vp = {};
+                    if (v.url) vp.url = v.url;
+                    if (v.parent) vp.url = v.parent;
+                    vp.templateUrl = function(stateParams) {
+                        return 'templates/' + v.template;
+                    };
+
+                    $stateProvider
+                        .state(vk, vp);
+                });
+                /*.state('files', {
+                        parent: "main",
+                        url: "^/files",
+                        templateUrl: "templates/files.html"
+                    });*/
+            }
+        ])
+
+        app.run(that._onStart);
+
+        this.run = function() {
+            // start
+            var $root = $("#mollify").html("<div ui-view></div>");
+            angular.bootstrap($root, ['mollify']);
+        };
+
+        this._onStart = function($rootScope, $state, session) {
+            var initialized = false;
+            var pendingStateChange = false;
+            console.log("Mollify started");
+
+            // state interceptor
+            $rootScope.$on('$stateChangeStart',
+                function(event, toState, toParams, fromState, fromParams) {
+                    console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
+
+                    if (!initialized) {
+                        pendingStateChange = {
+                            to: toState,
+                            params: toParams
+                        };
+                        console.log("STATECHANGE CANCELLED: not initialized");
+                        event.preventDefault();
+                        return;
+                    }
+
+                    var s = session.get();
+                    var isAuthenticated = (s && s.user);
+                    var requiresAuthenticated = (toState && toState.name != 'login');
+
+                    if (requiresAuthenticated && !isAuthenticated) {
+                        console.log("STATECHANGE REJECTED: not authenticated");
+                        event.preventDefault();
+                        $rootScope.loginForwardState = {
+                            to: toState,
+                            params: toParams
+                        };
+                        $state.go("login");
+                    }
+                });
+
+            session.init().done(function() {
+                initialized = true;
+                if (!pendingStateChange) return;
+                var stateChange = pendingStateChange;
+                pendingStateChange = false;
+                $state.go(stateChange.to.name);
+            });
+        };
     };
 
     window.mollify = {
         init: function(opt) {
-            var settings = $.extend({}, opt, mollifyDefaults);
+            var _m = new MollifyApp(angular, $.extend({}, opt, mollifyDefaults));
+            _m.run();
+        },
+        plugins: {},
 
-            var app = angular.module('mollify', [
-                'ui.bootstrap',
-                'ui.router',
-                'mollify.core'
-            ]).
-            config(['$stateProvider', '$urlRouterProvider',
-                function($stateProvider, $urlRouterProvider) {
-                	//$urlRouterProvider.when("/files");
+        utils: {
+            breakUrl: function(u) {
+                var parts = u.split("?");
+                return {
+                    path: parts[0],
+                    params: mollify.helpers.getUrlParams(u),
+                    paramsString: (parts.length > 1 ? ("?" + parts[1]) : "")
+                };
+            },
 
-                    // For any unmatched url, redirect to /files
-                    $urlRouterProvider.otherwise("/files");
-                    //
-                    // Now set up the states
-                    $stateProvider
-                        .state('login', {
-                            url: "/login",
-                            controller: "LoginCtrl",
-                            templateUrl: "templates/login.html",
-                            data: {
-                                foo: 'bar'
-                            }
-                        })
-                        .state('main', {
-                        	abstract: true,
-                            //url: "/",
-                            templateUrl: "templates/main.html"
-                        }).state('files', {
-                        	parent: "main",
-                            url: "^/files",
-                            templateUrl: "templates/files.html"
-                        });
+            getUrlParams: function(u) {
+                var params = {};
+                $.each(u.substring(1).split("&"), function(i, p) {
+                    var pp = p.split("=");
+                    if (!pp || pp.length < 2) return;
+                    params[decodeURIComponent(pp[0])] = decodeURIComponent(pp[1]);
+                });
+                return params;
+            },
+
+            urlWithParam: function(url, param, v) {
+                var p = param;
+                if (v) p = param + "=" + encodeURIComponent(v);
+                return url + (window.strpos(url, "?") ? "&" : "?") + p;
+            },
+
+            noncachedUrl: function(url) {
+                return mollify.utils.urlWithParam(url, "_=" + mollify._time);
+            },
+
+            formatDateTime: function(time, fmt) {
+                var ft = time.toString(fmt);
+                return ft;
+            },
+
+            parseInternalTime: function(time) {
+                if (!time || time == null || typeof(time) !== 'string' || time.length != 14) return null;
+
+                var ts = new Date();
+                ts.setYear(time.substring(0, 4));
+                ts.setMonth(time.substring(4, 6) - 1);
+                ts.setDate(time.substring(6, 8));
+                ts.setHours(time.substring(8, 10));
+                ts.setMinutes(time.substring(10, 12));
+                ts.setSeconds(time.substring(12, 14));
+                return ts;
+            },
+
+            formatInternalTime: function(time) {
+                if (!time) return null;
+                return mollify.utils.formatDateTime(time, 'yyyyMMddHHmmss');
+            },
+
+            mapByKey: function(list, key, value) {
+                var byKey = {};
+                if (!list) return byKey;
+                for (var i = 0, j = list.length; i < j; i++) {
+                    var r = list[i];
+                    if (!window.def(r)) continue;
+                    var v = r[key];
+                    if (!window.def(v)) continue;
+
+                    if (window.def(value) && r[value])
+                        byKey[v] = r[value];
+                    else
+                        byKey[v] = r;
                 }
-            ]).config(function($provide) {
-                $provide.factory('settings', function() {
-                    return settings;
+                return byKey;
+            },
+
+            getKeys: function(m) {
+                var list = [];
+                if (m)
+                    for (var k in m) {
+                        if (!m.hasOwnProperty(k)) continue;
+                        list.push(k);
+                    }
+                return list;
+            },
+
+            extractValue: function(list, key) {
+                var l = [];
+                for (var i = 0, j = list.length; i < j; i++) {
+                    var r = list[i];
+                    l.push(r[key]);
+                }
+                return l;
+            },
+
+            filter: function(list, f) {
+                var result = [];
+                $.each(list, function(i, it) {
+                    if (f(it)) result.push(it);
                 });
-            });
+                return result;
+            },
 
-            app.run(function($rootScope, $state, session) {
-                var initialized = false;
-                var pendingStateChange = false;
-                console.log("Mollify started");
-
-                // state interceptor
-                $rootScope.$on('$stateChangeStart',
-                    function(event, toState, toParams, fromState, fromParams) {
-                        console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
-
-                        if (!initialized) {
-                            pendingStateChange = {
-                                to: toState,
-                                params: toParams
-                            };
-                            console.log("STATECHANGE CANCELLED: not initialized");
-                            event.preventDefault();
-                            return;
-                        }
-
-                        var s = session.get();
-                        var isAuthenticated = (s && s.user);
-                        var requiresAuthenticated = (toState && toState.name != 'login');
-
-                        if (requiresAuthenticated && !isAuthenticated) {
-                            console.log("STATECHANGE REJECTED: not authenticated");
-                            event.preventDefault();
-                            $rootScope.loginForwardState = {
-                                to: toState,
-                                params: toParams
-                            };
-                            $state.go("login");
-                        }
-                    });
-
-                session.init().done(function() {
-                    initialized = true;
-                    if (!pendingStateChange) return;
-                    var stateChange = pendingStateChange;
-                    pendingStateChange = false;
-                    $state.go(stateChange.to.name);
-                });
-            });
-
-            // start
-            var $root = $("#mollify").html("<div ui-view></div>");
-            angular.bootstrap($root, ['mollify']);
+            arrayize: function(i) {
+                var a = [];
+                if (!window.isArray(i)) {
+                    a.push(i);
+                } else {
+                    return i;
+                }
+                return a;
+            }
         }
     }
 
