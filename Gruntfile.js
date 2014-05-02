@@ -24,7 +24,7 @@ module.exports = function(grunt) {
 
         // Metadata.
         pkg: pkg,
-        banner: '/*!\n' + ' * Mollify v<%= pkg.version %> (<%= pkg.homepage %>)\n' + ' * Copyright 2008-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' + ' * Licensed under <%= _.pluck(pkg.licenses, "type") %> (<%= _.pluck(pkg.licenses, "url") %>)\n' + ' */\n',
+        banner: '/*!\n' + ' * Mollify v<%= pkg.version %> rev<%= pkg.revision %> (<%= pkg.homepage %>)\n' + ' * Copyright 2008-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' + ' * Licensed under <%= _.pluck(pkg.licenses, "type") %> (<%= _.pluck(pkg.licenses, "url") %>)\n' + ' */\n',
 
         // Task configuration.
         clean: {
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
                 src: [] //TODO clean up 'Gruntfile.js']
             },
             src: {
-                src: 'js/*.js'
+                src: ['js/*.js']
             },
             test: {
                 src: [] //'js/tests/unit/*.js'
@@ -57,13 +57,50 @@ module.exports = function(grunt) {
                 src: [] //'Gruntfile.js']
             },
             src: {
-                src: [] //TODO clean 'js/*.js'
+                src: ['js/*.js'] //TODO clean 
             },
             test: {
                 src: [] //'js/tests/unit/*.js'
             },
             assets: {
                 src: []
+            }
+        },
+
+        less: {
+            compileCore: {
+                options: {
+                    strictMath: true,
+                    //sourceMap: true,
+                    outputSourceFiles: true,
+                    //sourceMapURL: '<%= pkg.name %>.css.map',
+                    //sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map'
+                },
+                files: {
+                    'css/<%= pkg.name %>.css': 'less/mollify.less'
+                }
+            },
+            /*compileTheme: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          //sourceMapURL: '<%= pkg.name %>-theme.css.map',
+          //sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map'
+        },
+        files: {
+          'dist/css/<%= pkg.name %>-theme.css': 'less/theme.less'
+        }
+      },*/
+            minify: {
+                options: {
+                    cleancss: true,
+                    report: 'min'
+                },
+                files: {
+                    'css/<%= pkg.name %>.min.css': 'css/<%= pkg.name %>.css',
+                    //'dist/css/<%= pkg.name %>-theme.min.css': 'dist/css/<%= pkg.name %>-theme.css'
+                }
             }
         },
 
@@ -74,13 +111,7 @@ module.exports = function(grunt) {
             },
             mollify: {
                 src: [
-                    'js/init.js',
-                    'js/ui.js',
-                    'js/loginview.js',
-                    'js/mainview.js',
-                    'js/plugins.js',
-                    'js/configview.js',
-                    'js/uploader.js'
+                    'js/*.js'
                 ],
                 dest: 'dist/js/<%= pkg.name %>.js'
             },
@@ -102,18 +133,6 @@ module.exports = function(grunt) {
                     'dist/js/<%= pkg.name %>.js',
                 ],
                 dest: 'dist/js/<%= pkg.name %>.full.js'
-            },
-            css: {
-                src: [
-                    'css/libs.css',
-                    'css/bootstrap.css',
-                    'css/bootstrap-responsive.css',
-                    'css/font-awesome.css',
-                    'css/bootstrap-lightbox.css',
-                    'css/bootstrap-datetimepicker.min.css',
-                    'css/style.css'
-                ],
-                dest: 'dist/css/<%= pkg.name %>.css'
             }
         },
 
@@ -134,7 +153,7 @@ module.exports = function(grunt) {
         },
 
         cssmin: {
-            minify: {
+            combine: {
                 options: {
                     keepSpecialComments: '*',
                     noAdvanced: true, // turn advanced optimizations off until the issue is fixed in clean-css
@@ -142,7 +161,7 @@ module.exports = function(grunt) {
                     selectorsMergeMode: 'ie8'
                 },
                 files: {
-                    'dist/css/<%= pkg.name %>.min.css': ['dist/css/<%= pkg.name %>.css']
+                    'dist/css/<%= pkg.name %>.min.css': ['css/style.css']
                 }
             }
             /*,
@@ -251,7 +270,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand: true,
                     cwd: 'dist/dav/',
-                    src: ['**', '.htaccess'],
+                    src: ['**'],
                     dest: 'dav/'
                 }]
             }
@@ -273,7 +292,22 @@ module.exports = function(grunt) {
                 //bootstrap: 'tests/php/phpunit.php',
                 colors: true
             }
-        }
+        },
+
+        watch: {
+            src: {
+                files: '<%= jshint.src.src %>',
+                tasks: ['jshint:src', 'qunit']
+            },
+            test: {
+                files: '<%= jshint.test.src %>',
+                tasks: ['jshint:test', 'qunit']
+            },
+            less: {
+                files: 'less/*.less',
+                tasks: 'less'
+            }
+        },
 
     });
 
@@ -286,10 +320,10 @@ module.exports = function(grunt) {
     grunt.registerTask('test', ['jshint', 'jscs', 'qunit', 'phpunit']);
 
     // JS distribution task.
-    grunt.registerTask('dist-js', ['concat', 'uglify', 'copy:js']);
+    grunt.registerTask('dist-js', ['jshint', 'jscs', 'concat', 'uglify', 'copy:js']);
 
     // CSS distribution task.
-    grunt.registerTask('dist-css', ['concat:css', 'cssmin', 'usebanner', 'copy:css']);
+    grunt.registerTask('dist-css', ['cssmin', 'usebanner', 'copy:css']);
 
     // JS distribution task.
     grunt.registerTask('dist-backend', ['copy:backend']);

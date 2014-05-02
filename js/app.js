@@ -8,7 +8,7 @@
         },
         "view-url": false,
         "app-element-id": "mollify",
-        "service-path": "../backend/",
+        "service-path": "backend/",
         "limited-http-methods": false,
         "file-view": {
             "default-view-mode": false,
@@ -49,9 +49,9 @@
             }
         };
 
-		var deps = ['ui.bootstrap', 'ui.router'];
+        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate'];
         $.each(mollify.modules, function(i, m) {
-        	var mod = ng.module(m.id, m.dependencies || []);
+            var mod = ng.module(m.id, m.dependencies || []);
             m.setup({
                 registerView: function(id, v) {
                     views[id] = v;
@@ -66,6 +66,22 @@
             $provide.factory('settings', function() {
                 return settings;
             });
+        }).config(['$translateProvider',
+            function($translateProvider) {
+                $translateProvider.useMissingTranslationHandler('missingLocalizationHandler');
+                $translateProvider.preferredLanguage(settings.language.
+                    default);
+                $translateProvider.useStaticFilesLoader({
+                    prefix: './localization/texts_',
+                    suffix: '.json'
+                });
+            }
+        ]);
+
+        app.factory('missingLocalizationHandler', function() {
+            return function(translationID) {
+                console.log("Missing localization: "+translationID);
+            };
         });
 
         // views

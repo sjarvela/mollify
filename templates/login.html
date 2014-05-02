@@ -1,0 +1,43 @@
+<div class="login-view container">
+    <form class="fullpage" role="form">
+        <div class="mollify-logo"></div>
+
+        <legend>{{ 'login.title' | translate }}</legend>
+
+        <div class="form-group">
+            <label class="sr-only" for="loginUsername">{{ 'login.username' | translate }}</label>
+            <input id="loginUsername" type="text" ng-model="username" class="form-control" required="1" autofocus="1" placeholder="{{ 'login.username' | translate }}" />
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="loginPassword">{{ 'login.password' | translate }}</label>
+            <input id="loginPassword" type="password" ng-model="password" class="form-control" required="1" placeholder="{{ 'login.password' | translate }}" />
+        </div>
+
+        <label class="checkbox">
+            <!--{{view Ember.Checkbox checkedBinding="remember"}} {{t login-view.rememberme}}-->
+        </label>
+
+        <button ng-click="doLogin()" class="btn btn-lg btn-primary btn-block" type="submit">
+            {{ 'login.login' | translate }}
+        </button>
+
+        <!--div class="links center-block">
+            <div class="link">
+                <a id="toggle-reset" class="btn btn-link">{{t login-view.reset-password.show-action}}</a>
+                {{#bs-popover triggers="click" placement="bottom" autofocus="login-reset-email" isVisibleBinding="showReset"}} {{t login-view.reset-password.message}} {{input id="login-reset-email" type="text" value=model.resetEmail class="form-control" required="1"}}
+
+                <button {{action "reset" controller}} class="btn" type="submit">
+                    {{t login-view.reset-password.reset-action}}
+                </button>
+                {{/bs-popover}}
+            </div>
+
+            <div class="link">
+                {{#if controller._m.plugins.list.Registration}}
+                <a href="#/registration/new" class="btn btn-link">{{t login-view.register-action}}</a>
+                {{/if}}
+            </div>
+        </div-->
+    </form>
+</div>
