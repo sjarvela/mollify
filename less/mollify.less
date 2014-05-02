@@ -1,7 +1,6 @@
 @import url(../bower_components/bootstrap/less/bootstrap.less);
  @import url(../bower_components/bootstrap/less/theme.less);
  @import url(../bower_components/font-awesome/less/font-awesome.less);
- 
  #mollify {
     margin: 0;
     .container {
@@ -16,6 +15,22 @@
             .link {
                 display: inline-block;
             }
+        }
+    }
+    .main-view {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            display: block;
+            padding: 70px 20px 20px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #eee;
+        }
+        & > .container-fluid {
+            margin-top: 60px;
         }
     }
 }

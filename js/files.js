@@ -2,14 +2,19 @@
     'use strict';
 
     mollify.modules.push({
-    	id: 'mollify.main.files',
+        id: 'mollify.main.files',
 
         setup: function(h, mod) {
             h.registerView('files', {
                 parent: "main",
                 url: "^/files",
                 template: "files.html",
-                controller: "FilesCtrl"
+                controller: "FilesCtrl",
+                subviews: {
+                    'sidebar': {
+                        template: 'files-sidebar.html'
+                    }
+                }
             });
 
             mod.controller('FilesCtrl', ['$scope',

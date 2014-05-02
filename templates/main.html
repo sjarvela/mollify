@@ -1,2 +1,33 @@
-main {{session.user.name}}
-<div ui-view>sub</div>
+<div class="main-view">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="#" class="navbar-brand">Mollify</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="main-header-nav nav navbar-nav navbar-left">
+
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {{session.user.name}}
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <input type="text" class="form-control" placeholder="TODO">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-md-2 sidebar" ui-view="sidebar">
+            </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ui-view>
+        </div>
+    </div>
+</div>

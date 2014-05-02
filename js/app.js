@@ -80,7 +80,7 @@
 
         app.factory('missingLocalizationHandler', function() {
             return function(translationID) {
-                console.log("Missing localization: "+translationID);
+                console.log("Missing localization: " + translationID);
             };
         });
 
@@ -91,15 +91,38 @@
                 // For any unmatched url, redirect to /files
                 $urlRouterProvider.otherwise("/files");
 
+                var templateUrlFn = function(tpl) {
+                    return function(stateParams) {
+                        return 'templates/' + tpl; //TODO path from params
+                    };
+                };
+
                 $.each(mollify.utils.getKeys(views), function(i, vk) {
                     var v = views[vk];
                     var vp = {};
+                    var subviews = false;
                     if (v.url) vp.url = v.url;
                     if (v.parent) vp.parent = v.parent;
-                    if (v.controller) vp.controller = v.controller;
-                    vp.templateUrl = function(stateParams) {
-                        return 'templates/' + v.template; //TODO path from params
-                    };
+
+                    if (v.subviews) {
+                        subviews = {};
+                        $.each(mollify.utils.getKeys(v.subviews), function(i, svk) {
+                            var sv = v.subviews[svk];
+                            var svp = {
+                                controller : sv.controller,
+                                templateUrl : templateUrlFn(sv.template)
+                            };
+                            subviews[svk] = svp;
+                        });
+                        subviews[''] = {
+                            controller : v.controller,
+                            templateUrl : templateUrlFn(v.template)
+                        };
+                        vp.views = subviews;
+                    } else {
+                        if (v.controller) vp.controller = v.controller;
+                        vp.templateUrl = templateUrlFn(v.template);
+                    }
 
                     console.log("VIEW:" + vk);
                     console.log(vp);
