@@ -38,7 +38,7 @@
 				</div>
 			</div>
 			
-			{{if features['change_password']}}
+			{{if features['change_password'] && user.hasPermission("change_password")}}
 			<div class="control-group">
 				<label class="control-label localized" text-key="configUserAccountPasswordTitle"></label>
 				<div class="controls">
