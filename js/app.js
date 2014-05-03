@@ -93,7 +93,8 @@
 
                 var templateUrlFn = function(tpl) {
                     return function(stateParams) {
-                        return 'templates/' + tpl; //TODO path from params
+                        var tplName = angular.isFunction(tpl) ? tpl(stateParams) : tpl;
+                        return 'templates/' + tplName; //TODO path from params
                     };
                 };
 
@@ -109,18 +110,25 @@
                         $.each(mollify.utils.getKeys(v.subviews), function(i, svk) {
                             var sv = v.subviews[svk];
                             var svp = {
-                                controller : sv.controller,
-                                templateUrl : templateUrlFn(sv.template)
+                                templateUrl: templateUrlFn(sv.template)
                             };
+                            if (sv.controller) {
+                                if (angular.isFunction(sv.controller)) svp.controllerProvider = sv.controller;
+                                else svp.controller = sv.controller;
+                            }
+
                             subviews[svk] = svp;
                         });
                         subviews[''] = {
-                            controller : v.controller,
-                            templateUrl : templateUrlFn(v.template)
+                            controller: v.controller,
+                            templateUrl: templateUrlFn(v.template)
                         };
                         vp.views = subviews;
                     } else {
-                        if (v.controller) vp.controller = v.controller;
+                        if (v.controller) {
+                            if (angular.isFunction(v.controller)) vp.controllerProvider = v.controller;
+                            else vp.controller = v.controller;
+                        }
                         vp.templateUrl = templateUrlFn(v.template);
                     }
 
