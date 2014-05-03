@@ -580,7 +580,7 @@
 		return mollify.dom.template("mollify-tmpl-popupmenu", {items:list});
 	};
 	var initPopupItems = function($p, l, onItem) {
-		$p.find(".dropdown-item").click(function() {
+		$p.find(".dropdown-item, .dropdown-submenu").click(function() {
 			var $e = $(this);
 			var $top = $p.find(".dropdown-menu");
 			var path = [];
@@ -596,6 +596,8 @@
 				item = parent[ind];
 				if (item.type == 'submenu') parent = item.items;
 			});
+			if (item.type == 'submenu' && item.primary)
+				item = item.primary;
 			if (onItem) onItem(item, item.callback ? item.callback() : null);
 			else if (item.callback) item.callback();
 			return false;
