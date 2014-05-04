@@ -27,9 +27,11 @@
                                 return false;
                             }
                             // empty view
-                            return { folders: [] };
+                            return {
+                                folders: []
+                            };
                         }
-                        return filesystem.folderInfo($stateParams.id, true);    //TODO request data
+                        return filesystem.folderInfo($stateParams.id, true); //TODO request data
                     }
                 },
                 subviews: {
@@ -59,7 +61,7 @@
             mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'filesystem', 'data',
                 function($scope, $state, $stateParams, filesystem, data) {
                     if (!data) return;
-                    
+
                     var reload = function() {
                         $state.transitionTo($state.current, $stateParams, {
                             reload: true,
@@ -68,15 +70,20 @@
                         });
                     };
 
-                    $scope.view = viewData;
-                    $scope.roots = filesystem.roots();
-                    $scope.root = data.hierarchy[0];
-                    $scope.data = data;
+                    var sd = {
+                        view: viewData,
+                        roots: filesystem.roots(),
+                        root: data.hierarchy[0],
+                        data: data
+                    };
+
+                    $scope.$parent.files = sd;
+                    $.extend($scope, sd);
+
                     $scope.setViewType = function(t) {
                         viewData.type = t;
                         reload();
                     }
-                    console.log("files");
                 }
             ]);
 
