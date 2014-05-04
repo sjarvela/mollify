@@ -147,7 +147,7 @@
             }
         ])
 
-        app.run(function($rootScope, $state, session) {
+        app.run(function($rootScope, $state, service, session, filesystem) {
             that._onStart($rootScope, $state, session);
         });
 
@@ -192,7 +192,7 @@
             // state interceptor
             $rootScope.$on('$stateChangeStart',
                 function(event, toState, toParams, fromState, fromParams) {
-                    console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState));
+                    console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState) + " " + JSON.stringify(toParams));
 
                     if (!initialized) {
                         pendingStateChange = {

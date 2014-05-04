@@ -11,23 +11,27 @@
 
             h.registerView('files', {
                 parent: "main",
-                url: "^/files/:id",
+                url: "^/files/{id}",
                 template: "files.html",
                 controller: "FilesCtrl",
-                onBefore: function(params) {
-                    // if no folder id, redirect to default folder
+                /*onBefore: function(params, filesystem) {
 
-                    // TODO get from root folders
-                    if (!params.id) return {
-                        name: "files",
-                        params: {
-                            id: '12'
-                        }
-                    };
-                },
+                },*/
                 resolve: {
-                    data: function($stateParams, itemProvider) {
-                        console.log($stateParams);
+                    data: function($stateParams, $state, $location, filesystem) {
+                        // if no folder id, redirect to default folder
+
+                        // TODO get from root folders
+                        var roots = filesystem.roots();
+                        if (!$stateParams.id && roots) {
+                            /*$state.go("files", {
+                                id: roots[0].id
+                            }, {
+                                location: true
+                            });*/
+                            $location.path("/files/"+roots[0].id);
+                            return false;
+                        }
                         return {}; //itemProvider.getFolderInfo('1');
                     }
                 },

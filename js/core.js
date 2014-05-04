@@ -9,8 +9,26 @@
             mod.factory('itemProvider', ['service',
                 function(service) {
                     return {
-                        getFolderInfo : function(id) {
-                            return service.get('filesystem/'+id+'/info');
+                        getFolderInfo: function(id) {
+                            return service.get('filesystem/' + id + '/info');
+                        }
+                    }
+                }
+            ]);
+
+            mod.factory('filesystem', ['$rootScope', 'service', 'session',
+                function($rootScope, service, session) {
+                    var _roots = [];
+                    $rootScope.$on('session/start', function(event, session) {
+                        _roots = session.data.folders;
+                    });
+                    $rootScope.$on('session/end', function(event) {
+                        _roots = [];
+                    });
+
+                    return {
+                        roots: function() {
+                            return _roots;
                         }
                     }
                 }
@@ -21,6 +39,9 @@
                     var _sessionId = false;
                     $rootScope.$on('session/start', function(event, session) {
                         _sessionId = session.id;
+                    });
+                    $rootScope.$on('session/end', function(event) {
+                        _sessionId = false;
                     });
                     var limitedHttpMethods = !! settings['limited-http-methods'];
                     var urlFn = function(u, full) {
@@ -73,8 +94,8 @@
                                 var failContext = {
                                     handled: false
                                 }
-                                if (error.code == 100 && mollify.session.user) {
-                                    mollify.events.dispatch('session/end');
+                                if (error.code == 100 && _sessionId) {
+                                    $rootScope.$broadcast('error/unauthorized');
                                     failContext.handled = true;
                                 }
                                 // push default handler to end of callback list
@@ -113,6 +134,10 @@
             mod.factory('session', ['service', '$rootScope',
                 function(service, $rootScope) {
                     var _session = false;
+                    var _end = function() {
+                        $rootScope.session = null;
+                        $rootScope.$broadcast('session/end');
+                    };
                     var _set = function(s) {
                         if (!s || !s.authenticated) {
                             _session = {
@@ -126,17 +151,20 @@
                                     id: s.user_id,
                                     type: s.user_type,
                                     name: s.username
-                                }
+                                },
+                                data: s
                             }
                         }
                         $rootScope.session = _session;
                         $rootScope.$broadcast('session/start', _session);
+                        $rootScope.$on('error/unauthorized', _end);
                     };
                     //_set();
                     return {
                         get: function() {
                             return _session;
                         },
+                        end: _end,
                         init: function() {
                             var df = $.Deferred();
                             service.get('session/info').done(function(s) {
