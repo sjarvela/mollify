@@ -39,12 +39,15 @@
         var that = this;
         var views = {
             login: {
+                id: 'login',
                 url: "/login",
                 controller: "LoginCtrl",
                 template: "login.html"
             },
             main: {
+                id: 'main',
                 abstract: true,
+                controller: "MainCtrl",
                 template: "main.html"
             }
         };
@@ -54,11 +57,19 @@
             var mod = ng.module(m.id, m.dependencies || []);
             m.setup({
                 registerView: function(id, v) {
+                    v.id = id;
                     views[id] = v;
                 }
             }, mod);
             deps.push(m.id);
         });
+        var getViews = function(parent) {
+            var result = [];
+            $.each(views, function(i, v) {
+                if (v.parent == parent) result.push(v);
+            });
+            return result;
+        };
 
         var app = ng.module('mollify', deps);
 
@@ -83,6 +94,15 @@
                 console.log("Missing localization: " + translationID);
             };
         });
+
+        app.controller('MainCtrl', ['$scope', '$state', '$stateParams',
+            function($scope, $state, $stateParams) {
+                console.log("main");
+                $scope.views = getViews('main');
+                $scope.activeView = views[$state.current.name];
+                //console.log($state);
+            }
+        ]);
 
         // views
         app.
@@ -173,7 +193,7 @@
                 $state.go(stateChange.to.name);
             }
 
-            var onBeforeStateChange = function(e, toState, toParams, fromState, fromParams) {
+            /*var onBeforeStateChange = function(e, toState, toParams, fromState, fromParams) {
                 if (!views[toState.name] || !views[toState.name].onBefore) return;
 
                 var res = views[toState.name].onBefore(toParams, fromState);
@@ -187,7 +207,7 @@
                         return;
                     }
                 }
-            };
+            };*/
 
             // state interceptor
             $rootScope.$on('$stateChangeStart',
@@ -218,7 +238,7 @@
                         $state.go("login");
                         return;
                     }
-                    onBeforeStateChange(event, toState, toParams, fromState, fromParams);
+                    //onBeforeStateChange(event, toState, toParams, fromState, fromParams);
                 });
 
             $rootScope.$on('session/start', function() {

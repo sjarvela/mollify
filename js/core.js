@@ -29,6 +29,14 @@
                     return {
                         roots: function() {
                             return _roots;
+                        },
+                        folderInfo: function(id) {
+                            return service.get('filesystem/' + id + '/info').pipe(function(r) {
+                                var folder = r.folder;
+                                var data = r;
+                                data.items = r.folders.slice(0).concat(r.files);
+                                return data;
+                            });
                         }
                     }
                 }

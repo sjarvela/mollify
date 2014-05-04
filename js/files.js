@@ -10,32 +10,32 @@
             };
 
             h.registerView('files', {
+                title: "main.files.title",
+                icon: "fa-folder",
                 parent: "main",
                 url: "^/files/{id}",
                 template: "files.html",
                 controller: "FilesCtrl",
-                /*onBefore: function(params, filesystem) {
-
-                },*/
                 resolve: {
-                    data: function($stateParams, $state, $location, filesystem) {
+                    data: function($stateParams, $location, filesystem) {
                         // if no folder id, redirect to default folder
 
-                        // TODO get from root folders
                         var roots = filesystem.roots();
-                        if (!$stateParams.id && roots) {
-                            /*$state.go("files", {
-                                id: roots[0].id
-                            }, {
-                                location: true
-                            });*/
-                            $location.path("/files/"+roots[0].id);
-                            return false;
+                        if (!$stateParams.id) {
+                            if (roots) {
+                                $location.path("/files/" + roots[0].id);
+                                return false;
+                            }
+                            // empty view
+                            return { folders: [] };
                         }
-                        return {}; //itemProvider.getFolderInfo('1');
+                        return filesystem.folderInfo($stateParams.id);
                     }
                 },
                 subviews: {
+                    'header-nav': {
+                        template: 'files-header-nav.html'
+                    },
                     'sidebar': {
                         template: 'files-sidebar.html'
                     },
@@ -66,7 +66,8 @@
                         });
                     };
 
-                    $scope.data = viewData;
+                    $scope.view = viewData;
+                    $scope.data = data;
                     $scope.setViewType = function(t) {
                         viewData.type = t;
                         reload();
