@@ -29,7 +29,7 @@
                             // empty view
                             return { folders: [] };
                         }
-                        return filesystem.folderInfo($stateParams.id);
+                        return filesystem.folderInfo($stateParams.id, true);    //TODO request data
                     }
                 },
                 subviews: {
@@ -56,8 +56,10 @@
                 }
             });
 
-            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'data',
-                function($scope, $state, $stateParams, data) {
+            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'filesystem', 'data',
+                function($scope, $state, $stateParams, filesystem, data) {
+                    if (!data) return;
+                    
                     var reload = function() {
                         $state.transitionTo($state.current, $stateParams, {
                             reload: true,
@@ -67,6 +69,8 @@
                     };
 
                     $scope.view = viewData;
+                    $scope.roots = filesystem.roots();
+                    $scope.root = data.hierarchy[0];
                     $scope.data = data;
                     $scope.setViewType = function(t) {
                         viewData.type = t;

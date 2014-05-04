@@ -19,22 +19,39 @@
             mod.factory('filesystem', ['$rootScope', 'service', 'session',
                 function($rootScope, service, session) {
                     var _roots = [];
+                    var _rootsById = [];
                     $rootScope.$on('session/start', function(event, session) {
                         _roots = session.data.folders;
+                        $.each(_roots, function(i, r) {
+                            _rootsById[r.id] = r;
+                        })
                     });
                     $rootScope.$on('session/end', function(event) {
                         _roots = [];
+                        _rootsById = {};
                     });
 
                     return {
                         roots: function() {
                             return _roots;
                         },
-                        folderInfo: function(id) {
-                            return service.get('filesystem/' + id + '/info').pipe(function(r) {
+                        root: function(id) {
+                            return _rootsById[id];
+                        },
+                        rootsById: function() {
+                            return _rootsById;
+                        },
+                        folderInfo: function(id, hierarchy, data) {
+                            return service.post("filesystem/" + (id ? id : "roots") + "/info/" + (hierarchy ? "?h=1" : ""), {
+                                data: data || {}
+                            }).pipe(function(r) {
+                                //mollify.filesystem.permissionCache[id] = r.permissions;
+
                                 var folder = r.folder;
                                 var data = r;
                                 data.items = r.folders.slice(0).concat(r.files);
+                                if (r.hierarchy)
+                                    r.hierarchy[0] = _rootsById[r.hierarchy[0].id];
                                 return data;
                             });
                         }
