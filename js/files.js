@@ -11,9 +11,26 @@
 
             h.registerView('files', {
                 parent: "main",
-                url: "^/files",
+                url: "^/files/:id",
                 template: "files.html",
                 controller: "FilesCtrl",
+                onBefore: function(params) {
+                    // if no folder id, redirect to default folder
+
+                    // TODO get from root folders
+                    if (!params.id) return {
+                        name: "files",
+                        params: {
+                            id: '12'
+                        }
+                    };
+                },
+                resolve: {
+                    data: function($stateParams, itemProvider) {
+                        console.log($stateParams);
+                        return {}; //itemProvider.getFolderInfo('1');
+                    }
+                },
                 subviews: {
                     'sidebar': {
                         template: 'files-sidebar.html'
@@ -35,8 +52,8 @@
                 }
             });
 
-            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams',
-                function($scope, $state, $stateParams) {
+            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'data',
+                function($scope, $state, $stateParams, data) {
                     var reload = function() {
                         $state.transitionTo($state.current, $stateParams, {
                             reload: true,

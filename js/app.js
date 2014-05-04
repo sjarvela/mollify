@@ -104,6 +104,7 @@
                     var subviews = false;
                     if (v.url) vp.url = v.url;
                     if (v.parent) vp.parent = v.parent;
+                    if (v.resolve) vp.resolve = v.resolve;
 
                     if (v.subviews) {
                         subviews = {};
@@ -116,6 +117,7 @@
                                 if (angular.isFunction(sv.controller)) svp.controllerProvider = sv.controller;
                                 else svp.controller = sv.controller;
                             }
+                            if (svp.resolve) svp.resolve = sv.resolve;
 
                             subviews[svk] = svp;
                         });
@@ -160,6 +162,33 @@
             var pendingStateChange = false;
             console.log("Mollify started");
 
+            var resumeStateChange = function() {
+                var stateChange = pendingStateChange;
+                if (!stateChange) stateChange = {
+                    to: {
+                        name: 'files'
+                    }
+                };
+                pendingStateChange = false;
+                $state.go(stateChange.to.name);
+            }
+
+            var onBeforeStateChange = function(e, toState, toParams, fromState, fromParams) {
+                if (!views[toState.name] || !views[toState.name].onBefore) return;
+
+                var res = views[toState.name].onBefore(toParams, fromState);
+                if (res === false) {
+                    e.preventDefault();
+                    //TODO then what?
+                } else if (typeof(res) == 'object') {
+                    if (res.name) {
+                        e.preventDefault();
+                        $state.go(res.name, res.params);
+                        return;
+                    }
+                }
+            };
+
             // state interceptor
             $rootScope.$on('$stateChangeStart',
                 function(event, toState, toParams, fromState, fromParams) {
@@ -182,20 +211,22 @@
                     if (requiresAuthenticated && !isAuthenticated) {
                         console.log("STATECHANGE REJECTED: not authenticated");
                         event.preventDefault();
-                        $rootScope.loginForwardState = {
+                        pendingStateChange = {
                             to: toState,
                             params: toParams
                         };
                         $state.go("login");
+                        return;
                     }
+                    onBeforeStateChange(event, toState, toParams, fromState, fromParams);
                 });
+
+            $rootScope.$on('session/start', function() {
+                resumeStateChange();
+            });
 
             session.init().done(function() {
                 initialized = true;
-                if (!pendingStateChange) return;
-                var stateChange = pendingStateChange;
-                pendingStateChange = false;
-                $state.go(stateChange.to.name);
             });
         };
     };

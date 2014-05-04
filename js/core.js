@@ -6,6 +6,16 @@
         id: 'mollify.core',
 
         setup: function(h, mod) {
+            mod.factory('itemProvider', ['service',
+                function(service) {
+                    return {
+                        getFolderInfo : function(id) {
+                            return service.get('filesystem/'+id+'/info');
+                        }
+                    }
+                }
+            ]);
+
             mod.factory('service', ['$rootScope', 'settings',
                 function($rootScope, settings) {
                     var _sessionId = false;
@@ -130,8 +140,8 @@
                         init: function() {
                             var df = $.Deferred();
                             service.get('session/info').done(function(s) {
+                                df.resolve(s);
                                 if (s) _set(s);
-                                df.resolve();
                             }).fail(df.reject);
                             return df.promise();
                         },
@@ -160,14 +170,7 @@
                     $scope.password = "";
 
                     $scope.doLogin = function() {
-                        session.authenticate($scope.username, $scope.password).done(function() {
-                            if ($rootScope.loginForwardState) {
-                                var goto = $rootScope.loginForwardState;
-                                $rootScope.loginForwardState = null;
-                                $state.go(goto.to.name);
-                            } else
-                                $state.go("main");
-                        });
+                        session.authenticate($scope.username, $scope.password);
                     }
                 }
             ]);
