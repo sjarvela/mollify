@@ -95,11 +95,16 @@
             };
         });
 
-        app.controller('MainCtrl', ['$scope', '$state', '$stateParams',
-            function($scope, $state, $stateParams) {
+        //var onUpdateMain = false;
+
+        app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams',
+            function($scope, $rootScope, $state, $stateParams) {
                 console.log("main");
                 $scope.views = getViews('main');
                 $scope.activeView = views[$state.current.name];
+                $rootScope.$on('$stateChangeSuccess', function(e, to) {
+                    $scope.activeView = views[to.name];
+                });
                 //console.log($state);
             }
         ]);
