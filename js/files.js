@@ -16,14 +16,16 @@
                 url: "^/files/{id}",
                 template: "files.html",
                 controller: "FilesCtrl",
-                redirect: function($injector, $location) {                    
+                redirect: ['filesystem', function($location, filesystem) {
                     if ($location.$$path == '/files') {
-                        var roots = $injector.get('filesystem').roots();
+                        var roots = filesystem.roots();
+                        if (!roots) return;
+
                         var rd = "/files/" + roots[0].id;
                         console.log("PATH:"+$location.$$path+" -> "+rd);
                         return rd;
                     }
-                },
+                }],
                 resolve: {
                     data: function($stateParams, filesystem) {
                         return filesystem.folderInfo($stateParams.id, true); //TODO request data

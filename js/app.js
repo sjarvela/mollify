@@ -163,7 +163,18 @@
                         .state(vk, vp);
 
                     if (v.redirect) {
-                        $urlRouterProvider.rule(v.redirect);
+                        var fn = false;
+                        if (typeof(v.redirect) == 'function') fn = v.redirect;
+                        else if (window.isArray(v.redirect) && v.redirect.length > 0)
+                            fn = v.redirect[v.redirect.length - 1];
+                        if (fn)
+                            $urlRouterProvider.rule(function($injector, $location) {
+                                var deps = [];
+                                var args = [$location];
+                                if (window.isArray(v.redirect) && v.redirect.length > 1)
+                                    for (var i = 0; i <= v.redirect.length - 2; i++) args.push($injector.get(v.redirect[i]));
+                                fn.apply(null, args);
+                            });
                     }
                 });
             }
