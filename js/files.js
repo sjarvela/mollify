@@ -16,16 +16,18 @@
                 url: "^/files/{id}",
                 template: "files.html",
                 controller: "FilesCtrl",
-                redirect: ['filesystem', function($location, filesystem) {
-                    if ($location.$$path == '/files') {
-                        var roots = filesystem.roots();
-                        if (!roots) return;
+                redirect: ['filesystem',
+                    function($location, filesystem) {
+                        if ($location.$$path == '/files') {
+                            var roots = filesystem.roots();
+                            if (!roots) return;
 
-                        var rd = "/files/" + roots[0].id;
-                        console.log("PATH:"+$location.$$path+" -> "+rd);
-                        return rd;
+                            var rd = "/files/" + roots[0].id;
+                            console.log("PATH:" + $location.$$path + " -> " + rd);
+                            return rd;
+                        }
                     }
-                }],
+                ],
                 resolve: {
                     data: function($stateParams, filesystem) {
                         return filesystem.folderInfo($stateParams.id, true); //TODO request data
@@ -34,6 +36,9 @@
                 subviews: {
                     'header-nav': {
                         template: 'files-header-nav.html'
+                    },
+                    'header-tools': {
+                        template: 'files-header-tools.html'
                     },
                     'sidebar': {
                         template: 'files-sidebar.html'
@@ -69,16 +74,15 @@
                         view: viewData,
                         roots: filesystem.roots(),
                         root: data.hierarchy ? data.hierarchy[0] : null,
-                        data: data
+                        data: data,
+                        setViewType : function(t) {
+                            viewData.type = t;
+                            reload();
+                        }
                     };
 
                     $scope.$parent.files = sd;
                     $.extend($scope, sd);
-
-                    $scope.setViewType = function(t) {
-                        viewData.type = t;
-                        reload();
-                    }
                 }
             ]);
 
