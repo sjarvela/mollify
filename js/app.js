@@ -52,7 +52,7 @@
             }
         };
 
-        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate', 'ngGrid'];
+        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate'];
         $.each(mollify.modules, function(i, m) {
             var mod = ng.module(m.id, m.dependencies || []);
             m.setup({

@@ -1,4 +1,3 @@
-@import url(../bower_components/ng-grid/ng-grid.css);
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */
 html {
   font-family: sans-serif;
@@ -7481,10 +7480,28 @@ button.close {
 #mollify .main-view .fileview .filelist-table {
   float: left;
 }
-#mollify .main-view .fileview .filelist-table .filelist-item {
+#mollify .main-view .fileview .filelist-table .filelist-header {
+  float: left;
+  width: 100%;
+  font-weight: bold;
+}
+#mollify .main-view .fileview .filelist-table .filelist-header .filelist-header-col {
+  float: left;
+  vertical-align: bottom;
+  border-bottom: 2px solid #ddd;
+}
+#mollify .main-view .fileview .filelist-table .filelist-items {
+  float: left;
+  clear: both;
+}
+#mollify .main-view .fileview .filelist-table .filelist-items .filelist-item {
   float: left;
   width: 100%;
 }
-#mollify .main-view .fileview .filelist-table .filelist-item .filelist-item-value {
+#mollify .main-view .fileview .filelist-table .filelist-items .filelist-item .filelist-item-value {
   float: left;
+}
+#mollify .main-view .fileview .filelist-table .filelist-header-col,
+#mollify .main-view .fileview .filelist-table .filelist-item-value {
+  padding: 4px;
 }

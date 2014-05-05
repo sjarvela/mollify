@@ -1,9 +1,8 @@
 @import url(../bower_components/bootstrap/less/bootstrap.less);
  @import url(../bower_components/bootstrap/less/theme.less);
  @import url(../bower_components/font-awesome/less/font-awesome.less);
- @fa-font-path:        "../bower_components/font-awesome/fonts";
- @import url(../bower_components/ng-grid/ng-grid.css);
-
+ @fa-font-path:"../bower_components/font-awesome/fonts";
+ 
  #mollify {
     margin: 0;
     .container {
@@ -36,18 +35,34 @@
             margin-top: 60px;
         }
         .fileview {
-        	.filelist-table {
-        		float: left;
+            .filelist-table {
+                float: left;
+                .filelist-header {
+                    float: left;
+                    width: 100%;
+                    font-weight: bold;
 
-        		.filelist-item {
-        			float: left;
-        			width: 100%;
-
-        			.filelist-item-value {
-        				float: left;
-        			}
-        		}
-        	}	
+                    .filelist-header-col {
+                        float: left;
+                        vertical-align: bottom;
+                        border-bottom: 2px solid #ddd;
+                    }
+                }
+                .filelist-items {
+                    float: left;
+                    clear: both;
+                    .filelist-item {
+                        float: left;
+                        width: 100%;
+                        .filelist-item-value {
+                            float: left;
+                        }
+                    }
+                }
+                .filelist-header-col, .filelist-item-value {
+                    padding: 4px;
+                }
+            }
         }
     }
 }

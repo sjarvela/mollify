@@ -12,7 +12,6 @@
         "angular-translate-loader-static-files": "*",
         "bootstrap": "~3.1.1",
         "ui-bootstrap": "*",
-        "font-awesome": "*",
-        "ng-grid": "*"
+        "font-awesome": "*"
     }
 }

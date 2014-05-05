@@ -1,9 +1,15 @@
-<div class="filelist-table" ng-grid="tableData"></div>
+<div class="filelist-table">
+    <div class="filelist-header">
+        <div class="filelist-header-col col-{{col.id}}" ng-repeat="col in cols">
+            {{ col.titleKey | translate }}
+        </div>
+    </div>
 
-<!--div class="filelist-table">
-	<div class="filelist-item" ng-class="item.is_file ? 'item-file item-file-{{item.extension}}' : 'item-folder'" ng-repeat="item in data.items">
-		<div class="filelist-item-value" ng-repeat="col in cols">
-			{{ content(item, col) }}
-		</div>
-	</div>
-</div-->
+    <div class="filelist-items">
+        <div class="filelist-item" ng-class="item.is_file ? 'item-file item-file-{{item.extension}}' : 'item-folder'" ng-repeat="item in data.items">
+            <div class="filelist-item-value col-{{col.id}}" ng-repeat="col in cols">
+                {{ content(item, col) }}
+            </div>
+        </div>
+    </div>
+</div>
