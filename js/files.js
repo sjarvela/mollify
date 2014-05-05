@@ -84,20 +84,24 @@
 
             /* File list */
 
-            mod.controller('FilesListTableCtrl', ['$scope', 'settings', 'filesystem', 'formatters',
-                function($scope, settings, filesystem, formatters) {
+            mod.controller('FilesListTableCtrl', ['$scope', '$translate', 'settings', 'filesystem', 'formatters',
+                function($scope, $translate, settings, filesystem, formatters) {
                     var colConfig = settings['file-view']['list-view-columns'];
                     var colSpecs = mollify.utils.mapByKey(mollify.filelist.columns, 'id');
                     var cols = [];
                     $.each(mollify.utils.getKeys(colConfig), function(i, ck) {
                         var s = colSpecs[ck];
                         if (!s) return;
-                        cols.push($.extend({}, s, colConfig[ck]));
+                        var d = $.extend({}, s, colConfig[ck]);
+                        cols.push({ field: d.id, displayName: d.titleKey });
                     });
                     //$scope.cols = cols;
+                    $scope.selected = [];
 
                     $scope.tableData = {
-                        data: 'data.items'
+                        data: 'data.items',
+                        columnDefs: cols,
+                        selectedItems: $scope.selected,
                     };
 
                     $scope.content = function(item, col) {
