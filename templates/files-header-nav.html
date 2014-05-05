@@ -1,7 +1,7 @@
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-folder"></i>&nbsp;<span>{{files.root.name}}</span> <b class="caret"></b></a>
     <ul class="dropdown-menu" role="menu">
-        <li ng-repeat="r in files.roots"><a href="#"><i class="fa fa-folder"></i>&nbsp;<span>{{r.name}}</span></a>
+        <li ng-repeat="r in files.roots"><a href="#/files/{{r.id}}"><i class="fa fa-folder"></i>&nbsp;<span>{{r.name}}</span></a>
         </li>
     </ul>
 </li>

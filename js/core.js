@@ -6,13 +6,66 @@
         id: 'mollify.core',
 
         setup: function(h, mod) {
-            mod.factory('itemProvider', ['service',
-                function(service) {
-                    return {
-                        getFolderInfo: function(id) {
-                            return service.get('filesystem/' + id + '/info');
-                        }
-                    }
+            mod.factory('formatters', ['$translate',
+                function($translate) {
+                    var df = $.Deferred();
+                    $translate(['file-size.one-byte', 'file-size.bytes', 'file-size.one-kb', 'file-size.kb']).then(function(texts) {
+                        df.resolve({
+                            ByteSize: function(texts, nf) {
+                                this.format = function(b) {
+                                    if (!window.def(b)) return "";
+
+                                    var bytes = b;
+                                    if (typeof(b) === "string") {
+                                        bytes = parseInt(bytes, 10);
+                                        if (isNaN(bytes)) return "";
+                                    } else if (typeof(b) !== "number") return "";
+
+                                    if (bytes < 1024)
+                                        return (bytes == 1 ? texts['file-size.one-byte'] : texts['file-size.bytes', nf.format(bytes)]);
+
+                                    if (bytes < (1024 * 1024)) {
+                                        var kilobytes = bytes / 1024;
+                                        return (kilobytes == 1 ? texts['file-size.one-kb'] : texts['file-size.kb', nf.format(kilobytes)]);
+                                    }
+
+                                    if (bytes < (1024 * 1024 * 1024)) {
+                                        var megabytes = bytes / (1024 * 1024);
+                                        return texts.get('file-size.mb', nf.format(megabytes));
+                                    }
+
+                                    var gigabytes = bytes / (1024 * 1024 * 1024);
+                                    return texts.get('file-size.gb', nf.format(gigabytes));
+                                };
+                            },
+                            Timestamp: function(fmt) {
+                                this.format = function(ts) {
+                                    if (ts == null) return "";
+                                    if (typeof(ts) === 'string') ts = mollify.utils.parseInternalTime(ts);
+                                    return ts.toString(fmt);
+                                };
+                            },
+                            Number: function(precision, unit, ds) {
+                                this.format = function(n) {
+                                    if (!window.def(n) || typeof(n) !== 'number') return "";
+
+                                    var s = Math.pow(10, precision);
+                                    var v = Math.floor(n * s) / s;
+                                    var sv = v.toString();
+                                    if (ds) sv = sv.replace(".", ds);
+                                    if (unit) return sv + " " + unit;
+                                    return sv;
+                                };
+                            },
+                            FilesystemItemPath: function(fs) {
+                                this.format = function(item) {
+                                    if (!item) return "";
+                                    return fs.rootsById[item.root_id].name + (item.path.length > 0 ? ":&nbsp;" + item.path : "");
+                                }
+                            }
+                        });
+                    });
+                    return df;
                 }
             ]);
 

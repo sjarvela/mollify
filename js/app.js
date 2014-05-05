@@ -52,7 +52,7 @@
             }
         };
 
-        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate'];
+        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate', 'ngGrid'];
         $.each(mollify.modules, function(i, m) {
             var mod = ng.module(m.id, m.dependencies || []);
             m.setup({
@@ -94,8 +94,6 @@
                 console.log("Missing localization: " + translationID);
             };
         });
-
-        //var onUpdateMain = false;
 
         app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams',
             function($scope, $rootScope, $state, $stateParams) {
@@ -163,12 +161,11 @@
                     console.log(vp);
                     $stateProvider
                         .state(vk, vp);
+
+                    if (v.redirect) {
+                        $urlRouterProvider.rule(v.redirect);
+                    }
                 });
-                /*.state('files', {
-                        parent: "main",
-                        url: "^/files",
-                        templateUrl: "templates/files.html"
-                    });*/
             }
         ])
 
@@ -262,6 +259,9 @@
             _m.run();
         },
         modules: [],
+        filelist: {
+            columns: []
+        },
 
         utils: {
             breakUrl: function(u) {

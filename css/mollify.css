@@ -1,3 +1,4 @@
+@import url(../bower_components/ng-grid/ng-grid.css);
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */
 html {
   font-family: sans-serif;
@@ -7476,4 +7477,14 @@ button.close {
 }
 #mollify .main-view > .container-fluid {
   margin-top: 60px;
+}
+#mollify .main-view .fileview .filelist-table {
+  float: left;
+}
+#mollify .main-view .fileview .filelist-table .filelist-item {
+  float: left;
+  width: 100%;
+}
+#mollify .main-view .fileview .filelist-table .filelist-item .filelist-item-value {
+  float: left;
 }

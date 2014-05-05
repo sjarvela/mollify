@@ -2,6 +2,7 @@
  @import url(../bower_components/bootstrap/less/theme.less);
  @import url(../bower_components/font-awesome/less/font-awesome.less);
  @fa-font-path:        "../bower_components/font-awesome/fonts";
+ @import url(../bower_components/ng-grid/ng-grid.css);
 
  #mollify {
     margin: 0;
@@ -33,6 +34,20 @@
         }
         & > .container-fluid {
             margin-top: 60px;
+        }
+        .fileview {
+        	.filelist-table {
+        		float: left;
+
+        		.filelist-item {
+        			float: left;
+        			width: 100%;
+
+        			.filelist-item-value {
+        				float: left;
+        			}
+        		}
+        	}	
         }
     }
 }
