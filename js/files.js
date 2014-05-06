@@ -83,6 +83,10 @@
 
                     $scope.$parent.files = sd;
                     $.extend($scope, sd);
+
+                    $scope.onItemAction = function(item, action, ctx) {
+                        console.log(item.name + " " + action);
+                    };
                 }
             ]);
 
@@ -115,22 +119,28 @@
                             formatters: formatters
                         }, [item]);
                     };
+                    var getCtx = function(col) {
+                        return {
+                            col: col
+                        }
+                    };
+
                     $scope.onClick = function(item, col) {
                         $scope._click = $timeout(function() {
                             if (!$scope._click) return;
                             $scope._click = false;
-                            alert(item.name + " " + col.id);
+                            $scope.onItemAction(item, "click", getCtx(col));
                         }, 200);
                     };
 
                     $scope.onRightClick = function(item, col) {
-                        alert("right " + item.name + " " + col.id);
+                        $scope.onItemAction(item, "right-click", getCtx(col));
                     };
 
                     $scope.onDblClick = function(item, col) {
                         if ($scope._click) $timeout.cancel($scope._click);
                         $scope._click = false;
-                        alert("dbl " + item.name + " " + col.id);
+                        $scope.onItemAction(item, "dbl-click", getCtx(col));
                     };
                 }
             ]);
