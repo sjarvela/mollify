@@ -47,13 +47,13 @@
                         template: function() {
                             if (viewData.type == 1)
                                 return 'files-list-table.html';
-                            else if (viewData.type == 2)
+                            else if (viewData.type == 2 || viewData.type == 3)
                                 return 'files-list-icon.html';
                         },
                         controller: function() {
                             if (viewData.type == 1)
                                 return 'FilesListTableCtrl';
-                            else if (viewData.type == 2)
+                            else if (viewData.type == 2 || viewData.type == 3)
                                 return 'FilesListIconCtrl';
                         }
                     }
@@ -75,7 +75,7 @@
                         roots: filesystem.roots(),
                         root: data.hierarchy ? data.hierarchy[0] : null,
                         data: data,
-                        setViewType : function(t) {
+                        setViewType: function(t) {
                             viewData.type = t;
                             reload();
                         }
@@ -88,24 +88,26 @@
 
             /* File list */
 
-            mod.controller('FilesListTableCtrl', ['$scope', 'settings', 'filesystem', 'formatters',
-                function($scope, settings, filesystem, formatters) {
-                    var colConfig = settings['file-view']['list-view-columns'];
-                    var colSpecs = mollify.utils.mapByKey(mollify.filelist.columns, 'id');
-                    var cols = [];
-                    $.each(mollify.utils.getKeys(colConfig), function(i, ck) {
-                        var s = colSpecs[ck];
-                        if (!s) return;
-                        cols.push($.extend({}, s, colConfig[ck]));
-                    });
+            var cols = false;
+            var setupCols = function(settings) {
+                var colConfig = settings['file-view']['list-view-columns'];
+                var colSpecs = mollify.utils.mapByKey(mollify.filelist.columns, 'id');
+                cols = [];
+
+                $.each(mollify.utils.getKeys(colConfig), function(i, ck) {
+                    var s = colSpecs[ck];
+                    if (!s) return;
+                    cols.push($.extend({}, s, colConfig[ck]));
+                });
+            };
+
+            mod.controller('FilesListTableCtrl', ['$scope', '$timeout', 'settings', 'filesystem', 'formatters',
+                function($scope, $timeout, settings, filesystem, formatters) {
+                    if (!cols) setupCols(settings);
+
                     $scope.cols = cols;
                     $scope.selected = [];
-
-                    /*$scope.tableData = {
-                        data: 'data.items',
-                        columnDefs: cols,
-                        selectedItems: $scope.selected,
-                    };*/
+                    $scope._click = false;
 
                     $scope.content = function(item, col) {
                         return col.content.apply({
@@ -113,8 +115,22 @@
                             formatters: formatters
                         }, [item]);
                     };
-                    $scope.onClickItem = function() {
-                        alert(this.item);
+                    $scope.onClick = function(item, col) {
+                        $scope._click = $timeout(function() {
+                            if (!$scope._click) return;
+                            $scope._click = false;
+                            alert(item.name + " " + col.id);
+                        }, 200);
+                    };
+
+                    $scope.onRightClick = function(item, col) {
+                        alert("right " + item.name + " " + col.id);
+                    };
+
+                    $scope.onDblClick = function(item, col) {
+                        if ($scope._click) $timeout.cancel($scope._click);
+                        $scope._click = false;
+                        alert("dbl " + item.name + " " + col.id);
                     };
                 }
             ]);
@@ -130,7 +146,7 @@
     // register file list columns
     mollify.filelist.columns.push({
         id: "name",
-        titleKey: "fileListColumnTitleName",
+        titleKey: "files.list.col.name",
         sort: function(i1, i2, sort, data) {
             return i1.name.toLowerCase().localeCompare(i2.name.toLowerCase()) * sort;
         },
@@ -140,7 +156,7 @@
     });
     mollify.filelist.columns.push({
         id: "path",
-        titleKey: "fileListColumnTitlePath",
+        titleKey: "files.list.col.path",
         sort: function(i1, i2, sort, data) {
             var p1 = _m.filesystem.rootsById[i1.root_id].name + i1.path;
             var p2 = _m.filesystem.rootsById[i2.root_id].name + i2.path;
@@ -153,7 +169,7 @@
     });
     mollify.filelist.columns.push({
         id: "type",
-        titleKey: "fileListColumnTitleType",
+        titleKey: "files.list.col.type",
         sort: function(i1, i2, sort, data) {
             var e1 = i1.is_file ? (i1.extension || '') : '';
             var e2 = i2.is_file ? (i2.extension || '') : '';
@@ -165,7 +181,7 @@
     });
     mollify.filelist.columns.push({
         id: "size",
-        titleKey: "fileListColumnTitleSize",
+        titleKey: "files.list.col.size",
         opts: {
             "min-width": 75
         },
@@ -181,7 +197,7 @@
     mollify.filelist.columns.push({
         id: "file-modified",
         dataId: "core-file-modified",
-        titleKey: "fileListColumnTitleLastModified",
+        titleKey: "files.list.col.lastmodified",
         opts: {
             "width": 180
         },
