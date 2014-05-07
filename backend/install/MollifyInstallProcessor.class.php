@@ -209,6 +209,15 @@
 		
 		public function registerFilesystemPermission($p, $v = NULL) {}
 		
+		public function installPlugins($util) {
+			$allPlugins = $this->plugins()->getPlugins();
+
+			foreach ($allPlugins as $id => $p) {
+				if ($p->version() == NULL) continue;
+				$util->execPluginCreateTables($id);
+			}
+		}
+				
 		public function createAdminUser($name, $pw) {			
 			$id = $this->configuration()->addUser($name, NULL, NULL, Authentication::USER_TYPE_ADMIN, NULL);
 			$this->configuration()->storeUserAuth($id, $name, NULL, $pw, TRUE);

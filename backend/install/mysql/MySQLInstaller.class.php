@@ -255,6 +255,13 @@
 			}
 
 			$this->processor->createEnvironment($this->db);
+			try {	
+				$this->processor->installPlugins($this->util());
+			} catch (ServiceException $e) {
+				$this->processor->setError("Could not install plugins", '<code>'.$e->details().'</code>');
+				$this->processor->showPage("install_error");
+			}
+			
 			try {
 				$this->processor->createAdminUser($this->data("name"), $this->data("password"));
 			} catch (ServiceException $e) {
