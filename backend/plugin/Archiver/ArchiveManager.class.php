@@ -56,9 +56,11 @@
 		public function compress($items, $to = NULL) {
 			$a = $this->createArchive($items);
 			
-			if ($to != NULL)
-				rename($a->filename(), $to);
-			else
+			if ($to != NULL) {
+				$from = $a->filename();
+				copy($from, $to);
+				unlink($from);
+			} else
 				return $a->filename();
 		}
 
