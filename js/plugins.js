@@ -134,8 +134,8 @@
     }
 
     /**
-	/* Item details plugin
-	/**/
+    /* Item details plugin
+    /**/
     mollify.plugin.ItemDetailsPlugin = function(conf, sp) {
         var that = this;
         that.formatters = {};
@@ -145,9 +145,9 @@
             that.fileSizeFormatter = new mollify.ui.formatters.ByteSize(new mollify.ui.formatters.Number(2, false, mollify.ui.texts.get('decimalSeparator')));
             that.timestampFormatter = new mollify.ui.formatters.Timestamp(mollify.ui.texts.get('shortDateTimeFormat'));
             /*if (sp) {
-				for (var i=0; i<sp.length;i++)
-					that.addDetailsSpec(sp[i]);
-			}*/
+                for (var i=0; i<sp.length;i++)
+                    that.addDetailsSpec(sp[i]);
+            }*/
             if (conf) {
                 that.typeConfs = {};
 
@@ -164,9 +164,9 @@
         };
 
         /*this.addDetailsSpec = function(s) {
-			if (!s || !s.key) return;
-			that.specs[s.key] = s;
-		}*/
+            if (!s || !s.key) return;
+            that.specs[s.key] = s;
+        }*/
 
         this.getApplicableSpec = function(item) {
             var ext = (item.is_file && item.extension) ? item.extension.toLowerCase().trim() : "";
@@ -204,13 +204,13 @@
             }
 
             /*var data = [];
-			for (var k in s) {
-				var rowSpec = s[k];
-				var rowData = o.data[k];
-				if (!rowData) continue;
-				
-				data.push({key:k, title:that.getTitle(k, rowSpec), value: that.formatData(k, rowData)});
-			}*/
+            for (var k in s) {
+                var rowSpec = s[k];
+                var rowData = o.data[k];
+                if (!rowData) continue;
+                
+                data.push({key:k, title:that.getTitle(k, rowSpec), value: that.formatData(k, rowData)});
+            }*/
             mollify.dom.template("itemdetails-template", {
                 groups: result
             }).appendTo(o.element);
@@ -277,10 +277,10 @@
             if (dataKey == 'image-size') return mollify.ui.texts.get('fileItemContextDataImageSize');
 
             /*if (that.specs[dataKey]) {
-				var spec = that.specs[dataKey];
-				if (spec.title) return spec.title;
-				if (spec["title-key"]) return mollify.ui.texts.get(spec["title-key"]);
-			}*/
+                var spec = that.specs[dataKey];
+                if (spec.title) return spec.title;
+                if (spec["title-key"]) return mollify.ui.texts.get(spec["title-key"]);
+            }*/
             return dataKey;
         };
 
@@ -358,7 +358,7 @@
     }
 
     /**
-     *	Item collection plugin
+     *  Item collection plugin
      **/
     mollify.plugin.ItemCollectionPlugin = function() {
         var that = this;
@@ -631,7 +631,7 @@
     }
 
     /**
-     *	Archiver plugin
+     *  Archiver plugin
      **/
     mollify.plugin.ArchiverPlugin = function() {
         var that = this;
@@ -814,8 +814,8 @@
     }
 
     /**
-	/* File viewer editor plugin
-	/**/
+    /* File viewer editor plugin
+    /**/
     mollify.plugin.FileViewerEditorPlugin = function() {
         var that = this;
 
@@ -1046,7 +1046,7 @@
     };
 
     /**
-     *	Comment plugin
+     *  Comment plugin
      **/
     mollify.plugin.CommentPlugin = function() {
         var that = this;
@@ -1235,7 +1235,7 @@
     }
 
     /**
-     *	Permission plugin
+     *  Permission plugin
      **/
     mollify.plugin.PermissionsPlugin = function() {
         var that = this;
@@ -2229,7 +2229,7 @@
     }
 
     /**
-     *	Dropbox plugin
+     *  Dropbox plugin
      **/
     mollify.plugin.DropboxPlugin = function() {
         var that = this;
@@ -2476,7 +2476,7 @@
     }
 
     /**
-     *	Share plugin
+     *  Share plugin
      **/
     mollify.plugin.SharePlugin = function() {
         var that = this;
@@ -2816,15 +2816,15 @@
             });
             that._context.show(false, 280);
             /*$("#share-context-container").animate({
-				"top" : "18px"
-			}, 500);*/
+                "top" : "18px"
+            }, 500);*/
         }
 
         this.closeAddEdit = function() {
             that._context.hide();
             /*$("#share-context-container").animate({
-				"top" : "300px"
-			}, 500);*/
+                "top" : "300px"
+            }, 500);*/
         }
 
         this.onAddShare = function(item) {
@@ -3170,7 +3170,7 @@
     }
 
     /**
-     *	Send via email -plugin
+     *  Send via email -plugin
      **/
     mollify.plugin.SendViaEmailPlugin = function() {
         var that = this;
@@ -3211,7 +3211,7 @@
     }
 
     /**
-     *	Registration -plugin
+     *  Registration -plugin
      **/
     mollify.plugin.RegistrationPlugin = function() {
         var that = this;
@@ -3241,6 +3241,9 @@
             this.init = function($c) {
                 return mollify.dom.loadContentInto($c, mollify.plugins.url("Registration", "registration_create.html"), function() {
                     $("#register-new-button").click(vt.onRegister);
+                    $(".control-group input").bind('keypress', function(e) {
+                        if ((e.keyCode || e.which) == 13) vt.onRegister();
+                    });
                     $("#registration-new-name").focus();
                 }, ['localize']);
             };
@@ -3322,6 +3325,9 @@
                         $("#mollify-registration-confirm-form").show();
                         $("#registration-confirm-email").val(vt._email);
                         $("#register-confirm-button").click(vt.onConfirm);
+                        $(".control-group input").bind('keypress', function(e) {
+                            if ((e.keyCode || e.which) == 13) vt.onConfirm();
+                        });
                         $("#registration-confirm-key").focus();
                     }
                 }, ['localize']);
@@ -3383,7 +3389,7 @@
                     }
 
                     $("#mollify-registration-main").addClass("loading");
-                    mollify.service.post("registration/approve/"+urlParams.id, {}).done(function(r) {
+                    mollify.service.post("registration/approve/" + urlParams.id, {}).done(function(r) {
                         $("#mollify-registration-main").removeClass("loading");
                         $("#mollify-registration-approval-success").show().find("p").html(mollify.ui.texts.get('registrationApprovalSuccessMessage', [r.name, r.email]));
                     }).fail(function(error) {
