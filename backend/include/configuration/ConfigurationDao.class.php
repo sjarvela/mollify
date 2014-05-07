@@ -169,7 +169,7 @@
 			$likeFields = array("name", "email");
 			
 			$db = $this->env->db();
-			$query = "from ".$db->table("user")." where 1=1";
+			$query = "from ".$db->table("user")." left outer join ".$db->table("user_auth")." on user.id=user_auth.user_id where 1=1";
 			
 			foreach($criteria as $k => $v) {
 				if (!in_array($k, $strFields)) {
@@ -192,7 +192,7 @@
 			}
 			
 			$count = $db->query("select count(id) ".$query)->value(0);
-			$result = $db->query("select id, name, user_type, lang, email, expiration, is_group ".$query." limit ".$rows." offset ".$start)->rows();
+			$result = $db->query("select id, name, user_type, lang, email, expiration, is_group, user_auth.type as auth ".$query." limit ".$rows." offset ".$start)->rows();
 			
 			return array("start" => $start, "count" => count($result), "total" => $count, "data" => $result);
 		}

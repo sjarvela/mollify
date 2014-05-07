@@ -424,7 +424,12 @@
                         id: "pw",
                         title: mollify.ui.texts.get('configAdminUsersActionChangePasswordTitle'),
                         type: "action",
-                        content: '<i class="icon-key"></i>'
+                        content: '<i class="icon-key"></i>',
+                        enabled: function(u) {
+                            var auth = u.auth;
+                            if (!auth) auth = that._defaultAuthMethod;
+                            return (auth == 'pw');
+                        }
                     }, {
                         id: "remove",
                         title: mollify.ui.texts.get('configAdminActionRemoveTitle'),
