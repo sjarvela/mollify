@@ -194,7 +194,60 @@
             };
         });
 
-        app.run(function($rootScope, $state, service, session, filesystem) {
+        app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile', '$timeout',
+            function($http, $templateCache, $compile, $timeout) {
+                return {
+                    restrict: 'EA',
+                    replace: true,
+                    scope: {
+                        title: '@',
+                        content: '@',
+                        placement: '@',
+                        animation: '&',
+                        isOpen: '&',
+                        compileScope: '&'
+                    },
+                    templateUrl: 'template/popover/popover-template.html',
+                    link: function(scope, element) {
+                        scope.$watch('content', function(templateUrl) {
+                            if (!templateUrl) {
+                                return;
+                            }
+                            $http.get(templateUrl, {
+                                cache: $templateCache
+                            })
+                                .then(function(response) {
+                                    var contentEl = angular.element(element[0].querySelector('.popover-content'));
+                                    contentEl.html(response.data.trim());
+                                    contentEl.append($compile(element.content())(scope));
+                                    $timeout(function() {
+                                        scope.$digest();
+                                    });
+                                });
+                        });
+                    }
+                };
+            }
+        ]);
+        app.directive('popoverTemplate', ['$tooltip',
+            function($tooltip) {
+                return $tooltip('popoverTemplate', 'popover', 'click');
+            }
+        ]);
+
+
+        app.run(function($templateCache, $rootScope, $state, service, session, filesystem) {
+            $templateCache.put("template/popover/popover-template.html",
+                "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
+                "  <div class=\"arrow\"></div>\n" +
+                "\n" +
+                "  <div class=\"popover-inner\">\n" +
+                "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
+                "      <div class=\"popover-content\"></div>\n" +
+                "  </div>\n" +
+                "</div>\n" +
+                "");
+
             that._onStart($rootScope, $state, session);
         });
 

@@ -74,7 +74,7 @@
                     var _roots = [];
                     var _rootsById = [];
                     $rootScope.$on('session/start', function(event, session) {
-                        _roots = session.data.folders;
+                        _roots = session.data ? session.data.folders : [];
                         $.each(_roots, function(i, r) {
                             _rootsById[r.id] = r;
                         })

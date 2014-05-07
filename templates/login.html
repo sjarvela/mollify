@@ -14,7 +14,8 @@
             <input id="loginPassword" type="password" ng-model="password" class="form-control" required="1" placeholder="{{ 'login.password' | translate }}" />
         </div>
 
-        <label class="checkbox">
+        <label class="checkbox" popover-template="login/reset">
+            pop
             <!--{{view Ember.Checkbox checkedBinding="remember"}} {{t login-view.rememberme}}-->
         </label>
 
@@ -39,5 +40,10 @@
                 {{/if}}
             </div>
         </div-->
+
+        <script id="login/reset" type="text/ng-template">
+        	{{username}}
+        	<button>Test</button>
+        </script>
     </form>
 </div>
