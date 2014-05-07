@@ -59,6 +59,9 @@
 		"resetPasswordPopupButton": "Effacer",
 		"resetPasswordPopupResetSuccess": "Votre mot de passe a été réinitialisé et un mail vous a été envoyé",
 		"resetPasswordPopupResetFailed": "La réinitialisation du mot de passe a échoué",
+		"sendPasswordHintPopupButton": "Envoyer l'indice",
+		"resetPasswordPopupSendHintSuccess": "Votre indice de mot de passe a été envoyé à votre adresse email.",
+		"resetPasswordPopupSendHintFailed": "L'envoi de votre indice de mot de passe a échoué",
 
 		"mainviewMenuTitle": "Fichiers",
 		"mainViewSearch": "Recherche",
@@ -74,6 +77,7 @@
 		"mainviewChangePasswordOld": "Ancien mot de passe",
 		"mainviewChangePasswordNew": "Nouveau mot de passe",
 		"mainviewChangePasswordVerify": "Nouveau mot de passe (vérification)",
+		"mainviewChangePasswordHint": "Indice de mot de passe",
 		"mainviewChangePasswordAction": "Modifier",
 		"mainviewChangePasswordErrorValueMissing": "Valeur manquante",
 		"mainviewChangePasswordErrorConfirm": "Le mot de passe ne correspond pas",
@@ -203,7 +207,9 @@
 		"pluginPermissionsNoEffectiveUserPermission": "L'utilisateur n'a pas de permissions relatives à cet objet, et les permissions par défauts à : \"<strong>{0}</strong>\"",
 		"pluginPermissionsEffectiveUserRelatedPermissions": "Permissions relatives dans l'ordre de priorité :",
 		"pluginPermissionsEditDialogUnsaved" : "Modifications non sauvegardées",
-										
+		"configAdminPermissionsRemoveConfirmationTitle": "Retirer les permissions",
+		"configAdminPermissionsRemoveConfirmationMessage": "Etes-vous certain de vouloir retirer les permissions sélectionnées ?",
+
 		"pluginPermissionsEditColUser": "Utilisateur",
 		"pluginPermissionsPermissionName": "Nom",
 		"pluginPermissionsPermissionValue": "Permission",
@@ -342,7 +348,6 @@
 		
 		"configAdminUsersTypeNormal": "Normal",
 		"configAdminUsersType_a": "Administrateur",
-		"configAdminUsersType_rw": "Utilisateur",
 
 		"configAdminUsersNameTitle": "Nom d'utilisateur",
 		"configAdminUsersTypeTitle": "Type",
@@ -397,6 +402,7 @@
 		"configAdminFoldersRemoveFoldersConfirmationMessage": "Etes-vous sûre de vouloir supprimer {0} dossiers?",
 		"configAdminFoldersRemoveFolderConfirmationTitle": "Suppression de dossiers",
 		"configAdminFoldersRemoveFolderConfirmationMessage": "Etes-vous sûre de vouloir supprimer le dossier \"{0}\"?",
+		"configAdminFoldersRemoveFolderContentConfirmation": "Supprimer le contenu du répertoire",
 
 		"configAdminGroupsDialogAddTitle": "Ajout de groupe",
 		"configAdminGroupsDialogEditTitle": "Edition de groupe",
@@ -419,6 +425,7 @@
 		"registrationNewPw": "Mot de passe",
 		"registrationNewPwConfirm": "Confirmer le mot de passe",
 		"registrationNewEmail": "Email",
+		"registrationNewHint": "Indice de mot de passe",
 		"registrationNewSubmit": "S'inscrire",
 		"registrationFailed": "L'inscription a échoué, merci de réessayer ultérieurement",
                 "registrationFailedDuplicateNameOrEmail": "Un utilisateur est déjà enregistré avec ce nom ou cette adresse email",
@@ -434,9 +441,14 @@
 		"registrationConfirmSuccessTitle": "Inscription terminée",
 		"registrationConfirmSuccessMessage": "Votre inscription est maintenant terminée, vous pouvez vous connecter à l'application",
 		"registrationConfirmSuccessWaitApprovalTitle": "Inscription en attente",
-		"registrationConfirmSuccessWaitApprovalMessage": "Votre demande d'inscription est maintenant en attente d'approbation par un modérateur",
+		"registrationConfirmSuccessWaitApprovalMessage": "Votre inscription est maintenant en attente d'approbation par un modérateur",
 		"registrationContinueButton": "S'identifier sur Mollify",
-		
+		"registrationInvalidApproval": "Requête d'approbation invalide",
+		"registrationApprovalSuccessTitle": "Inscription approuvée",
+		"registrationApprovalSuccessMessage": "Compte utilisateur créé : {0} ({1})",
+		"registrationApprovalFailed": "L'approbation de l'inscription a échoué",
+
+		"permission_manage_user_registrations": "Gérer les inscriptions utilisateur",
 		"pluginRegistrationAdminNavTitle" : "Inscriptions",
 		"pluginRegistrationAdminAddRegistrationTitle" : "Ajout d'une inscription",
 		"pluginRegistrationAdminNameTitle" : "Nom",
