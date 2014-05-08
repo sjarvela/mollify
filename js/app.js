@@ -199,6 +199,7 @@
                 return {
                     restrict: 'EA',
                     replace: true,
+                    transclude: true,
                     scope: {
                         title: '@',
                         content: '@',
@@ -208,24 +209,47 @@
                         compileScope: '&'
                     },
                     templateUrl: 'template/popover/popover-template.html',
-                    link: function(scope, element) {
-                        scope.$watch('content', function(templateUrl) {
-                            if (!templateUrl) {
-                                return;
+                    compile: function(tElement, tAttr, transclude) {
+                        //var contents = angular.element(tElement[0].querySelector('.popover-content'));
+                        var compiledContents;
+                        return function(scope, iElement, iAttr) {
+                            var target = angular.element(iElement[0].querySelector('.popover-content')).empty();
+                            if (!compiledContents) {
+                                $http.get(scope.content, {
+                                    cache: $templateCache
+                                })
+                                    .then(function(response) {
+                                        var c = angular.element(response.data.trim());
+                                        compiledContents = $compile(c, transclude);
+                                        compiledContents(scope, function(clone, scope) {
+                                            target.append(clone);
+                                        });
+                                    });
+                            } else {
+                                compiledContents(scope, function(clone, scope) {
+                                    target.append(clone);
+                                });
                             }
+                        };
+                    }
+                    /*link: function(scope, element, attrs, ctrl, transcludeFn) {
+                        scope.$watch('content', function(templateUrl) {
+                            if (!templateUrl)
+                                return;
                             $http.get(templateUrl, {
                                 cache: $templateCache
                             })
                                 .then(function(response) {
                                     var contentEl = angular.element(element[0].querySelector('.popover-content'));
-                                    contentEl.html(response.data.trim());
-                                    contentEl.append($compile(element.content())(scope));
-                                    $timeout(function() {
-                                        scope.$digest();
+                                    var c = response.data.trim();
+                                    var $c = $compile(c)(scope, function(clonedElement, scope) {
+                                        contentEl.empty().append(clonedElement);    
                                     });
+                                    //contentEl.html();
+   
                                 });
                         });
-                    }
+                    }*/
                 };
             }
         ]);
@@ -235,7 +259,6 @@
             }
         ]);
 
-
         app.run(function($templateCache, $rootScope, $state, service, session, filesystem) {
             $templateCache.put("template/popover/popover-template.html",
                 "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
@@ -243,7 +266,7 @@
                 "\n" +
                 "  <div class=\"popover-inner\">\n" +
                 "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
-                "      <div class=\"popover-content\"></div>\n" +
+                "      <div class=\"popover-content\" ng-transclude></div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
                 "");
