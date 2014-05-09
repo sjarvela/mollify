@@ -274,10 +274,15 @@
                 function($scope, $rootScope, $state, session) {
                     $scope.username = "";
                     $scope.password = "";
+                    $scope.forgotEmail = "";
 
                     $scope.doLogin = function() {
                         session.authenticate($scope.username, $scope.password);
-                    }
+                    };
+
+                    $scope.doSendPassword = function() {
+                        alert($scope.forgotEmail);
+                    };
                 }
             ]);
         }

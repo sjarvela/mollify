@@ -194,7 +194,7 @@
             };
         });
 
-        app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile', '$timeout',
+        app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile',
             function($http, $templateCache, $compile, $timeout) {
                 return {
                     restrict: 'EA',

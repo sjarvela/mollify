@@ -3,6 +3,8 @@
 	"login.username" : "Username",
 	"login.password" : "Password",
 	"login.login" : "Login",
+	"login.forgot-password.email" : "Email",
+	"login.forgot-password.send" : "Send",
 
 	"main.files.title": "Files",
 	"main.config.title": "Configuration",
