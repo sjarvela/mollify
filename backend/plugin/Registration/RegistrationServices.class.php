@@ -304,7 +304,7 @@
 				}
 				
 				if (count($existing) > 0)
-					$this->env->configuration()->addFolderUsers($folderId, $existing);
+					$this->env->configuration()->addFolderUsers($uf["id"], $existing);
 			}
 		}
 		
