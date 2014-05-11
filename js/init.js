@@ -124,6 +124,7 @@ var mollifyDefaults = {
 			lang: s.lang,
 			admin: s.user_type == 'a',
 			permissions: s.permissions,
+			auth: s.user_auth,
 			hasPermission : function(name, required) { return mollify.helpers.hasPermission(s.permissions, name, required); }
 		} : null;
 

@@ -155,12 +155,13 @@
 		public function getSessionInfo() {
 			$result = array();
 			$result['session_id'] = $this->id;
-			//$result['session_ver'] = "1_8_7";
 			if ($this->isActive()) {
 				$result['user_id'] = $this->userId();
 				$result['username'] = $this->username();
 				$result['user_type'] = $this->user["user_type"];
 				$result['lang'] = $this->user["lang"];
+				$result['user_auth'] = $this->user["auth"];
+				if ($result['user_auth'] == NULL) $result['user_auth'] = $this->env->authentication()->getDefaultAuthenticationMethod();
 			}
 			return $result;
 		}
