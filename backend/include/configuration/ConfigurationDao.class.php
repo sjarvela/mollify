@@ -47,9 +47,9 @@
 			$expirationCriteria = $expiration ? " AND (expiration is null or expiration > ".$this->formatTimestampInternal($expiration).")" : "";
 			
 			if ($allowEmail) {
-				$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, user_auth.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." on user.id=user_auth.user_id WHERE (name=%s or email=%s)".$expirationCriteria, $this->db->string($username, TRUE), $this->db->string($username, TRUE)));
+				$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, ua.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." ua on id=ua.user_id WHERE (name=%s or email=%s)".$expirationCriteria, $this->db->string($username, TRUE), $this->db->string($username, TRUE)));
 			} else {
-				$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, user_auth.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." on user.id=user_auth.user_id WHERE name=%s".$expirationCriteria, $this->db->string($username, TRUE)));
+				$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, ua.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." ua on id=ua.user_id WHERE name=%s".$expirationCriteria, $this->db->string($username, TRUE)));
 			}
 			$matches = $result->count();
 			
@@ -102,7 +102,7 @@
 		public function getUserByName($username, $expiration = FALSE) {
 			$expirationCriteria = $expiration ? " AND (expiration is null or expiration > ".$this->formatTimestampInternal($expiration).")" : "";
 			
-			$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, user_auth.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." on user.id=user_auth.user_id WHERE name='%s' and is_group=0".$expirationCriteria, $this->db->string($username)));
+			$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, ua.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." ua on id=ua.user_id WHERE name='%s' and is_group=0".$expirationCriteria, $this->db->string($username)));
 			$matches = $result->count();
 			
 			if ($matches === 0) {
@@ -119,7 +119,7 @@
 		}
 
 		public function getUserByNameOrEmail($name) {
-			$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, user_auth.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." on user.id=user_auth.user_id WHERE (name='%s' or email='%s') and is_group=0", $this->db->string($name), $this->db->string($name)));
+			$result = $this->db->query(sprintf("SELECT id, name, user_type, lang, email, ua.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." ua on id=ua.user_id WHERE (name='%s' or email='%s') and is_group=0", $this->db->string($name), $this->db->string($name)));
 			$matches = $result->count();
 			
 			if ($matches === 0) {
@@ -161,7 +161,7 @@
 		public function getUser($id, $expiration = FALSE) {
 			$expirationCriteria = $expiration ? " AND (expiration is null or expiration > ".$this->formatTimestampInternal($expiration).")" : "";
 			
-			return $this->db->query(sprintf("SELECT id, name, user_type, lang, email, expiration, user_auth.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." on user.id=user_auth.user_id WHERE id='%s'".$expirationCriteria, $this->db->string($id)))->firstRow();
+			return $this->db->query(sprintf("SELECT id, name, user_type, lang, email, expiration, ua.type as auth FROM ".$this->db->table("user")." left outer join ".$this->db->table("user_auth")." ua on id=ua.user_id WHERE id='%s'".$expirationCriteria, $this->db->string($id)))->firstRow();
 		}
 		
 		public function userQuery($rows, $start, $criteria, $sort = NULL) {
@@ -169,7 +169,7 @@
 			$likeFields = array("name", "email");
 			
 			$db = $this->env->db();
-			$query = "from ".$db->table("user")." left outer join ".$db->table("user_auth")." on user.id=user_auth.user_id where 1=1";
+			$query = "from ".$db->table("user")." left outer join ".$db->table("user_auth")." ua on id=ua.user_id where 1=1";
 			
 			foreach($criteria as $k => $v) {
 				if (!in_array($k, $strFields)) {
@@ -191,7 +191,7 @@
 			}
 			
 			$count = $db->query("select count(id) ".$query)->value(0);
-			$result = $db->query("select id, name, user_type, lang, email, expiration, is_group, user_auth.type as auth ".$query." limit ".$rows." offset ".$start)->rows();
+			$result = $db->query("select id, name, user_type, lang, email, expiration, is_group, ua.type as auth ".$query." limit ".$rows." offset ".$start)->rows();
 			
 			return array("start" => $start, "count" => count($result), "total" => $count, "data" => $result);
 		}
