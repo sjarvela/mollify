@@ -44,6 +44,10 @@
                 controller: "LoginCtrl",
                 template: "login.html"
             },
+            error: {
+                id: 'error',
+                template: "error.html"
+            },
             main: {
                 id: 'main',
                 abstract: true,
@@ -52,7 +56,7 @@
             }
         };
 
-        var deps = ['ui.bootstrap', 'ui.router', 'pascalprecht.translate'];
+        var deps = ['ui.bootstrap', 'ui.router', 'gettext'];
         $.each(mollify.modules, function(i, m) {
             var mod = ng.module(m.id, m.dependencies || []);
             m.setup({
@@ -77,7 +81,8 @@
             $provide.factory('settings', function() {
                 return settings;
             });
-        }).config(['$translateProvider',
+        });
+        /*.config(['$translateProvider',
             function($translateProvider) {
                 $translateProvider.useMissingTranslationHandler('missingLocalizationHandler');
                 $translateProvider.preferredLanguage(settings.language.
@@ -93,7 +98,7 @@
             return function(translationID) {
                 console.log("Missing localization: " + translationID);
             };
-        });
+        });*/
 
         app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams',
             function($scope, $rootScope, $state, $stateParams) {
@@ -112,7 +117,11 @@
         config(['$stateProvider', '$urlRouterProvider',
             function($stateProvider, $urlRouterProvider) {
                 // For any unmatched url, redirect to /files
-                $urlRouterProvider.otherwise("/files");
+                //$urlRouterProvider.otherwise("/files");
+                //$urlRouterProvider.otherwise(function($injector, $location) {
+                //    console.log("NOT FOUND: "+$location.$$path);
+                //    return "login";
+                //});
 
                 var templateUrlFn = function(tpl) {
                     return function(stateParams) {
@@ -194,22 +203,21 @@
             };
         });
 
-        app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile',
+        /*app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile',
             function($http, $templateCache, $compile, $timeout) {
                 return {
                     restrict: 'EA',
                     replace: true,
-                    transclude: true,
                     scope: {
                         title: '@',
                         content: '@',
                         placement: '@',
                         animation: '&',
                         isOpen: '&',
-                        compileScope: '&'
+                        model: '@popoverModel'
                     },
                     templateUrl: 'template/popover/popover-template.html',
-                    compile: function(tElement, tAttr, transclude) {
+                    compile: function(tElement, tAttr) {
                         //var contents = angular.element(tElement[0].querySelector('.popover-content'));
                         var compiledContents;
                         return function(scope, iElement, iAttr) {
@@ -220,36 +228,16 @@
                                 })
                                     .then(function(response) {
                                         var c = angular.element(response.data.trim());
-                                        compiledContents = $compile(c, transclude);
-                                        compiledContents(scope, function(clone, scope) {
+                                        compiledContents = $compile(c);
+
+                                        var contentScope = scope;//.$parent.$parent.$parent;
+                                        compiledContents(contentScope, function(clone, scope) {
                                             target.append(clone);
                                         });
                                     });
-                            } else {
-                                compiledContents(scope, function(clone, scope) {
-                                    target.append(clone);
-                                });
-                            }
+                            };
                         };
                     }
-                    /*link: function(scope, element, attrs, ctrl, transcludeFn) {
-                        scope.$watch('content', function(templateUrl) {
-                            if (!templateUrl)
-                                return;
-                            $http.get(templateUrl, {
-                                cache: $templateCache
-                            })
-                                .then(function(response) {
-                                    var contentEl = angular.element(element[0].querySelector('.popover-content'));
-                                    var c = response.data.trim();
-                                    var $c = $compile(c)(scope, function(clonedElement, scope) {
-                                        contentEl.empty().append(clonedElement);    
-                                    });
-                                    //contentEl.html();
-   
-                                });
-                        });
-                    }*/
                 };
             }
         ]);
@@ -257,19 +245,20 @@
             function($tooltip) {
                 return $tooltip('popoverTemplate', 'popover', 'click');
             }
-        ]);
+        ]);*/
 
         app.run(function($templateCache, $rootScope, $state, service, session, filesystem) {
             $templateCache.put("template/popover/popover-template.html",
                 "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
                 "  <div class=\"arrow\"></div>\n" +
-                "\n" +
                 "  <div class=\"popover-inner\">\n" +
                 "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
-                "      <div class=\"popover-content\" ng-transclude></div>\n" +
+                "      <div class=\"popover-content\" tt-load-template-in-sibling=\"{{template}}\"></div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
                 "");
+
+            $rootScope.plugins = settings.plugins;
 
             that._onStart($rootScope, $state, session);
         });
@@ -312,9 +301,18 @@
                 }
             };*/
 
+            // state not found
+            $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams) {
+                console.log("NOT FOUND:" + unfoundState.to);
+                event.preventDefault();
+                $state.go("error");
+            });
+
             // state interceptor
             $rootScope.$on('$stateChangeStart',
                 function(event, toState, toParams, fromState, fromParams) {
+                    if (toState.name == "error") return; //error view can be shown always
+
                     console.log("STATECHANGE:" + JSON.stringify(fromState) + " -> " + JSON.stringify(toState) + " " + JSON.stringify(toParams));
 
                     if (!initialized) {

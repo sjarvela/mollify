@@ -38,6 +38,7 @@
         "grunt-jscs-checker": "",
         "grunt-sed": "",
         "grunt-phpunit": "*",
+        "grunt-angular-gettext": "*",
         "load-grunt-tasks": "",
         "karma": "~0.10",
         "protractor": "~0.17.0",

@@ -1,0 +1,57 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"X-Generator: Poedit 1.6.5\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en_EN\n"
+
+#: templates/login.html
+msgid "Email"
+msgstr ""
+
+#: templates/login.html
+msgid "Login"
+msgstr ""
+
+#: templates/login.html
+msgid "Password"
+msgstr ""
+
+#: templates/login.html
+msgid "Register"
+msgstr ""
+
+#: templates/login.html
+msgid "Remember me"
+msgstr ""
+
+#: templates/login.html
+msgid "Reset password"
+msgstr ""
+
+#: templates/login.html
+msgid "Username"
+msgstr ""
+
+#: js/core.js
+msgid "file-size.bytes"
+msgstr ""
+
+#: js/core.js
+msgid "file-size.one-byte"
+msgstr ""
+
+#: templates/main.html
+msgid "{{activeView.title}}"
+msgstr ""
+
+#: templates/main.html
+msgid "{{view.title}}"
+msgstr ""

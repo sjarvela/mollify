@@ -2,53 +2,39 @@
     <form class="fullpage" role="form">
         <div class="mollify-logo"></div>
 
-        <legend>{{ 'login.title' | translate }}</legend>
+        <legend translate>login_Login</legend>
 
         <div class="form-group">
-            <label class="sr-only" for="loginUsername">{{ 'login.username' | translate }}</label>
-            <input id="loginUsername" type="text" ng-model="username" class="form-control" required="1" autofocus="1" placeholder="{{ 'login.username' | translate }}" />
+            <label class="sr-only" for="loginUsername" translate>login_Username</label>
+            <input id="loginUsername" type="text" ng-model="username" class="form-control" required="1" autofocus="1" placeholder="{{ 'login_Username' | translate }}" />
         </div>
 
         <div class="form-group">
-            <label class="sr-only" for="loginPassword">{{ 'login.password' | translate }}</label>
-            <input id="loginPassword" type="password" ng-model="password" class="form-control" required="1" placeholder="{{ 'login.password' | translate }}" />
+            <label class="sr-only" for="loginPassword" tranlsate>login_Password</label>
+            <input id="loginPassword" type="password" ng-model="password" class="form-control" required="1" placeholder="{{ 'login_Password' | translate }}" />
         </div>
-
-        <label class="checkbox" popover-template="login/reset">
-            pop
-            <!--{{view Ember.Checkbox checkedBinding="remember"}} {{t login-view.rememberme}}-->
+        <label class="checkbox">
+		    <label>
+				<input type="checkbox" ng-model="remember"><span translate>login_Remember me</span>
+		    </label>
         </label>
 
-        <button ng-click="doLogin()" class="btn btn-lg btn-primary btn-block">
-            {{ 'login.login' | translate }}
-        </button>
+        <button ng-click="doLogin()" class="btn btn-lg btn-primary btn-block" translate>login_Login</button>
 
-        <!--div class="links center-block">
-            <div class="link">
-                <a id="toggle-reset" class="btn btn-link">{{t login-view.reset-password.show-action}}</a>
-                {{#bs-popover triggers="click" placement="bottom" autofocus="login-reset-email" isVisibleBinding="showReset"}} {{t login-view.reset-password.message}} {{input id="login-reset-email" type="text" value=model.resetEmail class="form-control" required="1"}}
-
-                <button {{action "reset" controller}} class="btn" type="submit">
-                    {{t login-view.reset-password.reset-action}}
-                </button>
-                {{/bs-popover}}
-            </div>
-
-            <div class="link">
-                {{#if controller._m.plugins.list.Registration}}
-                <a href="#/registration/new" class="btn btn-link">{{t login-view.register-action}}</a>
-                {{/if}}
-            </div>
-        </div-->
+        <div class="links center-block">
+        	<div class="link" ng-if="features.lost_password">
+        		<a class="btn btn-link" href="javascript: void(0)" popover-template="login/reset" popover-model="reset" translate>login_Reset password</a>
+        	</div>
+        	<div class="link" ng-if="features.registration">
+        		<a class="btn btn-link" ui-sref="registration/new" translate>login_Register</a>
+        	</div>
+        </div>
 
         <script id="login/reset" type="text/ng-template">
         	<form role="form">
-	            <label class="sr-only" for="forgotPasswordEmail">{{ 'login.forgot-password.email' | translate }}</label>
-	            <input id="forgotPasswordEmail" ng-model="$parent.forgotEmail" class="form-control" required="1" placeholder="{{ 'login.forgot-password.email' | translate }}" />
-
-		        <button ng-click="$parent.doSendPassword()" class="btn btn-lg btn-primary btn-block">
-		            {{ 'login.forgot-password.send' | translate }}
-		        </button>
+	            <label class="sr-only" for="forgotPasswordEmail" translate>forgotPassword_Email</label>
+	            <input ng-model="reset.forgotEmail" class="form-control" required="1" placeholder="{{ 'forgotPassword_Email' | translate }}" />
+		        <button ng-click="reset.sendPassword()" class="btn btn-lg btn-primary btn-block" translate>forgotPassword_Send</button>
         	</form>
         </script>
     </form>

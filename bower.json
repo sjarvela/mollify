@@ -8,8 +8,7 @@
         "angular-loader": "1.2.x",
         "angular-mocks": "~1.2.16",
         "angular-ui-router": "*",
-        "angular-translate": "*",
-        "angular-translate-loader-static-files": "*",
+        "angular-gettext": "*",
         "bootstrap": "~3.1.1",
         "angular-bootstrap": "*",
         "font-awesome": "*"

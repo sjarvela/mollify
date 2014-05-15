@@ -309,6 +309,23 @@ module.exports = function(grunt) {
             }
         },
 
+        nggettext_extract: {
+            pot: {
+                files: {
+                    'po/template.pot': ['templates/*.html', 'js/*.js']
+                }
+            }
+        },
+        nggettext_compile: {
+            all: {
+                options: {
+                    module: 'mollify'
+                },
+                files: {
+                    'js/translations.js': ['po/*.po']
+                }
+            },
+        }
     });
 
 
@@ -316,6 +333,9 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt, {
         scope: 'devDependencies'
     });
+
+    grunt.registerTask('extract_texts', ['nggettext_extract']);
+    grunt.registerTask('compile_texts', ['nggettext_compile']);
 
     grunt.registerTask('test', ['jshint', 'jscs', 'qunit', 'phpunit']);
 
@@ -332,7 +352,7 @@ module.exports = function(grunt) {
     grunt.registerTask('dist-dav', ['clean', 'copy:dav', 'compress:dav']);
 
     // Full distribution task.
-    grunt.registerTask('dist', ['clean', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'copy:dist_ver', 'compress:dist']);
+    grunt.registerTask('dist', ['clean', 'compile_texts', 'dist-js', 'dist-css', 'dist-backend', 'copy:dist', 'copy:dist_ver', 'compress:dist']);
 
     // Default task.
     grunt.registerTask('default', ['dist']);
