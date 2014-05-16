@@ -253,7 +253,7 @@
                 "  <div class=\"arrow\"></div>\n" +
                 "  <div class=\"popover-inner\">\n" +
                 "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
-                "      <div class=\"popover-content\" tt-load-template-in-sibling=\"{{template}}\"></div>\n" +
+                "      <div class=\"popover-content\"></div>\n" +
                 "  </div>\n" +
                 "</div>\n" +
                 "");
