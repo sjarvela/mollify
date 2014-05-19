@@ -105,6 +105,9 @@
                 console.log("main");
                 $scope.views = getViews('main');
                 $scope.activeView = views[$state.current.name];
+
+                $scope.sessionActions = [{title:"logout"}];
+
                 $rootScope.$on('$stateChangeSuccess', function(e, to) {
                     $scope.activeView = views[to.name];
                 });
@@ -200,6 +203,38 @@
                         });
                     });
                 });
+            };
+        });
+
+        app.directive('menuList', function() {
+            return {
+                template: '<ul class="dropdown-menu" role="menu"><menu-item ng-repeat="item in items"></menu-item></ul>',
+                replace: true,
+                transclude: true,
+                restrict: 'E',
+                scope: {
+                    items: '=ngModel'
+                }
+            };
+        });
+
+        app.directive('menuItem', function($compile) {
+            return {
+                restrict: 'E',
+                replace: true,
+                transclude: true,
+                template: '<li>' + '<a href="#" ng-click="onItem(item)">' + '{{item.title}}' + '</a>' + '</li>',
+                link: function(scope, elm, attrs) {
+                    scope.onItem = function(item) {
+                        //TODO
+                        alert(item.title);
+                    };
+
+                    if (scope.item.children && scope.item.children.length > 0) {
+                        var subItems = $compile('<menu-list ng-model="item.children"></menu-list>')(scope)
+                        elm.append(subItems);
+                    }
+                }
             };
         });
 
