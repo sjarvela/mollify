@@ -4,13 +4,14 @@
     mollify.modules.push({
         id: 'mollify.main.files',
 
-        setup: function(h, mod) {
+        setup: function(h, mod, gettext) {
             var viewData = {
                 type: 1
             };
 
+            gettext("main.files.title");
             h.registerView('files', {
-                title: "main.files.title",
+                titleKey: "main.files.title",
                 icon: "fa-folder",
                 parent: "main",
                 url: "^/files/{id}",

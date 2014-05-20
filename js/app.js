@@ -55,16 +55,31 @@
                 template: "main.html"
             }
         };
+        var actions = {
+            all: [],
+            byId: {},
+            byType: {}
+        };
 
         var deps = ['ui.bootstrap', 'ui.router', 'gettext'];
+        var gettext_stub = function(s) {};
+
         $.each(mollify.modules, function(i, m) {
             var mod = ng.module(m.id, m.dependencies || []);
             m.setup({
                 registerView: function(id, v) {
                     v.id = id;
                     views[id] = v;
+                },
+                registerAction: function(ac) {
+                    actions.all.push(ac);
+                    actions.byId[ac.id] = ac;
+                    if (ac.type) {
+                        if (!actions.byType[ac.type]) actions.byType[ac.type] = [];
+                        actions.byType[ac.type].push(ac);
+                    }
                 }
-            }, mod);
+            }, mod, gettext_stub);
             deps.push(m.id);
         });
         var getViews = function(parent) {
@@ -82,36 +97,28 @@
                 return settings;
             });
         });
-        /*.config(['$translateProvider',
-            function($translateProvider) {
-                $translateProvider.useMissingTranslationHandler('missingLocalizationHandler');
-                $translateProvider.preferredLanguage(settings.language.
-                    default);
-                $translateProvider.useStaticFilesLoader({
-                    prefix: './localization/texts_',
-                    suffix: '.json'
-                });
-            }
-        ]);
 
-        app.factory('missingLocalizationHandler', function() {
-            return function(translationID) {
-                console.log("Missing localization: " + translationID);
-            };
-        });*/
+        app.config(function($provide) {
+            $provide.factory('actions', function() {
+                return {
+                    getType: function(type) {
+                        return actions.byType[type];
+                    }
+                };
+            });
+        });
 
-        app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams',
-            function($scope, $rootScope, $state, $stateParams) {
+        app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'actions',
+            function($scope, $rootScope, $state, $stateParams, actions) {
                 console.log("main");
                 $scope.views = getViews('main');
                 $scope.activeView = views[$state.current.name];
 
-                $scope.sessionActions = [{title:"logout"}];
+                $scope.sessionActions = actions.getType('session');
 
                 $rootScope.$on('$stateChangeSuccess', function(e, to) {
                     $scope.activeView = views[to.name];
                 });
-                //console.log($state);
             }
         ]);
 
@@ -213,76 +220,33 @@
                 transclude: true,
                 restrict: 'E',
                 scope: {
-                    items: '=ngModel'
+                    items: '=ngItems',
+                    ctx: '=ngCtx'
                 }
             };
         });
 
-        app.directive('menuItem', function($compile) {
+        app.directive('menuItem', function($rootScope, $compile) {
             return {
                 restrict: 'E',
                 replace: true,
                 transclude: true,
-                template: '<li>' + '<a href="#" ng-click="onItem(item)">' + '{{item.title}}' + '</a>' + '</li>',
+                template: '<li>' + '<a href="#" ng-click="onItem(item)">' + '{{item.titleKey | translate}}' + '</a>' + '</li>',
                 link: function(scope, elm, attrs) {
                     scope.onItem = function(item) {
-                        //TODO
-                        alert(item.title);
+                        $rootScope.onAction(item, scope.ctx);
                     };
-
-                    if (scope.item.children && scope.item.children.length > 0) {
+                    /*if (scope.item.children && scope.item.children.length > 0) {
                         var subItems = $compile('<menu-list ng-model="item.children"></menu-list>')(scope)
                         elm.append(subItems);
-                    }
+                    }*/
                 }
             };
         });
 
-        /*app.directive('popoverTemplatePopup', ['$http', '$templateCache', '$compile',
-            function($http, $templateCache, $compile, $timeout) {
-                return {
-                    restrict: 'EA',
-                    replace: true,
-                    scope: {
-                        title: '@',
-                        content: '@',
-                        placement: '@',
-                        animation: '&',
-                        isOpen: '&',
-                        model: '@popoverModel'
-                    },
-                    templateUrl: 'template/popover/popover-template.html',
-                    compile: function(tElement, tAttr) {
-                        //var contents = angular.element(tElement[0].querySelector('.popover-content'));
-                        var compiledContents;
-                        return function(scope, iElement, iAttr) {
-                            var target = angular.element(iElement[0].querySelector('.popover-content')).empty();
-                            if (!compiledContents) {
-                                $http.get(scope.content, {
-                                    cache: $templateCache
-                                })
-                                    .then(function(response) {
-                                        var c = angular.element(response.data.trim());
-                                        compiledContents = $compile(c);
+        app.run(function($templateCache, $rootScope, $state, gettextCatalog, service, session, filesystem) {
+            gettextCatalog.currentLanguage = "en";  //TODO set this on "session/start"
 
-                                        var contentScope = scope;//.$parent.$parent.$parent;
-                                        compiledContents(contentScope, function(clone, scope) {
-                                            target.append(clone);
-                                        });
-                                    });
-                            };
-                        };
-                    }
-                };
-            }
-        ]);
-        app.directive('popoverTemplate', ['$tooltip',
-            function($tooltip) {
-                return $tooltip('popoverTemplate', 'popover', 'click');
-            }
-        ]);*/
-
-        app.run(function($templateCache, $rootScope, $state, service, session, filesystem) {
             $templateCache.put("template/popover/popover-template.html",
                 "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
                 "  <div class=\"arrow\"></div>\n" +
@@ -319,22 +283,6 @@
                 pendingStateChange = false;
                 $state.go(stateChange.to.name);
             }
-
-            /*var onBeforeStateChange = function(e, toState, toParams, fromState, fromParams) {
-                if (!views[toState.name] || !views[toState.name].onBefore) return;
-
-                var res = views[toState.name].onBefore(toParams, fromState);
-                if (res === false) {
-                    e.preventDefault();
-                    //TODO then what?
-                } else if (typeof(res) == 'object') {
-                    if (res.name) {
-                        e.preventDefault();
-                        $state.go(res.name, res.params);
-                        return;
-                    }
-                }
-            };*/
 
             // state not found
             $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams) {
@@ -381,6 +329,10 @@
                 resumeStateChange();
             });
 
+            $rootScope.onAction = function(ac, ctx) {
+                alert(ac.id + ctx);
+            };
+
             session.init().done(function() {
                 initialized = true;
             });
@@ -393,6 +345,7 @@
             _m.run();
         },
         modules: [],
+        actions: [],
         filelist: {
             columns: []
         },

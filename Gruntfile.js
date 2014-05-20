@@ -319,7 +319,7 @@ module.exports = function(grunt) {
         nggettext_compile: {
             all: {
                 options: {
-                    module: 'mollify'
+                    //module: 'mollify'
                 },
                 files: {
                     'js/translations.js': ['po/*.po']

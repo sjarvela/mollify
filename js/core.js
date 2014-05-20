@@ -5,7 +5,7 @@
     mollify.modules.push({
         id: 'mollify.core',
 
-        setup: function(h, mod) {
+        setup: function(h, mod, gettext) {
             mod.factory('formatters', ['gettextCatalog',
                 function(gettextCatalog) {
                     return {
@@ -262,6 +262,17 @@
                     };
                 }
             ]);
+
+            gettext('session_logout');
+            h.registerAction({
+                id: 'session/logout',
+                type: 'session',
+                titleKey: 'session_logout',
+                handler: ["session", function(ctx, session) {
+                    console.log("on logout");
+                    session.end();
+                }]
+            });
         }
     });
 
