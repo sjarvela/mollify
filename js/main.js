@@ -65,30 +65,40 @@
             mod.directive('popupmenuContainer', function($timeout) {
                 var offset = {
                     left: 0,
-                    top: -20
+                    top: 20
                 }
                 return function(scope, element, attributes) {
-                    var $content = $('#main-popupmenu');    //TODO find by class under current element
+                    var $popup = element.find('.popupmenu-container'); //TODO find by class under current element
+                    var hidePopup = function() {
+                        scope.popupmenu = null;
+                        $popup.css("display", "none");
+                    };
+                    element.bind("click", function() {
+                        hidePopup();
+                    });
 
                     scope.showPopupmenu = function($event, parent, actions) {
                         var display;
-                        if (scope.popupmenu && scope.popupmenu.parent === parent) {
+                        /*if (scope.popupmenu && scope.popupmenu.parent === parent) {
                             scope.popupmenu = null;
                             display = 'none';
+                        } else {*/
+                        var $parent = $($event.target).closest(".popupmenu-parent");
+                        if (!$parent || $parent.length === 0) {
+                            hidePopup();
                         } else {
                             scope.popupmenu = {
                                 parent: parent,
                                 items: actions
                             };
-                            display = 'block';
-                            $content.find(".dropdown-menu").show();
-                        }
+                            var parentOffset = $parent.offset();
 
-                        $content.css({
-                            left: $event.clientX + offset.left + 'px',
-                            top: $event.clientY + offset.top + 'px',
-                            display: display
-                        });
+                            $popup.css({
+                                top: parentOffset.top + offset.top + 'px',
+                                left: parentOffset.left+ offset.left + 'px',
+                                display: "block"
+                            }).find(".dropdown-menu").show();
+                        }
                     }
                 }
             });
