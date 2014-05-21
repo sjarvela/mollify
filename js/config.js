@@ -5,9 +5,9 @@
         id: 'mollify.main.config',
 
         setup: function(h, mod, gettext) {
-            gettext("main.config.title");
+            gettext("config_viewTitle");
             h.registerView('config', {
-                titleKey: "main.config.title",
+                titleKey: "config_viewTitle",
                 icon: "fa-cog",
                 parent: "main",
                 url: "^/config",

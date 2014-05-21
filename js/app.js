@@ -2,6 +2,7 @@
     'use strict';
 
     var mollifyDefaults = {
+        "localization-debug": false,
         "language": {
             "default": "en",
             "options": ["en"]
@@ -21,7 +22,17 @@
                     width: 150
                 }
             },
-            "actions": false
+            "actions": {
+                "click": function(item) {
+                    return item.is_file ? "file/context" : "file/open";
+                },
+                "dbl-click" : function(item) {
+                    return "file/open";
+                },
+                "right-click" : function(item) {
+                    return "menu";
+                }
+            }
         },
         "html5-uploader": {
             maxChunkSize: 0
@@ -96,7 +107,7 @@
             $provide.factory('views', function() {
                 return {
                     all: views,
-                    get : getViews
+                    get: getViews
                 };
             });
         });
@@ -235,7 +246,8 @@
         });
 
         app.run(function($templateCache, $rootScope, $state, $injector, gettextCatalog, service, session, filesystem) {
-            gettextCatalog.currentLanguage = "en"; //TODO set this on "session/start"
+            if (settings["localization-debug"])
+                gettextCatalog.debug = true;
 
             $templateCache.put("template/popover/popover-template.html",
                 "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
@@ -249,7 +261,7 @@
 
             $rootScope.plugins = settings.plugins;
 
-            that._onStart($rootScope, $state, $injector, session);
+            that._onStart($rootScope, $state, $injector, gettextCatalog, session);
         });
 
         this.run = function() {
@@ -258,7 +270,7 @@
             ng.bootstrap($root, ['mollify']);
         };
 
-        this._onStart = function($rootScope, $state, $injector, session) {
+        this._onStart = function($rootScope, $state, $injector, gettextCatalog, session) {
             var initialized = false;
             var pendingStateChange = false;
             console.log("Mollify started");
@@ -315,7 +327,9 @@
                     //onBeforeStateChange(event, toState, toParams, fromState, fromParams);
                 });
 
-            $rootScope.$on('session/start', function() {
+            $rootScope.$on('session/start', function(e, s) {
+                gettextCatalog.currentLanguage = (s.user && s.user.lang) ? s.user.lang : settings.language["default"];
+
                 resumeStateChange();
             });
             $rootScope.$on('session/end', function() {
@@ -346,7 +360,7 @@
 
     window.mollify = {
         init: function(opt) {
-            var _m = new MollifyApp(angular, $.extend({}, opt, mollifyDefaults));
+            var _m = new MollifyApp(angular, $.extend({}, mollifyDefaults, opt));
             _m.run();
         },
         modules: [],

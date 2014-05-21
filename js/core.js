@@ -9,7 +9,7 @@
             mod.factory('formatters', ['gettextCatalog',
                 function(gettextCatalog) {
                     return {
-                        ByteSize: function(texts, nf) {
+                        ByteSize: function(nf) {
                             this.format = function(b) {
                                 if (!window.def(b)) return "";
 
@@ -19,21 +19,23 @@
                                     if (isNaN(bytes)) return "";
                                 } else if (typeof(b) !== "number") return "";
 
+                                //TODO params
+
                                 if (bytes < 1024)
-                                    return (bytes == 1 ? gettextCatalog.getString('file-size.one-byte') : gettextCatalog.getString('file-size.bytes', nf.format(bytes)));
+                                    return nf.format(bytes) + " " + gettextCatalog.getPlural(bytes, 'fileSize_byte', 'fileSize_bytes');// : gettextCatalog.getString('file-size.bytes', nf.format(bytes)));
 
                                 if (bytes < (1024 * 1024)) {
                                     var kilobytes = bytes / 1024;
-                                    return (kilobytes == 1 ? gettext['file-size.one-kb'] : gettext['file-size.kb', nf.format(kilobytes)]);
+                                    return nf.format(kilobytes) + " " + gettextCatalog.getPlural(bytes, 'fileSize_kilobyte', 'fileSize_kilobytes');// (kilobytes == 1 ? gettext['file-size.one-kb'] : gettext['file-size.kb', nf.format(kilobytes)]);
                                 }
 
                                 if (bytes < (1024 * 1024 * 1024)) {
                                     var megabytes = bytes / (1024 * 1024);
-                                    return texts.get('file-size.mb', nf.format(megabytes));
+                                    return nf.format(megabytes) + " " + gettextCatalog.getPlural(megabytes, 'fileSize_megabyte', 'fileSize_megabytes'); //texts.get('file-size.mb', nf.format(megabytes));
                                 }
 
                                 var gigabytes = bytes / (1024 * 1024 * 1024);
-                                return texts.get('file-size.gb', nf.format(gigabytes));
+                                return nf.format(gigabytes) + " " + gettextCatalog.getPlural(gigabytes, 'fileSize_gigabyte', 'fileSize_gigabytes'); //texts.get('file-size.gb', nf.format(gigabytes));
                             };
                         },
                         Timestamp: function(fmt) {
@@ -227,7 +229,8 @@
                                 user: {
                                     id: s.user_id,
                                     type: s.user_type,
-                                    name: s.username
+                                    name: s.username,
+                                    lang: s.lang
                                 },
                                 data: s
                             }

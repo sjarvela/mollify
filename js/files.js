@@ -9,9 +9,9 @@
                 type: 1
             };
 
-            gettext("main.files.title");
+            gettext("files_viewTitle");
             h.registerView('files', {
-                titleKey: "main.files.title",
+                titleKey: "files_viewTitle",
                 icon: "fa-folder",
                 parent: "main",
                 url: "^/files/{id}",
@@ -61,8 +61,8 @@
                 }
             });
 
-            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'filesystem', 'data',
-                function($scope, $state, $stateParams, filesystem, data) {
+            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'settings', 'filesystem', 'data',
+                function($scope, $state, $stateParams, settings, filesystem, data) {
                     var reload = function() {
                         $state.transitionTo($state.current, $stateParams, {
                             reload: true,
@@ -86,10 +86,35 @@
                     $.extend($scope, sd);
 
                     $scope.onItemAction = function(item, action, ctx) {
-                        console.log(item.name + " " + action);
+                        var itemAction = settings["file-view"].actions[action];
+                        if (typeof(itemAction) == "function") itemAction = itemAction(item);
+
+                        console.log(item.name + " " + itemAction);
+                        if (itemAction == "menu") {
+                            console.log("display menu");
+                        } else {
+                            $scope.onAction(itemAction, item);
+                        }
                     };
                 }
             ]);
+
+            gettext('file_open');
+            h.registerAction({
+                id: 'file/open',
+                type: 'file',
+                titleKey: 'file_open',
+                handler: ["$state",
+                    function(item, $state) {
+                        if (!item.is_file)
+                            $state.go("files", {
+                                id: item.id
+                            });
+                        else
+                            alert("open file " + item.name);
+                    }
+                ]
+            });
 
             /* File list */
 
@@ -110,6 +135,9 @@
                 function($scope, $timeout, settings, filesystem, formatters) {
                     if (!cols) setupCols(settings);
 
+                    var fmt = {
+                        byteSize: new formatters.ByteSize(new formatters.Number(2))
+                    };
                     $scope.cols = cols;
                     $scope.selected = [];
                     $scope._click = false;
@@ -117,7 +145,7 @@
                     $scope.content = function(item, col) {
                         return col.content.apply({
                             filesystem: filesystem,
-                            formatters: formatters
+                            formatters: fmt
                         }, [item]);
                     };
                     var getCtx = function(col) {
@@ -151,78 +179,83 @@
                     console.log("icon ctrl");
                 }
             ]);
-        }
-    });
 
-    // register file list columns
-    mollify.filelist.columns.push({
-        id: "name",
-        titleKey: "files.list.col.name",
-        sort: function(i1, i2, sort, data) {
-            return i1.name.toLowerCase().localeCompare(i2.name.toLowerCase()) * sort;
-        },
-        content: function(item, data) {
-            return item.name;
-        }
-    });
-    mollify.filelist.columns.push({
-        id: "path",
-        titleKey: "files.list.col.path",
-        sort: function(i1, i2, sort, data) {
-            var p1 = _m.filesystem.rootsById[i1.root_id].name + i1.path;
-            var p2 = _m.filesystem.rootsById[i2.root_id].name + i2.path;
-            return p1.toLowerCase().localeCompare(p2.toLowerCase()) * sort;
-        },
-        html: true,
-        content: function(item, data) {
-            return '<span class="item-path-root">' + this.filesystem.root(item.root_id).name + '</span>: <span class="item-path-val">' + item.path + '</span>';
-        }
-    });
-    mollify.filelist.columns.push({
-        id: "type",
-        titleKey: "files.list.col.type",
-        sort: function(i1, i2, sort, data) {
-            var e1 = i1.is_file ? (i1.extension || '') : '';
-            var e2 = i2.is_file ? (i2.extension || '') : '';
-            return e1.toLowerCase().localeCompare(e2.toLowerCase()) * sort;
-        },
-        content: function(item, data) {
-            return item.is_file ? (item.extension || '') : '';
-        }
-    });
-    mollify.filelist.columns.push({
-        id: "size",
-        titleKey: "files.list.col.size",
-        opts: {
-            "min-width": 75
-        },
-        sort: function(i1, i2, sort, data) {
-            var s1 = (i1.is_file ? parseInt(i1.size, 10) : 0);
-            var s2 = (i2.is_file ? parseInt(i2.size, 10) : 0);
-            return (s1 - s2) * sort;
-        },
-        content: function(item, data) {
-            return item.is_file ? item.size : ''; //TODOthis.formatters.byteSize.format(item.size) : '';
-        }
-    });
-    mollify.filelist.columns.push({
-        id: "file-modified",
-        dataId: "core-file-modified",
-        titleKey: "files.list.col.lastmodified",
-        opts: {
-            "width": 180
-        },
-        sort: function(i1, i2, sort, data) {
-            if (!i1.is_file && !i2.is_file) return 0;
-            if (!data || !data["core-file-modified"]) return 0;
+            // register file list columns
+            gettext("filesList_colName");
+            mollify.filelist.columns.push({
+                id: "name",
+                titleKey: "filesList_colName",
+                sort: function(i1, i2, sort, data) {
+                    return i1.name.toLowerCase().localeCompare(i2.name.toLowerCase()) * sort;
+                },
+                content: function(item, data) {
+                    return item.name;
+                }
+            });
+            gettext("filesList_colPath");
+            mollify.filelist.columns.push({
+                id: "path",
+                titleKey: "filesList_colPath",
+                sort: function(i1, i2, sort, data) {
+                    var p1 = _m.filesystem.rootsById[i1.root_id].name + i1.path;
+                    var p2 = _m.filesystem.rootsById[i2.root_id].name + i2.path;
+                    return p1.toLowerCase().localeCompare(p2.toLowerCase()) * sort;
+                },
+                html: true,
+                content: function(item, data) {
+                    return '<span class="item-path-root">' + this.filesystem.root(item.root_id).name + '</span>: <span class="item-path-val">' + item.path + '</span>';
+                }
+            });
+            gettext("filesList_colType");
+            mollify.filelist.columns.push({
+                id: "type",
+                titleKey: "filesList_colType",
+                sort: function(i1, i2, sort, data) {
+                    var e1 = i1.is_file ? (i1.extension || '') : '';
+                    var e2 = i2.is_file ? (i2.extension || '') : '';
+                    return e1.toLowerCase().localeCompare(e2.toLowerCase()) * sort;
+                },
+                content: function(item, data) {
+                    return item.is_file ? (item.extension || '') : '';
+                }
+            });
+            gettext("filesList_colSize");
+            mollify.filelist.columns.push({
+                id: "size",
+                titleKey: "filesList_colSize",
+                opts: {
+                    "min-width": 75
+                },
+                sort: function(i1, i2, sort, data) {
+                    var s1 = (i1.is_file ? parseInt(i1.size, 10) : 0);
+                    var s2 = (i2.is_file ? parseInt(i2.size, 10) : 0);
+                    return (s1 - s2) * sort;
+                },
+                content: function(item, data) {
+                    return item.is_file ? this.formatters.byteSize.format(item.size) : '';
+                }
+            });
+            gettext("filesList_colLastModified");
+            mollify.filelist.columns.push({
+                id: "file-modified",
+                dataId: "core-file-modified",
+                titleKey: "filesList_colLastModified",
+                opts: {
+                    "width": 180
+                },
+                sort: function(i1, i2, sort, data) {
+                    if (!i1.is_file && !i2.is_file) return 0;
+                    if (!data || !data["core-file-modified"]) return 0;
 
-            var ts1 = data["core-file-modified"][i1.id] ? data["core-file-modified"][i1.id] * 1 : 0;
-            var ts2 = data["core-file-modified"][i2.id] ? data["core-file-modified"][i2.id] * 1 : 0;
-            return ((ts1 > ts2) ? 1 : -1) * sort;
-        },
-        content: function(item, data) {
-            if (!item.id || !item.is_file || !data || !data["core-file-modified"] || !data["core-file-modified"][item.id]) return "";
-            return this.formatters.timestamp.format(mollify.utils.parseInternalTime(data["core-file-modified"][item.id]));
+                    var ts1 = data["core-file-modified"][i1.id] ? data["core-file-modified"][i1.id] * 1 : 0;
+                    var ts2 = data["core-file-modified"][i2.id] ? data["core-file-modified"][i2.id] * 1 : 0;
+                    return ((ts1 > ts2) ? 1 : -1) * sort;
+                },
+                content: function(item, data) {
+                    if (!item.id || !item.is_file || !data || !data["core-file-modified"] || !data["core-file-modified"][item.id]) return "";
+                    return this.formatters.timestamp.format(mollify.utils.parseInternalTime(data["core-file-modified"][item.id]));
+                }
+            });
         }
     });
 }(window.mollify);

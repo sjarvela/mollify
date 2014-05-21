@@ -1,28 +1,72 @@
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Project-Id-Version: mollify\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
-"Last-Translator: \n"
+"Last-Translator: Samuli Järvelä <samuli@jarvela.com>\n"
 "Language-Team: \n"
-"MIME-Version: 1.0\n"
 "Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6.5\n"
 
-#: js/core.js
-msgid "file-size.bytes"
-msgstr ""
+#: js/config.js
+msgid "config_viewTitle"
+msgstr "Configuration"
 
 #: js/core.js
-msgid "file-size.one-byte"
+msgid "fileSize_byte"
+msgid_plural "fileSize_bytes"
+msgstr[0] "byte"
+msgstr[1] "bytes"
+
+#: js/core.js
+msgid "fileSize_gigabyte"
+msgid_plural "fileSize_gigabytes"
+msgstr[0] "Gb"
+msgstr[1] "Gb"
+
+#: js/core.js
+msgid "fileSize_kilobyte"
+msgid_plural "fileSize_kilobytes"
+msgstr[0] "kB"
+msgstr[1] "kB"
+
+#: js/core.js
+msgid "fileSize_megabyte"
+msgid_plural "fileSize_megabytes"
+msgstr[0] "mB"
+msgstr[1] "mB"
+
+#: js/files.js
+msgid "filesList_colLastModified"
 msgstr ""
+
+#: js/files.js
+msgid "filesList_colName"
+msgstr "Name"
+
+#: js/files.js
+msgid "filesList_colPath"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colSize"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colType"
+msgstr ""
+
+#: js/files.js
+msgid "files_viewTitle"
+msgstr "Files"
 
 #: templates/login.html
 msgid "forgotPassword_Email"
-msgstr ""
+msgstr "Email"
 
 #: templates/login.html
 msgid "login_Login"
@@ -34,28 +78,24 @@ msgstr "Password"
 
 #: templates/login.html
 msgid "login_Register"
-msgstr ""
+msgstr "Register"
 
 #: templates/login.html
 msgid "login_Remember me"
-msgstr ""
+msgstr "Remember me"
 
 #: templates/login.html
 msgid "login_Reset password"
-msgstr ""
+msgstr "Reset password"
 
 #: templates/login.html
 msgid "login_Username"
-msgstr ""
-
-#: js/config.js
-msgid "main.config.title"
-msgstr ""
-
-#: js/files.js
-msgid "main.files.title"
-msgstr ""
+msgstr "Username"
 
 #: js/core.js
 msgid "session_logout"
 msgstr "Logout"
+
+#: js/main.js
+msgid "user_changePassword"
+msgstr "Change password..."

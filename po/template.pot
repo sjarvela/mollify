@@ -2,22 +2,57 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Project-Id-Version: mollify\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"MIME-Version: 1.0\n"
-"Language: en\n"
-"X-Generator: Poedit 1.6.5\n"
 
-#: js/core.js
-msgid "file-size.bytes"
+#: js/config.js
+msgid "config_viewTitle"
 msgstr ""
 
 #: js/core.js
-msgid "file-size.one-byte"
+msgid "fileSize_byte"
+msgid_plural "fileSize_bytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/core.js
+msgid "fileSize_gigabyte"
+msgid_plural "fileSize_gigabytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/core.js
+msgid "fileSize_kilobyte"
+msgid_plural "fileSize_kilobytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/core.js
+msgid "fileSize_megabyte"
+msgid_plural "fileSize_megabytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/files.js
+msgid "filesList_colLastModified"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colName"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colPath"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colSize"
+msgstr ""
+
+#: js/files.js
+msgid "filesList_colType"
+msgstr ""
+
+#: js/files.js
+msgid "files_viewTitle"
 msgstr ""
 
 #: templates/login.html
@@ -26,11 +61,11 @@ msgstr ""
 
 #: templates/login.html
 msgid "login_Login"
-msgstr "Login"
+msgstr ""
 
 #: templates/login.html
 msgid "login_Password"
-msgstr "Password"
+msgstr ""
 
 #: templates/login.html
 msgid "login_Register"
@@ -48,14 +83,10 @@ msgstr ""
 msgid "login_Username"
 msgstr ""
 
-#: js/config.js
-msgid "main.config.title"
-msgstr ""
-
-#: js/files.js
-msgid "main.files.title"
-msgstr ""
-
 #: js/core.js
 msgid "session_logout"
-msgstr "Logout"
+msgstr ""
+
+#: js/main.js
+msgid "user_changePassword"
+msgstr ""
