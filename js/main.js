@@ -12,6 +12,7 @@
                 controller: "MainCtrl",
                 template: "main.html"
             });
+
             mod.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'views', 'actions',
                 function($scope, $rootScope, $state, $stateParams, views, actions) {
                     $scope.views = views.get('main');
@@ -59,6 +60,37 @@
                         }, function() {});
                     }
                 ]
+            });
+
+            mod.directive('popupmenuContainer', function($timeout) {
+                var offset = {
+                    left: 0,
+                    top: -20
+                }
+                return function(scope, element, attributes) {
+                    var $content = $('#main-popupmenu');    //TODO find by class under current element
+
+                    scope.showPopupmenu = function($event, parent, actions) {
+                        var display;
+                        if (scope.popupmenu && scope.popupmenu.parent === parent) {
+                            scope.popupmenu = null;
+                            display = 'none';
+                        } else {
+                            scope.popupmenu = {
+                                parent: parent,
+                                items: actions
+                            };
+                            display = 'block';
+                            $content.find(".dropdown-menu").show();
+                        }
+
+                        $content.css({
+                            left: $event.clientX + offset.left + 'px',
+                            top: $event.clientY + offset.top + 'px',
+                            display: display
+                        });
+                    }
+                }
             });
         }
     });

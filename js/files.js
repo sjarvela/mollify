@@ -61,8 +61,8 @@
                 }
             });
 
-            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'settings', 'filesystem', 'data',
-                function($scope, $state, $stateParams, settings, filesystem, data) {
+            mod.controller('FilesCtrl', ['$scope', '$state', '$stateParams', 'settings', 'actions', 'filesystem', 'data',
+                function($scope, $state, $stateParams, settings, actions, filesystem, data) {
                     var reload = function() {
                         $state.transitionTo($state.current, $stateParams, {
                             reload: true,
@@ -91,7 +91,7 @@
 
                         console.log(item.name + " " + itemAction);
                         if (itemAction == "menu") {
-                            console.log("display menu");
+                            $scope.showPopupmenu(ctx.e, item, actions.getType('filesystem', item));
                         } else {
                             $scope.onAction(itemAction, item);
                         }
@@ -148,28 +148,29 @@
                             formatters: fmt
                         }, [item]);
                     };
-                    var getCtx = function(col) {
+                    var getCtx = function(e, col) {
                         return {
+                            e: e,
                             col: col
                         }
                     };
 
-                    $scope.onClick = function(item, col) {
+                    $scope.onClick = function(e, item, col) {
                         $scope._click = $timeout(function() {
                             if (!$scope._click) return;
                             $scope._click = false;
-                            $scope.onItemAction(item, "click", getCtx(col));
+                            $scope.onItemAction(item, "click", getCtx(e, col));
                         }, 200);
                     };
 
-                    $scope.onRightClick = function(item, col) {
-                        $scope.onItemAction(item, "right-click", getCtx(col));
+                    $scope.onRightClick = function(e, item, col) {
+                        $scope.onItemAction(item, "right-click", getCtx(e, col));
                     };
 
-                    $scope.onDblClick = function(item, col) {
+                    $scope.onDblClick = function(e, item, col) {
                         if ($scope._click) $timeout.cancel($scope._click);
                         $scope._click = false;
-                        $scope.onItemAction(item, "dbl-click", getCtx(col));
+                        $scope.onItemAction(item, "dbl-click", getCtx(e, col));
                     };
                 }
             ]);

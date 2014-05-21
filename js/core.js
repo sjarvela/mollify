@@ -284,6 +284,18 @@
                     }
                 ]
             });
+
+            gettext('file_copy');
+            h.registerAction({
+                id: 'file/copy',
+                type: 'filesystem',
+                titleKey: 'file_copy',
+                handler: ["filesystem",
+                    function(file, filesystem) {
+                        alert("copy " + file.name);
+                    }
+                ]
+            });
         }
     });
 

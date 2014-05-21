@@ -7505,3 +7505,7 @@ button.close {
 #mollify .main-view .fileview .filelist-table .filelist-item-value {
   padding: 8px;
 }
+#mollify .main-view .popupmenu-container {
+  position: absolute;
+  display: none;
+}
