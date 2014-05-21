@@ -244,8 +244,8 @@
             };
         });
 
-        app.run(function($templateCache, $rootScope, $state, gettextCatalog, service, session, filesystem) {
-            gettextCatalog.currentLanguage = "en";  //TODO set this on "session/start"
+        app.run(function($templateCache, $rootScope, $state, $injector, gettextCatalog, service, session, filesystem) {
+            gettextCatalog.currentLanguage = "en"; //TODO set this on "session/start"
 
             $templateCache.put("template/popover/popover-template.html",
                 "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
@@ -259,7 +259,7 @@
 
             $rootScope.plugins = settings.plugins;
 
-            that._onStart($rootScope, $state, session);
+            that._onStart($rootScope, $state, $injector, session);
         });
 
         this.run = function() {
@@ -268,7 +268,7 @@
             ng.bootstrap($root, ['mollify']);
         };
 
-        this._onStart = function($rootScope, $state, session) {
+        this._onStart = function($rootScope, $state, $injector, session) {
             var initialized = false;
             var pendingStateChange = false;
             console.log("Mollify started");
@@ -328,9 +328,20 @@
             $rootScope.$on('session/start', function() {
                 resumeStateChange();
             });
+            $rootScope.$on('session/end', function() {
+                $state.go("login");
+            });
 
             $rootScope.onAction = function(ac, ctx) {
-                alert(ac.id + ctx);
+                if (!ac || !ac.handler) return;
+
+                // inject handler params
+                var fn = window.isArray(ac.handler) ? ac.handler[ac.handler.length - 1] : ac.handler;
+                var deps = [];
+                var args = [ctx];
+                if (window.isArray(ac.handler) && ac.handler.length > 1)
+                    for (var i = 0; i <= ac.handler.length - 2; i++) args.push($injector.get(ac.handler[i]));
+                fn.apply(null, args);
             };
 
             session.init().done(function() {

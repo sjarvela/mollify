@@ -241,7 +241,14 @@
                         get: function() {
                             return _session;
                         },
-                        end: _end,
+                        end: function() {
+                            var df = $.Deferred();
+                            service.get('session/logout').done(function(s) {
+                                df.resolve(s);
+                                if (s) _end(s);
+                            }).fail(df.reject);
+                            return df.promise();
+                        },
                         init: function() {
                             var df = $.Deferred();
                             service.get('session/info').done(function(s) {
@@ -268,10 +275,11 @@
                 id: 'session/logout',
                 type: 'session',
                 titleKey: 'session_logout',
-                handler: ["session", function(ctx, session) {
-                    console.log("on logout");
-                    session.end();
-                }]
+                handler: ["session",
+                    function(ctx, session) {
+                        session.end();
+                    }
+                ]
             });
         }
     });
