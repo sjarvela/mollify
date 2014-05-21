@@ -38,21 +38,15 @@
     var MollifyApp = function(ng, settings) {
         var that = this;
         var views = {
-            login: {
+            /*login: {
                 id: 'login',
                 url: "/login",
                 controller: "LoginCtrl",
                 template: "login.html"
-            },
+            },*/
             error: {
                 id: 'error',
                 template: "error.html"
-            },
-            main: {
-                id: 'main',
-                abstract: true,
-                controller: "MainCtrl",
-                template: "main.html"
             }
         };
         var actions = {
@@ -99,6 +93,15 @@
         });
 
         app.config(function($provide) {
+            $provide.factory('views', function() {
+                return {
+                    all: views,
+                    get : getViews
+                };
+            });
+        });
+
+        app.config(function($provide) {
             $provide.factory('actions', function() {
                 return {
                     getType: function(type) {
@@ -107,20 +110,6 @@
                 };
             });
         });
-
-        app.controller('MainCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'actions',
-            function($scope, $rootScope, $state, $stateParams, actions) {
-                console.log("main");
-                $scope.views = getViews('main');
-                $scope.activeView = views[$state.current.name];
-
-                $scope.sessionActions = actions.getType('session');
-
-                $rootScope.$on('$stateChangeSuccess', function(e, to) {
-                    $scope.activeView = views[to.name];
-                });
-            }
-        ]);
 
         // views
         app.
@@ -144,6 +133,7 @@
                     var v = views[vk];
                     var vp = {};
                     var subviews = false;
+                    if (v.abstract) vp.abstract = true;
                     if (v.url) vp.url = v.url;
                     if (v.parent) vp.parent = v.parent;
                     if (v.resolve) vp.resolve = v.resolve;
@@ -329,10 +319,14 @@
                 resumeStateChange();
             });
             $rootScope.$on('session/end', function() {
-                $state.go("login");
+                session.init().done(function() {
+                    $state.go("files"); //TODO default
+                });
             });
 
             $rootScope.onAction = function(ac, ctx) {
+                if (!ac) return;
+                if (typeof(ac) == 'string') ac = actions.byId[ac];
                 if (!ac || !ac.handler) return;
 
                 // inject handler params

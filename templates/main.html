@@ -43,3 +43,16 @@
         </div>
     </div>
 </div>
+
+<script type="text/ng-template" id="main/change_password.html">
+    <div class="modal-header">
+        <h3 class="modal-title">pw</h3>
+    </div>
+    <div class="modal-body">
+        User: <b>{{ user.name }}</b>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="ok()">OK</button>
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    </div>
+</script>

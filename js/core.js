@@ -289,6 +289,12 @@
         id: 'mollify.login',
 
         setup: function(h, mod) {
+            h.registerView('login', {
+                url: "/login",
+                template: "login.html",
+                controller: "LoginCtrl"
+            });
+
             mod.controller('LoginCtrl', ['$scope', '$rootScope', '$state', 'session',
                 function($scope, $rootScope, $state, session) {
                     $scope.username = "";
