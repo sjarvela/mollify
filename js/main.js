@@ -69,6 +69,7 @@
                 }
                 return function(scope, element, attributes) {
                     var $popup = element.find('.popupmenu-container'); //TODO find by class under current element
+                    var containerOffset = element.offset();
                     var hidePopup = function() {
                         scope.popupmenu = null;
                         $popup.css("display", "none");
@@ -79,10 +80,6 @@
 
                     scope.showPopupmenu = function($event, parent, actions) {
                         var display;
-                        /*if (scope.popupmenu && scope.popupmenu.parent === parent) {
-                            scope.popupmenu = null;
-                            display = 'none';
-                        } else {*/
                         var $parent = $($event.target).closest(".popupmenu-parent");
                         if (!$parent || $parent.length === 0) {
                             hidePopup();
@@ -94,8 +91,8 @@
                             var parentOffset = $parent.offset();
 
                             $popup.css({
-                                top: parentOffset.top + offset.top + 'px',
-                                left: parentOffset.left+ offset.left + 'px',
+                                top: (parentOffset.top + offset.top) + 'px',
+                                left: (parentOffset.left + offset.left) + 'px',
                                 display: "block"
                             }).find(".dropdown-menu").show();
                         }

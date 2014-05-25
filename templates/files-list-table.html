@@ -6,8 +6,8 @@
     </div>
 
     <div class="filelist-items">
-        <div class="filelist-item popupmenu-parent" ng-class="item.is_file ? 'item-file item-file-{{item.extension}}' : 'item-folder'" ng-repeat="item in data.items">
-            <div ng-click="onClick($event, item, col)" ng-right-click="onRightClick($event, item, col)" ng-dblclick="onDblClick($event, item, col)" class="filelist-item-value col-{{col.id}}" ng-repeat="col in cols">
+        <div class="filelist-item popupmenu-parent quickaction-parent" ng-class="item.is_file ? 'item-file item-file-{{item.extension}}' : 'item-folder'" ng-repeat="item in data.items">
+            <div ng-click="onClick($event, item, col)" ng-right-click="onRightClick($event, item, col)" ng-dblclick="onDblClick($event, item, col)" ng-mouseenter="onMouseOver($event, item)" ng-mouseleave="onMouseOut($event, item)" class="filelist-item-value col-{{col.id}}" ng-repeat="col in cols">
                 {{ content(item, col) }}
             </div>
         </div>

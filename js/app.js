@@ -31,7 +31,8 @@
                 },
                 "right-click" : function(item) {
                     return "menu";
-                }
+                },
+                "mouse-over" : "quickactions"
             }
         },
         "html5-uploader": {
@@ -63,7 +64,9 @@
         var actions = {
             all: [],
             byId: {},
-            byType: {}
+            byType: {
+                quick: []
+            }
         };
 
         var deps = ['ui.bootstrap', 'ui.router', 'gettext'];
@@ -83,6 +86,7 @@
                         if (!actions.byType[ac.type]) actions.byType[ac.type] = [];
                         actions.byType[ac.type].push(ac);
                     }
+                    if (ac.quick) actions.byType['quick'].push(ac);
                 }
             }, mod, gettext_stub);
             deps.push(m.id);

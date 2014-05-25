@@ -22,20 +22,20 @@
                                 //TODO params
 
                                 if (bytes < 1024)
-                                    return nf.format(bytes) + " " + gettextCatalog.getPlural(bytes, 'fileSize_byte', 'fileSize_bytes');// : gettextCatalog.getString('file-size.bytes', nf.format(bytes)));
+                                    return nf.format(bytes) + " " + gettextCatalog.getPlural(bytes, 'fileSize_byte', 'fileSize_bytes');
 
                                 if (bytes < (1024 * 1024)) {
                                     var kilobytes = bytes / 1024;
-                                    return nf.format(kilobytes) + " " + gettextCatalog.getPlural(bytes, 'fileSize_kilobyte', 'fileSize_kilobytes');// (kilobytes == 1 ? gettext['file-size.one-kb'] : gettext['file-size.kb', nf.format(kilobytes)]);
+                                    return nf.format(kilobytes) + " " + gettextCatalog.getPlural(kilobytes, 'fileSize_kilobyte', 'fileSize_kilobytes');
                                 }
 
                                 if (bytes < (1024 * 1024 * 1024)) {
                                     var megabytes = bytes / (1024 * 1024);
-                                    return nf.format(megabytes) + " " + gettextCatalog.getPlural(megabytes, 'fileSize_megabyte', 'fileSize_megabytes'); //texts.get('file-size.mb', nf.format(megabytes));
+                                    return nf.format(megabytes) + " " + gettextCatalog.getPlural(megabytes, 'fileSize_megabyte', 'fileSize_megabytes');
                                 }
 
                                 var gigabytes = bytes / (1024 * 1024 * 1024);
-                                return nf.format(gigabytes) + " " + gettextCatalog.getPlural(gigabytes, 'fileSize_gigabyte', 'fileSize_gigabytes'); //texts.get('file-size.gb', nf.format(gigabytes));
+                                return nf.format(gigabytes) + " " + gettextCatalog.getPlural(gigabytes, 'fileSize_gigabyte', 'fileSize_gigabytes');
                             };
                         },
                         Timestamp: function(fmt) {
@@ -57,10 +57,10 @@
                                 return sv;
                             };
                         },
-                        FilesystemItemPath: function(fs) {
+                        FilesystemItemPath: function() {
                             this.format = function(item) {
                                 if (!item) return "";
-                                return fs.rootsById[item.root_id].name + (item.path.length > 0 ? ":&nbsp;" + item.path : "");
+                                return this.filesystem.root(item.root_id).name + (item.path.length > 0 ? ":" + item.path : "");
                             }
                         }
                     };

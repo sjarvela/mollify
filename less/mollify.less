@@ -2,7 +2,6 @@
  @import url(../bower_components/bootstrap/less/theme.less);
  @import url(../bower_components/font-awesome/less/font-awesome.less);
  @fa-font-path:"../bower_components/font-awesome/fonts";
- 
  #mollify {
     margin: 0;
     .container {
@@ -41,7 +40,6 @@
                     float: left;
                     width: 100%;
                     font-weight: bold;
-
                     .filelist-header-col {
                         float: left;
                         vertical-align: bottom;
@@ -64,10 +62,15 @@
                 }
             }
         }
-
-        .popupmenu-container {
-        	position: absolute;
-        	display: none;
+        .popupmenu-container, .quickaction-container {
+            position: absolute;
+            display: none;
+        }
+        ul.quickaction-list {
+            display: block;
+            li {
+                display: block;
+            }
         }
     }
 }

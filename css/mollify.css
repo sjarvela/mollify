@@ -7505,7 +7505,14 @@ button.close {
 #mollify .main-view .fileview .filelist-table .filelist-item-value {
   padding: 8px;
 }
-#mollify .main-view .popupmenu-container {
+#mollify .main-view .popupmenu-container,
+#mollify .main-view .quickaction-container {
   position: absolute;
   display: none;
+}
+#mollify .main-view ul.quickaction-list {
+  display: block;
+}
+#mollify .main-view ul.quickaction-list li {
+  display: block;
 }

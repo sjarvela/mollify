@@ -87,11 +87,14 @@
 
                     $scope.onItemAction = function(item, action, ctx) {
                         var itemAction = settings["file-view"].actions[action];
+                        if (!itemAction) return;
                         if (typeof(itemAction) == "function") itemAction = itemAction(item);
 
                         console.log(item.name + " " + itemAction);
                         if (itemAction == "menu") {
                             $scope.showPopupmenu(ctx.e, item, actions.getType('filesystem', item));
+                        } else if (itemAction = "quickactions") {
+                            $scope.showQuickactions(ctx.e, item, actions.getType('quick', item));
                         } else {
                             $scope.onAction(itemAction, item);
                         }
@@ -103,6 +106,7 @@
             h.registerAction({
                 id: 'file/open',
                 type: 'file',
+                quick: true,
                 titleKey: 'file_open',
                 handler: ["$state",
                     function(item, $state) {
@@ -171,6 +175,16 @@
                         if ($scope._click) $timeout.cancel($scope._click);
                         $scope._click = false;
                         $scope.onItemAction(item, "dbl-click", getCtx(e, col));
+                    };
+
+                    $scope.onMouseOver = function(e, item) {
+                        $scope.onItemAction(item, "mouse-over", getCtx(e));
+                        //$scope.showQuickactions(e, item, [{}]);
+                    };
+
+                    $scope.onMouseOut = function(e, item) {
+                        $scope.onItemAction(item, "mouse-out", getCtx(e));
+                        //$scope.showQuickactions(e, item, false);
                     };
                 }
             ]);
@@ -255,6 +269,57 @@
                 content: function(item, data) {
                     if (!item.id || !item.is_file || !data || !data["core-file-modified"] || !data["core-file-modified"][item.id]) return "";
                     return this.formatters.timestamp.format(mollify.utils.parseInternalTime(data["core-file-modified"][item.id]));
+                }
+            });
+
+            mod.directive('quickactionContainer', function($timeout) {
+                var offset = {
+                    top: 0,
+                    left: 0
+                };
+
+                return function(scope, element, attributes) {
+                    var $popup = element.find('.quickaction-container'); //TODO find by class under current element
+                    var hidePopup = function() {
+                        scope.quickactions = null;
+                        $popup.css("display", "none");
+                    };
+                    element.bind("click", function() {
+                        hidePopup();
+                    });
+                    var containerOffset = element.offset();
+
+                    scope.showQuickactions = function($event, parent, actions) {
+                        if (!$event || !parent || (scope.quickactions && parent === scope.quickactions.parent)) {
+                            hidePopup();
+                            return;
+                        }
+                        if (!actions) {
+                            //console.log($event);
+                            if ($event.toElement !== $popup[0])
+                                hidePopup();
+                            return;
+                        }
+
+                        var display;
+                        var $parent = $($event.target).closest(".quickaction-parent");
+                        if (!$parent || $parent.length === 0) {
+                            hidePopup();
+                        } else {
+                            scope.quickactions = {
+                                parent: parent,
+                                items: actions
+                            };
+                            var parentOffset = $parent.offset();
+                            $timeout(function() {
+                                $popup.css({
+                                    top: (parentOffset.top - containerOffset.top) + 'px',
+                                    left: (parentOffset.left - containerOffset.left + $parent.outerWidth() - $popup.outerWidth()) + 'px',
+                                    display: "block"
+                                });
+                            });
+                        }
+                    }
                 }
             });
         }

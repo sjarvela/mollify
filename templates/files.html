@@ -1,2 +1,10 @@
-<div class="fileview" ui-view="files">
+<div quickaction-container>
+	<div class="fileview" ui-view="files">
+	</div>
+
+	<div class="quickaction-container">
+		<ul class="quickaction-list">
+			<li ng-repeat="item in quickactions.items" ng-click="onAction(item, quickactions.parent)">{{item.id}}</li>
+		</ul>
+	</div>
 </div>
