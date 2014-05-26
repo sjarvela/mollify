@@ -236,7 +236,7 @@
                 restrict: 'E',
                 replace: true,
                 transclude: true,
-                template: '<li>' + '<a href="#" ng-click="onItem(item)">' + '{{item.titleKey | translate}}' + '</a>' + '</li>',
+                template: '<li>' + '<a href="#" ng-click="onItem(item)">' + '<i class="fa {{item.icon}}"></i>&nbsp;' + '{{item.titleKey | translate}}' + '</a>' + '</li>',
                 link: function(scope, elm, attrs) {
                     scope.onItem = function(item) {
                         $rootScope.onAction(item, scope.ctx);

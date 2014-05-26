@@ -106,6 +106,7 @@
             h.registerAction({
                 id: 'file/open',
                 type: 'file',
+                icon: "fa-folder-open-o",
                 quick: true,
                 titleKey: 'file_open',
                 handler: ["$state",
@@ -279,18 +280,26 @@
                 };
 
                 return function(scope, element, attributes) {
+                    var _showTimeout = false;
+                    var _hideTimeout = false;
                     var $popup = element.find('.quickaction-container'); //TODO find by class under current element
                     var hidePopup = function() {
-                        scope.quickactions = null;
-                        $popup.css("display", "none");
+                        if (_hideTimeout) return;
+                        _hideTimeout = $timeout(function() {
+                            _hideTimeout = false;
+                            scope.quickactions = null;
+                            $popup.css("display", "none");
+                        }, 200);
                     };
                     element.bind("click", function() {
+                        if (_showTimeout) _showTimeout.cancel();
                         hidePopup();
                     });
                     var containerOffset = element.offset();
 
                     scope.showQuickactions = function($event, parent, actions) {
-                        if (!$event || !parent || (scope.quickactions && parent === scope.quickactions.parent)) {
+                        if (!$event || !parent) {
+                            if (scope.quickactions && parent === scope.quickactions.parent) return;
                             hidePopup();
                             return;
                         }
@@ -299,6 +308,18 @@
                             if ($event.toElement !== $popup[0])
                                 hidePopup();
                             return;
+                        }
+
+                        if (_hideTimeout) {
+                            // if set to be hidden, cancel it
+                            _hideTimeout.cancel();
+                            _hideTimeout = false;
+
+                            // if new parent is same as old, skip show
+                            if (scope.quickactions && parent === scope.quickactions.parent) {
+                                scope.quickactions.items = actions;
+                                return;
+                            }
                         }
 
                         var display;
@@ -311,13 +332,15 @@
                                 items: actions
                             };
                             var parentOffset = $parent.offset();
-                            $timeout(function() {
+                            _showTimeout = $timeout(function() {
+                                _showTimeout = false;
+
                                 $popup.css({
                                     top: (parentOffset.top - containerOffset.top) + 'px',
                                     left: (parentOffset.left - containerOffset.left + $parent.outerWidth() - $popup.outerWidth()) + 'px',
                                     display: "block"
                                 });
-                            });
+                            }, 200);
                         }
                     }
                 }

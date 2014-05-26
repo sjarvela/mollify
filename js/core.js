@@ -277,6 +277,7 @@
             h.registerAction({
                 id: 'session/logout',
                 type: 'session',
+                icon: "fa-sign-out",
                 titleKey: 'session_logout',
                 handler: ["session",
                     function(ctx, session) {
@@ -288,6 +289,7 @@
             gettext('file_copy');
             h.registerAction({
                 id: 'file/copy',
+                icon: "fa-copy",
                 type: 'filesystem',
                 titleKey: 'file_copy',
                 handler: ["filesystem",
