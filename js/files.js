@@ -107,13 +107,41 @@
                         }
                     };
 
-                    $scope.canDropItem = function(to, item) {
-                        console.log("candrop " + item.name + " -> " + to.name);
-                        return true;
+                    var dropType = function(to, i) {
+                        var single = false;
+                        if (!window.isArray(i)) single = i;
+                        else if (i.length === 0) single = i[0];
+
+                        var copy = (!single || to.root_id != single.root_id);
+                        return copy ? "copy" : "move";
+                    };
+
+                    $scope.canDropItem = function(to, itm) {
+                        var single = false;
+                        if (!window.isArray(itm)) single = itm;
+                        else if (itm.length === 0) single = itm[0];
+
+                        if (single)
+                            return dropType(to, single) == "copy" ? filesystem.canCopyTo(single, to) : filesystem.canMoveTo(single, to);
+
+                        var can = true;
+                        for (var i = 0; i < itm.length; i++) {
+                            var item = itm[i];
+                            if (!(that.dropType(to, item) == "copy" ? filesystem.canCopyTo(item, to) : filesystem.canMoveTo(item, to))) {
+                                can = false;
+                                break;
+                            }
+                        }
+                        return can;
                     };
 
                     $scope.onDropItem = function(to, item) {
-                        console.log("ondrop " + item.name + " -> " + to.name);
+                        //console.log("ondrop " + item.name + " -> " + to.name);
+                        var copy = (dropType(to, itm) == 'copy');
+                        //console.log((copy ? "copy " : "move ") +itm.name+" to "+to.name);
+
+                        if (copy) filesystem.copy(itm, to);
+                        else filesystem.move(itm, to);
                     };
                 }
             ]);
@@ -147,7 +175,7 @@
                 handler: ["filesystem",
                     function(item, filesystem) {
                         //TODO angular way? download-directive?
-                        $("#mollify-download-frame").attr("src", filesystem.getItemURL(item));
+                        $("#mollify-download-frame").attr("src", filesystem.getItemDownloadURL(item));
                     }
                 ]
             });

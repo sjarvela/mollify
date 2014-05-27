@@ -82,6 +82,57 @@
                         _rootsById = {};
                     });
 
+                    var _canCopySingleTo = function(item, to) {
+                        // cannot copy into file
+                        if (to.is_file) return false;
+
+                        // cannot copy into itself
+                        if (item.id == to.id) return false;
+
+                        // cannot copy into same location
+                        if (item.parent_id == to.id) return false;
+                        return true;
+                    };
+
+                    var _canMoveSingleTo = function(item, to) {
+                        // cannot move into file
+                        if (to.is_file) return false;
+
+                        // cannot move folder into its own subfolder
+                        if (!to.is_file && item.root_id == to.root_id && to.path.startsWith(item.path)) return false;
+
+                        // cannot move into itself
+                        if (item.id == to.id) return false;
+
+                        // cannot move into same location
+                        if (item.parent_id == to.id) return false;
+                        return true;
+                    };
+
+                    var _copy = function(i, to) {
+                        return mollify.service.post("filesystem/" + i.id + "/copy/", {
+                            folder: to.id
+                        }).done(function(r) {
+                            $rootScope.$broadcast('filesystem/copy', {
+                                items: [i],
+                                to: to
+                            });
+                        });
+                    };
+
+                    var _copyMany = function(i, to) {
+                        return mollify.service.post("filesystem/items/", {
+                            action: 'copy',
+                            items: i,
+                            to: to
+                        }).done(function(r) {
+                            $rootScope.$broadcast('filesystem/copy', {
+                                items: i,
+                                to: to
+                            });
+                        });
+                    };
+
                     return {
                         roots: function() {
                             return _roots;
@@ -106,8 +157,77 @@
                                 return data;
                             });
                         },
-                        getItemURL: function(item) {
-                            return "foo/"+item.id;
+                        getDownloadUrl: function(item) {
+                            if (!item.is_file) return false;
+                            var url = service.url("filesystem/" + item.id, true);
+                            //TODO if (mollify.App.mobile)
+                            //    url = url + ((url.indexOf('?') >= 0) ? "&" : "?") + "m=1";
+                            return url;
+                        },
+                        canCopyTo: function(item, to) {
+                            if (window.isArray(item)) {
+                                for (var i = 0, j = item.length; i < j; i++)
+                                    if (!_canCopySingleTo(item[i], to)) return false;
+                                return true;
+                            }
+
+                            return _canCopySingleTo(item, to);
+                        },
+                        canMoveTo: function(item, to) {
+                            if (window.isArray(item)) {
+                                for (var i = 0, j = item.length; i < j; i++)
+                                    if (!_canMoveSingleTo(item[i], to)) return false;
+                                return true;
+                            }
+
+                            return _canMoveSingleTo(item, to);
+                        },
+                        copy: function(i, to) {
+                            if (!i) return;
+
+                            if (window.isArray(i) && i.length > 1) {
+                                if (!to) {
+                                    var df = $.Deferred();
+                                    /*mollify.ui.dialogs.folderSelector({
+                                        title: mollify.ui.texts.get('copyMultipleFileDialogTitle'),
+                                        message: mollify.ui.texts.get('copyMultipleFileMessage', [i.length]),
+                                        actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
+                                        handler: {
+                                            onSelect: function(f) {
+                                                $.when(mfs._copyMany(i, f)).then(df.resolve, df.reject);
+                                            },
+                                            canSelect: function(f) {
+                                                return mfs.canCopyTo(i, f);
+                                            }
+                                        }
+                                    });*/
+                                    alert("selector");
+                                    return df.promise();
+                                } else
+                                    return _copyMany(i, to);
+                            }
+
+                            if (window.isArray(i)) i = i[0];
+
+                            if (!to) {
+                                var df2 = $.Deferred();
+                                /*mollify.ui.dialogs.folderSelector({
+                                    title: mollify.ui.texts.get('copyFileDialogTitle'),
+                                    message: mollify.ui.texts.get('copyFileMessage', [i.name]),
+                                    actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
+                                    handler: {
+                                        onSelect: function(f) {
+                                            $.when(mfs._copy(i, f)).then(df2.resolve, df2.reject);
+                                        },
+                                        canSelect: function(f) {
+                                            return mfs.canCopyTo(i, f);
+                                        }
+                                    }
+                                });*/
+                                alert("selector");
+                                return df2.promise();
+                            } else
+                                return _copy(i, to);
                         }
                     }
                 }
@@ -297,7 +417,7 @@
                 titleKey: 'file_copy',
                 handler: ["filesystem",
                     function(file, filesystem) {
-                        alert("copy " + file.name);
+                        filesystem.copy(file);
                     }
                 ]
             });
