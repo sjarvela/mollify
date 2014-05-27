@@ -121,6 +121,21 @@
                 ]
             });
 
+            gettext('file_download');
+            h.registerAction({
+                id: 'file/download',
+                type: 'file',
+                icon: "fa-download",
+                quick: true,
+                titleKey: 'file_download',
+                handler: ["filesystem",
+                    function(item, filesystem) {
+                        //TODO angular way? download-directive?
+                        $("#mollify-download-frame").attr("src", filesystem.getItemURL(item));
+                    }
+                ]
+            });
+
             /* File list */
 
             var cols = false;
@@ -186,6 +201,24 @@
                     $scope.onMouseOut = function(e, item) {
                         $scope.onItemAction(item, "mouse-out", getCtx(e));
                         //$scope.showQuickactions(e, item, false);
+                    };
+
+                    $scope.onDragItem = function(item) {
+                        return {
+                            type: "filesystemitem",
+                            payload: item
+                        }
+                    };
+
+                    $scope.canDrop = function(item, dragObj) {
+                        console.log("candrop "+dragObj.payload.name+" -> "+item.name);
+                        return {
+                            dropType: "copy"
+                        }
+                    };
+
+                    $scope.onDrop = function(item, dragObj) {
+                        console.log("ondrop "+dragObj.payload.name+" -> "+item.name);
                     };
                 }
             ]);
@@ -312,7 +345,7 @@
 
                         if (_hideTimeout) {
                             // if set to be hidden, cancel it
-                            _hideTimeout.cancel();
+                            if (_hideTimeout.cancel) _hideTimeout.cancel();
                             _hideTimeout = false;
 
                             // if new parent is same as old, skip show

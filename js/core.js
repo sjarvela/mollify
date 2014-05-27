@@ -105,6 +105,9 @@
                                     r.hierarchy[0] = _rootsById[r.hierarchy[0].id];
                                 return data;
                             });
+                        },
+                        getItemURL: function(item) {
+                            return "foo/"+item.id;
                         }
                     }
                 }

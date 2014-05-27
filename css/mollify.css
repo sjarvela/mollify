@@ -7734,7 +7734,10 @@ button.close {
   padding: 8px;
 }
 #mollify .main-view .fileview .filelist-table .col {
-  min-width: 175px;
+  width: 175px;
+}
+#mollify .main-view .fileview .filelist-table .col-name {
+  width: 275px;
 }
 #mollify .main-view .popupmenu-container,
 #mollify .main-view .quickaction-container {
@@ -7742,13 +7745,15 @@ button.close {
   display: none;
 }
 #mollify .main-view ul.quickaction-list {
+  float: left;
   display: block;
   background-color: rgba(220, 220, 220, 0.1);
   margin: 0;
-  padding: 0;
+  padding: 2px;
 }
 #mollify .main-view ul.quickaction-list li {
   margin: 0;
+  float: left;
   display: block;
   cursor: pointer;
   padding: 6px 8px;
