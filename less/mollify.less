@@ -55,16 +55,19 @@
                         .filelist-item-value {
                             float: left;
                         }
+                        &.dragover {
+                            background-color: red;
+                        }
                     }
                 }
                 .filelist-header-col, .filelist-item-value {
                     padding: 8px;
                 }
                 .col {
-                	width: 175px;
+                    width: 175px;
                 }
                 .col-name {
-                	width: 275px;
+                    width: 275px;
                 }
             }
         }
@@ -73,21 +76,19 @@
             display: none;
         }
         ul.quickaction-list {
-        	float: left;
+            float: left;
             display: block;
             background-color: rgba(220, 220, 220, 0.1);
             margin: 0;
             padding: 2px;
-
             li {
-            	margin: 0;
-            	float: left;
+                margin: 0;
+                float: left;
                 display: block;
                 cursor: pointer;
-            	padding: 6px 8px;
-
+                padding: 6px 8px;
                 &:hover {
-					background-color: rgba(220, 220, 220, 0.5);
+                    background-color: rgba(220, 220, 220, 0.5);
                 }
             }
         }

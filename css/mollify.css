@@ -7729,6 +7729,9 @@ button.close {
 #mollify .main-view .fileview .filelist-table .filelist-items .filelist-item .filelist-item-value {
   float: left;
 }
+#mollify .main-view .fileview .filelist-table .filelist-items .filelist-item.dragover {
+  background-color: red;
+}
 #mollify .main-view .fileview .filelist-table .filelist-header-col,
 #mollify .main-view .fileview .filelist-table .filelist-item-value {
   padding: 8px;

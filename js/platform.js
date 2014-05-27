@@ -186,7 +186,6 @@
                                     if (!dragObj) return false;
 
                                     var dragImageType = dragObj.type;
-
                                     if (dragObj.type == 'filesystemitem') {
                                         var pl = dragObj.payload;
                                         if (!window.isArray(pl) || pl.length == 1) {
@@ -200,7 +199,6 @@
                                         //TODO api.enableDragToDesktop(pl, e);
                                     }
                                     var $e = $(this);
-                                    //t.dragListener = l;
                                     $e.addClass("dragged");
                                     e.dataTransfer.effectAllowed = "copyMove";
 
@@ -240,32 +238,26 @@
                                     if (e.stopPropagation) e.stopPropagation();
                                     if (!_dragObj || _dragObj.$e[0] === this) return;
                                     if (dropAcceptType && dropAcceptType != _dragObj.obj.type) return;
-                                    console.log("DROP " + _dragObj.obj.type);
-                                    //if (!l.canDrop || !l.onDrop || !t.dragObj) return;
+
                                     scope.$apply(function() {
                                         onDrop(scope, {
-                                            dragObj: _dragObj.obj,
+                                            dragObj: _dragObj.obj.payload,
+                                            dragType: _dragObj.obj.type,
                                             $event: e
                                         });
                                     });
                                     $(this).removeClass("dragover");
                                     _dragObj = false;
-                                    /*if (l.canDrop($t, e, t.dragObj)) {
-                                        l.onDrop($t, e, t.dragObj);
-                                        $t.removeClass("dragover");
-                                    }
-                                    endDrag(e);*/
                                 });
                                 domElement.addEventListener('dragenter', function(e) {
-                                    //if (!l.canDrop || !t.dragObj) return false;
                                     if (!_dragObj || _dragObj.$e[0] === this) return false;
                                     if (dropAcceptType && dropAcceptType != _dragObj.obj.type) return;
-                                    console.log("DRAG ENTER " + _dragObj.obj.type);
 
                                     var dropSpec = false;
                                     scope.$apply(function() {
                                         dropSpec = canDrop(scope, {
-                                            dragObj: _dragObj.obj,
+                                            dragObj: _dragObj.obj.payload,
+                                            dragType: _dragObj.type,
                                             $event: e
                                         });
                                     });
@@ -279,34 +271,22 @@
 
                                     var fx = "none";
                                     var dropSpec = false;
-                                    //console.log("DRAG OVER " + _dragObj.obj.type);
 
                                     scope.$apply(function() {
                                         dropSpec = canDrop(scope, {
-                                            dragObj: _dragObj.obj,
+                                            dragObj: _dragObj.obj.payload,
+                                            dragType: _dragObj.type,
                                             $event: e
                                         });
                                     });
                                     if (!dropSpec) return false;
-
-                                    if (dropSpec.dropType) fx = dropSpec.dropType;
-                                    /*var dragObj
-
-                                    if (l.canDrop && l.dropType && t.dragObj) {
-                                        var $t = $(this);
-                                        if (l.canDrop($t, e, t.dragObj)) {
-                                            var tp = l.dropType($t, e, t.dragObj);
-                                            if (tp) fx = tp;
-                                        }
-                                    }*/
+                                    if (dropSpec === true) fx = (dropSpec === true) ? "copy" : dropSpec;
 
                                     e.dataTransfer.dropEffect = fx;
                                     return false;
                                 });
-
                                 domElement.addEventListener('dragleave', function(e) {
                                     $(this).removeClass("dragover");
-                                    //t.dragTarget = false;
                                 });
                             };
                         }

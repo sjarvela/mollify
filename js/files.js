@@ -93,11 +93,27 @@
                         console.log(item.name + " " + itemAction);
                         if (itemAction == "menu") {
                             $scope.showPopupmenu(ctx.e, item, actions.getType('filesystem', item));
-                        } else if (itemAction = "quickactions") {
+                        } else if (itemAction == "quickactions") {
                             $scope.showQuickactions(ctx.e, item, actions.getType('quick', item));
                         } else {
                             $scope.onAction(itemAction, item);
                         }
+                    };
+
+                    $scope.onDragItem = function(item) {
+                        return {
+                            type: "filesystemitem",
+                            payload: item
+                        }
+                    };
+
+                    $scope.canDropItem = function(to, item) {
+                        console.log("candrop " + item.name + " -> " + to.name);
+                        return true;
+                    };
+
+                    $scope.onDropItem = function(to, item) {
+                        console.log("ondrop " + item.name + " -> " + to.name);
                     };
                 }
             ]);
@@ -202,24 +218,6 @@
                         $scope.onItemAction(item, "mouse-out", getCtx(e));
                         //$scope.showQuickactions(e, item, false);
                     };
-
-                    $scope.onDragItem = function(item) {
-                        return {
-                            type: "filesystemitem",
-                            payload: item
-                        }
-                    };
-
-                    $scope.canDrop = function(item, dragObj) {
-                        console.log("candrop "+dragObj.payload.name+" -> "+item.name);
-                        return {
-                            dropType: "copy"
-                        }
-                    };
-
-                    $scope.onDrop = function(item, dragObj) {
-                        console.log("ondrop "+dragObj.payload.name+" -> "+item.name);
-                    };
                 }
             ]);
 
@@ -315,7 +313,7 @@
                 return function(scope, element, attributes) {
                     var _showTimeout = false;
                     var _hideTimeout = false;
-                    var $popup = element.find('.quickaction-container'); //TODO find by class under current element
+                    var $popup = element.find('.quickaction-container');
                     var hidePopup = function() {
                         if (_hideTimeout) return;
                         _hideTimeout = $timeout(function() {
@@ -325,7 +323,7 @@
                         }, 200);
                     };
                     element.bind("click", function() {
-                        if (_showTimeout) _showTimeout.cancel();
+                        if (_showTimeout) $timeout.cancel(_showTimeout);
                         hidePopup();
                     });
                     var containerOffset = element.offset();
@@ -337,15 +335,16 @@
                             return;
                         }
                         if (!actions) {
-                            //console.log($event);
                             if ($event.toElement !== $popup[0])
                                 hidePopup();
                             return;
                         }
 
+                        if (_showTimeout) $timeout.cancel(_showTimeout);
+
                         if (_hideTimeout) {
                             // if set to be hidden, cancel it
-                            if (_hideTimeout.cancel) _hideTimeout.cancel();
+                            $timeout.cancel(_hideTimeout);
                             _hideTimeout = false;
 
                             // if new parent is same as old, skip show
