@@ -239,7 +239,7 @@
 		"permission_filesystem_item_access_value_rwd": "Lecture, écriture et suppression",
 		"permission_filesystem_item_access_value_rw": "Lecture et écriture, pas de suppression",
 		"permission_filesystem_item_access_value_r": "Lecture seule",
-		"permission_filesystem_item_access_value_n": "Aucun droits",
+		"permission_filesystem_item_access_value_n": "Aucun droit",
 		
 		"permission_value_0": "Non",
 		"permission_value_1": "Oui",
