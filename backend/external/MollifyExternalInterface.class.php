@@ -103,6 +103,11 @@
 			return $this->configuration->addUserFolder($userId, $folderId, $name);
 		}
 		
+		public function addUserToGroup($userId, $gr) {
+			$g = is_array($gr) ? array($gr) : $gr;
+			return $this->configuration->addUsersGroups($userId, $g);
+		}
+		
 		public function setUserDefaultFilesystemPermission($userId, $permission) {
 			return $this->env->permissions()->addFilesystemPermission(NULL, "filesystem_item_access", $userId, $permission);
 		}
