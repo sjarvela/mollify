@@ -71,8 +71,11 @@
 			$userId = $parts[0];
 			$token = $parts[1];
 			
-			$user = $this->env->configuration()->getUser($userId, time());
-			if ($user == NULL) return FALSE;
+			$user = $this->env->configuration()->getUser($userId, time());			
+			if ($user == NULL) {
+				Logging::logDebug("Auth cookie found, but user ".$userId." does not exist or is expired");
+				return FALSE;
+			}
 			
 			$check = $this->getCookieAuthString($user);
 			if (strcmp($token, $check) != 0) {
@@ -84,7 +87,9 @@
 		}
 		
 		private function getCookieAuthString($user) {
-			return md5($user["name"]."/".$user["password"]);
+			$userAuth = $this->env->configuration()->getUserAuth($user["id"]);
+			if (!$userAuth) return "";
+			return md5($user["id"]."/".$user["name"]."/".$userAuth["hash"]);
 		}
 		
 		public function storeCookie() {
