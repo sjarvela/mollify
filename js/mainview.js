@@ -1333,8 +1333,8 @@
 			
 			mollify.dom.template("mollify-tmpl-iconview-item", items, {
 				showThumb: function(item) {
-					if (!thumbs || !item.is_file) return false;
-					return (supportedThumbs.indexOf(item.extension) >= 0);
+					if (!thumbs || !item.is_file || !item.extension) return false;
+					return (supportedThumbs.indexOf(item.extension.toLowerCase()) >= 0);
 				},
 				thumbUrl: function(item) {
 					return mollify.service.url("filesystem/"+item.id+"/thumbnail/");
