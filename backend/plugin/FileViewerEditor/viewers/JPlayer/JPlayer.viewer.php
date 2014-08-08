@@ -20,7 +20,7 @@
 								}).jPlayer("play");
 							},
 							solution: "html, flash",
-							swfPath: "resources/",
+							swfPath: "'.$resourceUrl.'",
 							errorAlerts:false,
 							warningAlerts:false,
 							supplied: "'.$item->extension().'"
