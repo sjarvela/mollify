@@ -324,8 +324,8 @@
 					
 					var ctx = {
 						details: d,
-						hasPermission : function(name, required) { mollify.helpers.hasPermission(d.permissions, name, required); },
-						hasParentPermission : function(name, required) { mollify.helpers.hasPermission(d.parent_permissions, name, required); },
+						hasPermission : function(name, required) { return mollify.helpers.hasPermission(d.permissions, name, required); },
+						hasParentPermission : function(name, required) { return mollify.helpers.hasPermission(d.parent_permissions, name, required); },
 						folder : spec.folder,
 						folder_writable : spec.folder_writable
 					};
@@ -340,7 +340,9 @@
 		};
 		
 		ict.renderItemContext = function(cApi, $e, item, ctx) {
-			var descriptionEditable = mollify.features.hasFeature("descriptions") && ctx.hasPermission("edit_description");
+			var df = mollify.features.hasFeature("descriptions");
+			var dp = ctx.hasPermission("edit_description");
+			var descriptionEditable = df && dp;
 			var showDescription = descriptionEditable || !!ctx.details.description;
 			
 			var plugins = mollify.plugins.getItemContextPlugins(item, ctx);

@@ -1086,10 +1086,12 @@ var mollifyDefaults = {
 		
 		hasPermission : function(list, name, required) {
 			if (!list || list[name] === undefined) return false;
+			if (mollify.session.user.admin) return true;
+			
 			var v = list[name];
 			
 			var options = mollify.session.data.permission_types.values[name];
-			if (!required || !options) return v == "1";
+			if (!required || !options) return (v == "1");
 			
 			var ui = options.indexOf(v);
 			var ri = options.indexOf(required);
