@@ -366,7 +366,9 @@
 								var editor = false;
 								var $newType = mollify.ui.controls.select("mollify-notificator-filtereditor-new-type", {
 									none: {title: mollify.ui.texts.get('pluginNotificatorNotificationEditEventFiltersSelect')},
-									valueMapper: function(i) { return mollify.ui.texts.get('pluginNotificatorEventFilterType_'+i); },
+									formatter: function(i) {
+										return mollify.ui.texts.get('pluginNotificatorEventFilterType_'+i);
+									},
 									onChange: function(nf) {
 										clearNewEditor(true);
 										if (nf && filterEditors[filterEditorTypes[nf]]) {
