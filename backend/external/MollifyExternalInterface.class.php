@@ -84,6 +84,10 @@
 		public function getUser($id) {
 			return $this->configuration->getUser($id);
 		}
+
+		public function getUserByNameOrEmail($name) {
+			return $this->configuration->getUserByNameOrEmail($name);
+		}
 		
 		public function addUser($name, $pw, $email, $userType = NULL, $expiration = NULL) {
 			$userId = $this->configuration->addUser($name, NULL, $email, $userType, $expiration);
