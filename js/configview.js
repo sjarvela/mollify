@@ -1049,8 +1049,8 @@
             };
             var onAddGroupUsers = function() {
                 var currentIds = mollify.helpers.extractValue(users, "id");
-                var selectable = mollify.helpers.filter(allUsers, function(f) {
-                    return currentIds.indexOf(f.id) < 0;
+                var selectable = mollify.helpers.filter(allUsers, function(u) {
+                    return u.is_group == 0 && currentIds.indexOf(u.id) < 0;
                 });
                 //if (selectable.length === 0) return;
 
