@@ -963,7 +963,7 @@
                         title: mollify.ui.texts.get('configAdminTableIdTitle')
                     }, {
                         id: "name",
-                        title: mollify.ui.texts.get('configAdminUsersNameTitle')
+                        title: mollify.ui.texts.get('configAdminGroupsNameTitle')
                     }, {
                         id: "description",
                         title: mollify.ui.texts.get('configAdminGroupsDescriptionTitle')

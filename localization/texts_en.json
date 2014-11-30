@@ -406,6 +406,7 @@
 
 		"configAdminGroupsDialogAddTitle": "Add Group",
 		"configAdminGroupsDialogEditTitle": "Edit Group",
+		"configAdminGroupsNameTitle": "Name",
 		"configAdminGroupDialogNameTitle": "Name",
 		"configAdminGroupsDescriptionTitle": "Description",
 		"configAdminGroupsUsersTitle": "Group Users",
