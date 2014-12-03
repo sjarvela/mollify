@@ -3158,7 +3158,8 @@
                 }
             },
             itemContextHandler: function(item, ctx, data) {
-                if (!ctx.details.permissions.share_item) return false;
+                if (!mollify.session.user.hasPermission('share_item')) return false;
+
                 return {
                     actions: [{
                         id: 'pluginShare',
