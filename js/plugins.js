@@ -3061,8 +3061,16 @@
 
                 that.loadShares().done(function(l) {
                     shares = l.shares[mollify.session.user.id];
-                    items = l.items;
                     invalid = l.invalid;
+                    
+                    items = [];
+                    $.each(mollify.helpers.getKeys(l.items), function(i, k) {
+                        items.push(l.items[k]);
+                    });
+                    $.each(l.nonfs, function(i, k) {
+                        items.push({ id: k, name: k, path: false });
+                    });
+
                     listView.table.set(items);
 
                     cv.showLoading(false);
@@ -3085,6 +3093,14 @@
                     }, {
                         id: "name",
                         title: mollify.ui.texts.get('fileListColumnTitleName')
+                    }, {
+                        id: "path",
+                        title: mollify.ui.texts.get('pluginShareConfigViewPathTitle'),
+                        formatter: function(item) {
+                            if (!item.path) return "";
+                            var p = mollify.filesystem.rootsById[item.root_id].name + ":";
+                            return p + "/" + item.path.substring(0, item.path.length - item.name.length);
+                        }
                     }, {
                         id: "count",
                         title: mollify.ui.texts.get('pluginShareConfigViewCountTitle'),

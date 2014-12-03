@@ -317,6 +317,7 @@
 		"shareAccessPasswordTitle": "Password",
 		"shareAccessPasswordButtonTitle": "OK",
 		"shareAccessPasswordFailed": "Password was not correct",
+		"pluginShareConfigViewPathTitle": "Path",
 
 		"pluginItemCollectionsNavTitle": "Stored",
 		"pluginItemCollectionStore": "Store...",

@@ -28,9 +28,14 @@ class ShareServices extends ServicesBase {
 			$shares = $this->handler()->getUserShares();
 			$items = array();
 			$invalid = array();
+			$nonFs = array();
 			foreach ($shares as $uk => $u) {
 				foreach ($u as $ik => $i) {
 					if (array_key_exists($ik, $items) || in_array($ik, $invalid)) {
+						continue;
+					}
+					if (strpos($ik, "_") !== FALSE) {
+						$nonFs[] = $ik;
 						continue;
 					}
 
@@ -58,12 +63,12 @@ class ShareServices extends ServicesBase {
 					$items[$ik] = $item->data();
 				}
 			}
-			$this->response()->success(array("shares" => $shares, "items" => $items, "invalid" => $invalid));
+			$this->response()->success(array("shares" => $shares, "items" => $items, "invalid" => $invalid, "nonfs" => $nonFs));
 			return;
 		}
 
 		$itemId = $this->path[1];
-		if (strpos($itemId, "_") < 0) {
+		if (strpos($itemId, "_") === FALSE) {
 			$this->item($itemId);
 		}
 
