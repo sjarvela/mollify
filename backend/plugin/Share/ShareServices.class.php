@@ -35,7 +35,13 @@ class ShareServices extends ServicesBase {
 						continue;
 					}
 					if (strpos($ik, "_") !== FALSE) {
-						$nonFs[] = $ik;
+						$parts = explode("_", $ik);
+						$info = $this->handler()->getCustomShareInfo($parts[0], $parts[1], $i);
+						if ($info == NULL) {
+							continue;
+						}
+
+						$nonFs[] = array("id" => $ik, "type" => $info["type"], "name" => $info["name"]);
 						continue;
 					}
 

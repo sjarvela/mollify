@@ -3067,8 +3067,8 @@
                     $.each(mollify.helpers.getKeys(l.items), function(i, k) {
                         items.push(l.items[k]);
                     });
-                    $.each(l.nonfs, function(i, k) {
-                        items.push({ id: k, name: k, path: false });
+                    $.each(l.nonfs, function(i, itm) {
+                        items.push({ id: itm.id, name: itm.name, customType: itm.type });
                     });
 
                     listView.table.set(items);
@@ -3097,7 +3097,7 @@
                         id: "path",
                         title: mollify.ui.texts.get('pluginShareConfigViewPathTitle'),
                         formatter: function(item) {
-                            if (!item.path) return "";
+                            if (item.customType) return "";
                             var p = mollify.filesystem.rootsById[item.root_id].name + ":";
                             return p + "/" + item.path.substring(0, item.path.length - item.name.length);
                         }

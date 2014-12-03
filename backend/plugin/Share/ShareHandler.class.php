@@ -265,7 +265,7 @@ class ShareHandler {
 		throw new ServiceException("REQUEST_FAILED", "Invalid share restriction: " . $share["restriction"]);
 	}
 
-	private function getCustomShareInfo($type, $id, $share) {
+	public function getCustomShareInfo($type, $id, $share) {
 		if (!array_key_exists($type, $this->customShareHandlers)) {
 			Logging::logError("No custom share handler found: " . $type);
 			return NULL;
