@@ -429,6 +429,7 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 #mollify-folderview-header-items {
 	float: left;
 	width: 100%;
+	overflow: hidden;
 }
 
 .mollify-filelist {
@@ -526,11 +527,12 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 
 .mollify-filelist-header {
 	margin-bottom: 8px;
+	width: 9999px;
 }
 
 .mollify-filelist-items {
 	float: left;
-	overflow: auto;
+	width: 9999px;
 }
 
 .mollify-filelist-item {
