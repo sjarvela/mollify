@@ -104,8 +104,8 @@ class ShareHandler {
 	}
 
 	public function addShare($itemId, $name, $expirationTs, $active, $restriction) {
-		if (strpos($itemId, "_") < 0) {
-			$this->item($itemId);
+		if (strpos($itemId, "_") === FALSE) {
+			$this->env->filesystem()->item($itemId);
 			$item = $this->env->filesystem()->item($itemId);
 			if (!$this->env->permissions()->hasFilesystemPermission("share_item", $item)) {
 				throw new ServiceException("INSUFFICIENT_PERMISSIONS");
