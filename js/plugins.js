@@ -3088,6 +3088,7 @@
                         id: "icon",
                         title: "",
                         valueMapper: function(item) {
+                            if (item.customType) return ""; //TODO type icon
                             return isValid(item) ? '<i class="icon-file"></i>' : '<i class="icon-exclamation"></i>';
                         }
                     }, {
@@ -3125,7 +3126,17 @@
                     },
                     onRowAction: function(id, item) {
                         if (id == "edit") {
-                            that.onOpenShares(item);
+                            var shareTitle = false;
+                            if (item.customType) {
+                                // TODO register type handlers from plugins
+                                if (item.customType == 'ic') shareTitle = mollify.ui.texts.get("pluginItemCollectionShareTitle");
+                            }
+                            that.onOpenShares({
+                                id: item.id,
+                                name: item.name,
+                                shareTitle: shareTitle,
+                                is_file: item.is_file
+                            });
                         } else if (id == "remove") {
                             that.removeAllItemShares(item).done(updateShares);
                         }
@@ -3174,7 +3185,7 @@
                 }
             },
             itemContextHandler: function(item, ctx, data) {
-                if (!mollify.session.user.hasPermission('share_item')) return false;
+                if (!mollify.filesystem.hasPermission(item, "share_item")) return false;
 
                 return {
                     actions: [{

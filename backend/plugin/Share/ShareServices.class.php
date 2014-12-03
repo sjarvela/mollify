@@ -41,7 +41,7 @@ class ShareServices extends ServicesBase {
 							continue;
 						}
 
-						$nonFs[] = array("id" => $ik, "type" => $info["type"], "name" => $info["name"]);
+						$nonFs[] = array("id" => $ik, "type" => $parts[0], "name" => $info["name"]);
 						continue;
 					}
 
