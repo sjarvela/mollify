@@ -3100,7 +3100,8 @@
                         formatter: function(item) {
                             if (item.customType) return "";
                             var p = mollify.filesystem.rootsById[item.root_id].name + ":";
-                            return p + "/" + item.path.substring(0, item.path.length - item.name.length);
+                            var path = item.path.substring(0, item.path.length - (item.name.length + (item.is_file ? 0 : 1)));
+                            return p + "/" + path;
                         }
                     }, {
                         id: "count",
