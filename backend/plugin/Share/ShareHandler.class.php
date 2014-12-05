@@ -122,9 +122,11 @@ class ShareHandler {
 			return;
 		}
 
-		$item = $this->env->filesystem()->item($share["item_id"]);
-		if (!$this->env->permissions()->hasFilesystemPermission("share_item", $item)) {
-			throw new ServiceException("INSUFFICIENT_PERMISSIONS");
+		if (strpos($share["item_id"], "_") === FALSE) {
+			$item = $this->env->filesystem()->item($share["item_id"]);
+			if (!$this->env->permissions()->hasFilesystemPermission("share_item", $item)) {
+				throw new ServiceException("INSUFFICIENT_PERMISSIONS");
+			}
 		}
 
 		$this->dao()->editShare($id, $name, $expirationTs, $active, $restriction);
