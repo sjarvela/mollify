@@ -367,13 +367,14 @@
 			} else {
 				if ($c->acceptFolders()) {
 					$c->add($item->name(), $nativePath);
-				} else {					
-					$offset = strlen($this->localPath($item)) - strlen($item->name()) - 1;
+				} else {
+					$offset = strlen($this->localPath($item));// - strlen($item->name()) - 1;					
+					$name = $item->name();
+
 					$files = $this->allFilesRecursively($nativePath);	//TODO rights!
-					
 					foreach($files as $file) {
 						$st = stat($file);
-						$c->add($this->filesystemInfo->env()->convertCharset(substr($file, $offset)), $file, $st['size']);
+						$c->add($name.DIRECTORY_SEPARATOR.$this->filesystemInfo->env()->convertCharset(substr($file, $offset)), $file, $st['size']);
 					}
 				}
 			}
