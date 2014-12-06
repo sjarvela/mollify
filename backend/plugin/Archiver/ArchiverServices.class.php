@@ -28,6 +28,10 @@ class ArchiverServices extends ServicesBase {
 			throw $this->invalidRequestException();
 		}
 
+		if (!$this->isActionEnabled("download")) {
+			throw $this->invalidRequestException();
+		}
+
 		if (count($this->path) == 1) {
 			If (!$this->request->hasParam("item")) {
 				throw $this->invalidRequestException();
@@ -72,15 +76,20 @@ class ArchiverServices extends ServicesBase {
 			throw $this->invalidRequestException();
 		}
 
+		if (!$this->isActionEnabled($action)) {
+			throw $this->invalidRequestException();
+		}
+
 		if ($action === 'extract') {
 			$this->onExtract();
 		} else if ($action === 'compress') {
 			$this->onCompress();
 		} else if ($action === 'download') {
 			$this->onDownloadCompressed();
-		} else {
-			$this->onPack();
 		}
+		//else {
+		//	$this->onPack();
+		//}
 	}
 
 	private function onCompress() {

@@ -375,7 +375,7 @@
                 noTitle: mollify.ui.texts.get('dialogCancel'),
                 handler: {
                     isAcceptable: function(n) {
-                        return ( !! n && n.length > 0);
+                        return (!!n && n.length > 0);
                     },
                     onInput: function(n) {
                         $.when(that._onStore(items, n)).then(df.resolve, df.reject);
@@ -660,7 +660,7 @@
                     noTitle: mollify.ui.texts.get('dialogCancel'),
                     handler: {
                         isAcceptable: function(n) {
-                            return ( !! n && n.length > 0 && (!item || n != item.name));
+                            return (!!n && n.length > 0 && (!item || n != item.name));
                         },
                         onInput: function(n) {
                             $.when(that._onCompress(items, folder, n)).then(df.resolve, df.reject);
@@ -761,6 +761,8 @@
                 var folderWritable = !root && ctx.folder && ctx.folder_writable;
 
                 if (parentWritable && that._isArchive(item)) {
+                    if (!mollify.session.plugins.Archiver.actions.extract) return false;
+
                     return {
                         actions: [{
                             "title-key": "pluginArchiverExtract",
@@ -771,7 +773,9 @@
                     };
                 }
 
-                var actions = [{
+                var actions = [];
+
+                if (mollify.session.plugins.Archiver.actions.download) actions.push({
                     "title-key": "pluginArchiverDownloadCompressed",
                     icon: 'archive',
                     type: "primary",
@@ -779,8 +783,8 @@
                     callback: function() {
                         that.onDownloadCompressed([item]);
                     }
-                }];
-                if (ctx.folder && folderWritable) actions.push({
+                });
+                if (ctx.folder && folderWritable && mollify.session.plugins.Archiver.actions.compress) actions.push({
                     "title-key": "pluginArchiverCompress",
                     icon: 'archive',
                     callback: function() {
@@ -792,22 +796,26 @@
                 };
             },
             itemCollectionHandler: function(items, ctx) {
+                var actions = [];
+                if (mollify.session.plugins.Archiver.actions.compress) actions.push({
+                    "title-key": "pluginArchiverCompress",
+                    icon: 'archive',
+                    callback: function() {
+                        return that.onCompress(items)
+                    }
+                });
+                if (mollify.session.plugins.Archiver.actions.download) actions.push({
+                    "title-key": "pluginArchiverDownloadCompressed",
+                    icon: 'archive',
+                    type: "primary",
+                    group: "download",
+                    callback: function() {
+                        return that.onDownloadCompressed(items)
+                    }
+                });
+
                 return {
-                    actions: [{
-                        "title-key": "pluginArchiverCompress",
-                        icon: 'archive',
-                        callback: function() {
-                            return that.onCompress(items)
-                        }
-                    }, {
-                        "title-key": "pluginArchiverDownloadCompressed",
-                        icon: 'archive',
-                        type: "primary",
-                        group: "download",
-                        callback: function() {
-                            return that.onDownloadCompressed(items)
-                        }
-                    }]
+                    actions: actions
                 };
             }
         };
@@ -868,7 +876,7 @@
             var list = [{
                 embedded: spec.view.embedded,
                 full: spec.view.full,
-                edit: !! spec.edit,
+                edit: !!spec.edit,
                 item: item
             }];
             var init = list[0];
@@ -996,9 +1004,9 @@
             itemContextHandler: function(item, ctx, data) {
                 if (!data) return false;
 
-                var previewerAvailable = !! data.preview;
-                var viewerAvailable = !! data.view;
-                var editorAvailable = !! data.edit;
+                var previewerAvailable = !!data.preview;
+                var viewerAvailable = !!data.view;
+                var editorAvailable = !!data.edit;
 
                 var result = {
                     details: false,
@@ -3062,13 +3070,17 @@
                 that.loadShares().done(function(l) {
                     shares = l.shares[mollify.session.user.id];
                     invalid = l.invalid;
-                    
+
                     items = [];
                     $.each(mollify.helpers.getKeys(l.items), function(i, k) {
                         items.push(l.items[k]);
                     });
                     $.each(l.nonfs, function(i, itm) {
-                        items.push({ id: itm.id, name: itm.name, customType: itm.type });
+                        items.push({
+                            id: itm.id,
+                            name: itm.name,
+                            customType: itm.type
+                        });
                     });
 
                     listView.table.set(items);
