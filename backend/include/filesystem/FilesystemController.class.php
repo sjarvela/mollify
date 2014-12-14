@@ -26,6 +26,7 @@ class FilesystemController {
 	private $folderCache = array();
 	private $contextPlugins = array();
 	private $actionValidators = array();
+	private $actionInterceptors = array();
 	private $dataRequestPlugins = array();
 	private $itemCleanupHandlers = array();
 	private $searchers = array();
@@ -85,6 +86,10 @@ class FilesystemController {
 
 	public function registerItemContextPlugin($key, $plugin) {
 		$this->contextPlugins[$key] = $plugin;
+	}
+
+	public function registerActionInterceptor($key, $interceptor) {
+		$this->actionInterceptors[$key] = $interceptor;
 	}
 
 	public function registerActionValidator($key, $validator) {
@@ -793,17 +798,22 @@ class FilesystemController {
 	private function upload($folder, $name, $origin, $size = NULL, $type = NULL, $range = NULL) {
 		$this->assertUploadFileType($name);
 
-		$append = ($range != NULL);
-
+		$append = ($range != NULL and $range[1] != 0);
 		//TODO check for max post size, range etc
 		$target = $folder->fileWithName($name);
+		Logging::logDebug('uploading to [' . $target . '] file [' . $name . '],size=' . $size . ',type=' . $type . ',range=' . Util::array2str($range) . ',append=' . $append);
+
+		if (!$append) {
+			$this->triggerActionInterceptor(FileEvent::UPLOAD, $folder, array("name" => $name, "target" => $target));
+		}
+
 		if (!$append and $target->exists()) {
 			$target = $this->findFreeFileWithIndex($folder, $name);
 			$target = $folder->createFile($target->name());
 		}
 
 		//if ($target->exists()) throw new ServiceException("FILE_ALREADY_EXISTS");
-		Logging::logDebug('uploading to [' . $target . '] file [' . $name . '],size=' . $size . ',type=' . $type . ',range=' . Util::array2str($range));
+
 		$fromFile = ($origin && is_uploaded_file($origin));
 
 		if ($fromFile) {
@@ -827,6 +837,15 @@ class FilesystemController {
 
 		if (!$append or ($range[2] >= $range[3]-1)) {
 			$this->env->events()->onEvent(FileEvent::upload($target));
+		}
+	}
+
+	private function triggerActionInterceptor($action, $item, $data = NULL) {
+		foreach ($this->actionInterceptors as $key => $v) {
+			$ret = $v->onAction(FileEvent::UPLOAD, $item, $data);
+			if ($ret) {
+				$list[$key] = $ret;
+			}
 		}
 	}
 

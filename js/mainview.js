@@ -1148,6 +1148,7 @@
 		
 		this._getCtxObj = function(item, target) {
 			return {
+				fileview: that,
 				item: item,
 				viewtype: that.isListView() ? "list" : "icon",
 				target: target,

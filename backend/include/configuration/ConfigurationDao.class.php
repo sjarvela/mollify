@@ -66,6 +66,10 @@ class ConfigurationDao {
 		return $result->firstRow();
 	}
 
+	public function getUserInfo($ids) {
+		return $this->db->query(sprintf("SELECT id, name FROM " . $this->db->table("user") . " WHERE id in (" . $this->db->arrayString($ids, TRUE) . ")"))->rows();
+	}
+
 	public function getUserAuth($id) {
 		return $this->db->query(sprintf("SELECT user_id, type, hash, salt, hint FROM " . $this->db->table("user_auth") . " WHERE user_id=%s", $this->db->string($id, TRUE)))->firstRow();
 	}

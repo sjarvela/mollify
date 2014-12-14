@@ -864,14 +864,20 @@
             });
         };
 
-        this.view = function(item) {
-            mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
+        this.view = function(item, opt) {
+            var doView = function(d) {
                 if (!d || !d.plugins || !d.plugins['plugin-fileviewereditor']) return;
-                that.onView(item, [], d.plugins['plugin-fileviewereditor']);
-            });
+                that.onView(item, [], d.plugins['plugin-fileviewereditor'], opt);
+            }
+
+            if (opt && opt.itemDetails) doView(opt.itemDetails);
+            else
+                mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
+                    doView(d);
+                });
         };
 
-        this.onView = function(item, all, spec) {
+        this.onView = function(item, all, spec, opt) {
             var loaded = {};
             var list = [{
                 embedded: spec.view.embedded,
@@ -912,7 +918,7 @@
                 if (loaded[id]) return;
                 $.ajax({
                     type: 'GET',
-                    url: itm.embedded
+                    url: itm.embedded + ((opt && opt.rq) ? '&'+ opt.rq : '')
                 }).done(function(data) {
                     loaded[id] = true;
 
@@ -1001,6 +1007,16 @@
             id: "plugin-fileviewereditor",
             initialize: that.initialize,
             view: that.view,
+            canView: function(itemDetails) {
+                if (!itemDetails) {
+                    var df = $.Deferred();
+                    mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
+                        df.resolve(!!(d.plugins && d.plugins["plugin-fileviewereditor"] && d.plugins["plugin-fileviewereditor"].view));
+                    });
+                    return df;
+                }
+                return !!(itemDetails.plugins && itemDetails.plugins["plugin-fileviewereditor"] && itemDetails.plugins["plugin-fileviewereditor"].view);
+            },
             itemContextHandler: function(item, ctx, data) {
                 if (!data) return false;
 
