@@ -108,7 +108,7 @@ class FilesystemController {
 
 	public function getRequestData($parent, $items, $data) {
 		$requestDataResult = array();
-		if (!$data or !$items or count($items) < 1) {
+		if (!$data or ($parent == NULL and (!$items or count($items) < 1))) {
 			return $requestDataResult;
 		}
 
@@ -132,7 +132,7 @@ class FilesystemController {
 		$this->searchers[] = $searcher;
 	}
 
-	public function validateAction($action, $target) {
+	public function validateAction($action, $target, $data = NULL) {
 		$list = array();
 		$acceptKeys = $this->env->request()->hasData("acceptKeys") ? $this->env->request()->data("acceptKeys") : array();
 		if ($acceptKeys == NULL) {
@@ -140,7 +140,7 @@ class FilesystemController {
 		}
 
 		foreach ($this->actionValidators as $key => $v) {
-			$ret = $v->validateAction($action, $target, $acceptKeys);
+			$ret = $v->validateAction($action, $target, $acceptKeys, $data);
 			if ($ret) {
 				$list[$key] = $ret;
 			}
@@ -152,6 +152,12 @@ class FilesystemController {
 				"target" => $this->getItemData($target),
 				"items" => $list,
 			));
+		}
+	}
+
+	private function triggerActionInterceptor($action, $item, $data = NULL) {
+		foreach ($this->actionInterceptors as $key => $v) {
+			$v->onAction($action, $item, $data);
 		}
 	}
 
@@ -526,6 +532,8 @@ class FilesystemController {
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "copy");
 		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
+		$this->validateAction(FileEvent::COPY, $item, array("to" => $to));
+		$this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to));
 
 		$to = $item->copy($to);
 		$this->env->events()->onEvent(FileEvent::copy($item, $to));
@@ -534,6 +542,8 @@ class FilesystemController {
 	public function copyItems($items, $folder) {
 		Logging::logDebug('copying ' . count($items) . ' items to [' . $folder->path() . ']');
 		$this->assertRights($items, self::PERMISSION_LEVEL_READ, "copy");
+		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder));
+		$this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder));
 
 		foreach ($items as $item) {
 			if ($item->isFile()) {
@@ -556,6 +566,8 @@ class FilesystemController {
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "move");
 		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
+		$this->validateAction(FileEvent::MOVE, $item, array("to" => $to));
+		$this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to));
 
 		$to = $item->move($to);
 
@@ -572,6 +584,8 @@ class FilesystemController {
 		}
 
 		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITE, "move");
+		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to));
+		$this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to));
 
 		foreach ($items as $item) {
 			$this->move($item, $to);
@@ -586,6 +600,7 @@ class FilesystemController {
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
 		$this->validateAction(FileEvent::DELETE, $item);
+		$this->triggerActionInterceptor(FileEvent::DELETE, $item);
 
 		$item->delete();
 
@@ -609,6 +624,7 @@ class FilesystemController {
 
 		$this->validateAction(FileEvent::DELETE, $items);
 		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
+		$this->triggerActionInterceptor(FileEvent::DELETE, $items);
 
 		foreach ($items as $item) {
 			$this->delete($item);
@@ -689,6 +705,8 @@ class FilesystemController {
 		if (!$item->isFile()) {
 			throw new ServiceException("NOT_A_FILE", $item->path());
 		}
+		$this->validateAction(FileEvent::UPLOAD, $item);
+		$this->triggerActionInterceptor(FileEvent::UPLOAD, $item->parent(), array("name" => $item->name(), "target" => $item));
 
 		Logging::logDebug('update file contents [' . $item->id() . ']');
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITE, "update content");
@@ -788,7 +806,6 @@ class FilesystemController {
 		}
 
 		foreach ($_FILES['uploader-http']['name'] as $key => $value) {
-
 			$name = $_FILES['uploader-http']['name'][$key];
 			$origin = $_FILES['uploader-http']['tmp_name'][$key];
 			$this->upload($folder, $name, $origin);
@@ -804,7 +821,8 @@ class FilesystemController {
 		Logging::logDebug('uploading to [' . $target . '] file [' . $name . '],size=' . $size . ',type=' . $type . ',range=' . Util::array2str($range) . ',append=' . $append);
 
 		if (!$append) {
-			$this->triggerActionInterceptor(FileEvent::UPLOAD, $folder, array("name" => $name, "target" => $target));
+			$this->validateAction(FileEvent::UPLOAD, $target);
+			$this->triggerActionInterceptor(FileEvent::UPLOAD, $target);
 		}
 
 		if (!$append and $target->exists()) {
@@ -837,15 +855,6 @@ class FilesystemController {
 
 		if (!$append or ($range[2] >= $range[3]-1)) {
 			$this->env->events()->onEvent(FileEvent::upload($target));
-		}
-	}
-
-	private function triggerActionInterceptor($action, $item, $data = NULL) {
-		foreach ($this->actionInterceptors as $key => $v) {
-			$ret = $v->onAction(FileEvent::UPLOAD, $item, $data);
-			if ($ret) {
-				$list[$key] = $ret;
-			}
 		}
 	}
 

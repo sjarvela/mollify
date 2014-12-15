@@ -247,7 +247,7 @@ class RegistrationServices extends ServicesBase {
 		//if (file_exists("plugin/Registration/custom/CustomRegistrationHandler.php")) include("custom/CustomRegistrationHandler.php");
 		//if (function_exists("onConfirmCustomData")) onConfirmCustomData($registration, $id);
 
-		$this->env->events()->onEvent(RegistrationEvent::userCreated($id, $registration['name']));
+		$this->env->events()->onEvent(RegistrationEvent::userCreated($id, $registration['name'], $registration['email']));
 	}
 
 	private function addUserProperties($id, $name, $plugin) {
