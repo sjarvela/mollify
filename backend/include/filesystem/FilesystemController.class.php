@@ -821,8 +821,8 @@ class FilesystemController {
 		Logging::logDebug('uploading to [' . $target . '] file [' . $name . '],size=' . $size . ',type=' . $type . ',range=' . Util::array2str($range) . ',append=' . $append);
 
 		if (!$append) {
-			$this->validateAction(FileEvent::UPLOAD, $target);
-			$this->triggerActionInterceptor(FileEvent::UPLOAD, $target);
+			$this->validateAction(FileEvent::UPLOAD, $target, array("size" => $size));
+			$this->triggerActionInterceptor(FileEvent::UPLOAD, $target, array("size" => $size));
 		}
 
 		if (!$append and $target->exists()) {

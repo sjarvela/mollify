@@ -495,7 +495,7 @@ var mollifyDefaults = {
                     actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
                     handler: {
                         onSelect: function(f) {
-                            $.when(mfs._copyMany(i, f)).then(df.resolve, df.reject);
+                            mfs._validated(mfs._copyMany, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopyMany"), mollify.ui.texts.get("actionAcceptCopyMany", i.length)).done(df.resolve).fail(df.reject);
                         },
                         canSelect: function(f) {
                             return mfs.canCopyTo(i, f);
@@ -519,7 +519,7 @@ var mollifyDefaults = {
                 actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
                 handler: {
                     onSelect: function(f) {
-                        $.when(mfs._copy(i, f)).then(df2.resolve, df2.reject);
+                    	mfs._validated(mfs._copy, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", i.name)).done(df.resolve).fail(df.reject);
                     },
                     canSelect: function(f) {
                         return mfs.canCopyTo(i, f);
@@ -547,7 +547,7 @@ var mollifyDefaults = {
                         return !!n && n.length > 0 && n != item.name;
                     },
                     onInput: function(n) {
-                        $.when(mfs._copyHere(item, n)).then(df.resolve, df.reject);
+                        mfs._validated(mfs._copyHere, [item, n], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", item.name)).done(df.resolve).fail(df.reject);
                     }
                 }
             });
@@ -596,9 +596,10 @@ var mollifyDefaults = {
         return true;
     };
 
-    mfs._copyHere = function(i, name) {
+    mfs._copyHere = function(i, name, acceptKeys) {
         return mollify.service.post("filesystem/" + i.id + "/copy/", {
-            name: name
+            name: name,
+            acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/copy', {
                 items: [i],
@@ -607,9 +608,10 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._copy = function(i, to) {
+    mfs._copy = function(i, to, acceptKeys) {
         return mollify.service.post("filesystem/" + i.id + "/copy/", {
-            folder: to.id
+            folder: to.id,
+            acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/copy', {
                 items: [i],
@@ -618,11 +620,12 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._copyMany = function(i, to) {
+    mfs._copyMany = function(i, to, acceptKeys) {
         return mollify.service.post("filesystem/items/", {
             action: 'copy',
             items: i,
-            to: to
+            to: to,
+            acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/copy', {
                 items: i,
@@ -643,7 +646,7 @@ var mollifyDefaults = {
                     actionTitle: mollify.ui.texts.get('moveFileDialogAction'),
                     handler: {
                         onSelect: function(f) {
-                            $.when(mfs._moveMany(i, f)).then(df.resolve, df.reject);
+                        	mfs._validated(mfs._moveMany, [i, f], "move", mollify.ui.texts.get("actionDeniedMoveMany"), mollify.ui.texts.get("actionAcceptMoveMany", i.length)).done(df.resolve).fail(df.reject);
                         },
                         canSelect: function(f) {
                             return mfs.canMoveTo(i, f);
@@ -665,7 +668,7 @@ var mollifyDefaults = {
                 actionTitle: mollify.ui.texts.get('moveFileDialogAction'),
                 handler: {
                     onSelect: function(f) {
-                        $.when(mfs._move(i, f)).then(df2.resolve, df2.reject);
+                        mfs._validated(mfs._move, [i, f], "move", mollify.ui.texts.get("actionDeniedMove"), mollify.ui.texts.get("actionAcceptMove", i.name)).done(df.resolve).fail(df.reject);
                     },
                     canSelect: function(f) {
                         return mfs.canMoveTo(i, f);
@@ -677,9 +680,10 @@ var mollifyDefaults = {
             return mfs._move(i, to);
     };
 
-    mfs._move = function(i, to) {
+    mfs._move = function(i, to, acceptKeys) {
         return mollify.service.post("filesystem/" + i.id + "/move/", {
-            id: to.id
+            id: to.id,
+            acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/move', {
                 items: [i],
@@ -688,11 +692,12 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._moveMany = function(i, to) {
+    mfs._moveMany = function(i, to, acceptKeys) {
         return mollify.service.post("filesystem/items/", {
             action: 'move',
             items: i,
-            to: to
+            to: to,
+            acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/move', {
                 items: i,
@@ -736,7 +741,7 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._handleDenied = function(action, i, data, msgTitleDenied, msgTitleAccept) {
+    mfs._handleDenied = function(action, data, msgTitleDenied, msgTitleAccept) {
         var df = $.Deferred();
         var handlers = [];
         var findItem = function(id) {
@@ -786,37 +791,36 @@ var mollifyDefaults = {
         return df;
     }
 
-    mfs.del = function(i) {
-        if (!i) return;
-
+    mfs._validated = function(cbf, args, action, validationTitle, validationMessage) {
         var df = $.Deferred();
-        if (window.isArray(i) && i.length > 1) {
-            mfs._delMany(i).done(df.resolve).fail(function(e) {
-                // request denied
-                if (e.code == 109 && e.data && e.data.items) {
-                    this.handled = true;
-                    mfs._handleDenied("delete", i, e.data, mollify.ui.texts.get("actionDeniedDeleteMany"), mollify.ui.texts.get("actionAcceptDeleteMany", i.length)).done(function(acceptKeys) {
-                        mfs._delMany(i, acceptKeys).done(df.resolve).fail(df.reject);
-                    }).fail(function() {
-                        df.reject(e);
-                    });
-                } else df.reject(e);
-            });
-            return df.promise();
-        }
-
-        if (window.isArray(i)) i = i[0];
-        mfs._del(i).done(df.resolve).fail(function(e) {
+        cbf.apply(mfs, args).done(df.resolve).fail(function(e) {
             // request denied
             if (e.code == 109 && e.data && e.data.items) {
                 this.handled = true;
-                mfs._handleDenied("delete", i, e.data, mollify.ui.texts.get("actionDeniedDelete", i.name), mollify.ui.texts.get("actionAcceptDelete", i.name)).done(function(acceptKeys) {
-                    mfs._del(i, acceptKeys).done(df.resolve).fail(df.reject);
+                mfs._handleDenied(action, e.data, validationTitle, validationMessage).done(function(acceptKeys) {
+                	var argsWithKeys = args.slice(0);
+                	argsWithKeys.push(acceptKeys);
+
+                    cbf.apply(mfs, argsWithKeys).done(df.resolve).fail(df.reject);
                 }).fail(function() {
                     df.reject(e);
                 });
             } else df.reject(e);
         });
+        return df;
+    }
+
+    mfs.del = function(i) {
+        if (!i) return;
+
+        var df = $.Deferred();
+        if (window.isArray(i) && i.length > 1) {
+            mfs._validated(mfs._delMany, [i], "delete", mollify.ui.texts.get("actionDeniedDeleteMany"), mollify.ui.texts.get("actionAcceptDeleteMany", i.length)).done(df.resolve).fail(df.reject);
+            return df.promise();
+        }
+
+        if (window.isArray(i)) i = i[0];
+        mfs._validated(mfs._del, [i], "delete", mollify.ui.texts.get("actionDeniedDelete"), mollify.ui.texts.get("actionAcceptDelete", i.name)).done(df.resolve).fail(df.reject);
         return df.promise();
     };
 

@@ -331,6 +331,9 @@
 			},
 			"content": function(item, data) {
 				return item.name;
+			},
+			"value-title": function(item, data) {
+				return item.name;
 			}
 		});
 		this._filelist.addColumn({
@@ -1595,6 +1598,11 @@
 					var style="min-width:"+(col["min-width"] || t.minColWidth)+"px";
 					if (col.width) style = style+";width:"+col.width+"px";
 					return style;
+				},
+				itemColTitle: function(item, col) {
+					var title="";
+					if (col["value-title"]) title = col["value-title"](item, t.data);
+					return title;
 				}
 			}).appendTo(t.$i.empty());
 			
