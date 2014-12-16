@@ -122,6 +122,8 @@
 
                     if (p.resources && p.resources.texts)
                         o.push(mollify.ui.texts.loadPlugin(pk));
+                    if (p.resources && p.resources.css)
+                        o.push(mollify.dom.importCss(mollify.plugins.url(pk, "plugin.css", true)));
                     $.each(p.views, addView);
                 }
 

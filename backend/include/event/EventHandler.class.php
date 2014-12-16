@@ -51,7 +51,7 @@ class EventHandler {
 		$e->setIp($this->env->request()->ip());
 
 		if (Logging::isDebug()) {
-			Logging::logDebug("EVENT HANDLER: onEvent: '" . $e->type() . "'");
+			Logging::logDebug("EVENT HANDLER: onEvent: " . $e->type() . "/" . $e->subType());
 		}
 
 		foreach ($this->listeners as $type => $listeners) {

@@ -311,14 +311,12 @@ class LocalFilesystem extends MollifyFilesystem {
 	}
 
 	public function move($item, $to) {
-
 		$target = self::joinPath($to->internalPath(), $item->name());
 		if (!$item->isFile()) {
 			$target = self::folderPath($target);
 		}
 
 		$nativeTarget = $this->filesystemInfo->env()->convertCharset($target, FALSE);
-
 		if (file_exists($nativeTarget)) {
 			throw new ServiceException("FILE_ALREADY_EXISTS", "Failed to move [" . $item->id() . "] to [" . $to->id() . "], target already exists (" . $target . ")");
 		}
@@ -328,7 +326,10 @@ class LocalFilesystem extends MollifyFilesystem {
 			throw new ServiceException("REQUEST_FAILED", "Failed to move [" . $item->id() . "] to " . $target);
 		}
 
-		$newPath = $this->publicPath(self::joinPath($to->internalPath(), $item->name()));
+		$newPath = self::joinPath($to->path(), $item->name());
+		if (!$item->isFile()) {
+			$newPath = self::folderPath($newPath);
+		}
 		return $to->filesystem()->createItem($item->id(), $newPath);
 	}
 
@@ -336,10 +337,8 @@ class LocalFilesystem extends MollifyFilesystem {
 		if ($item->isFile()) {
 			if (!unlink($this->localPath($item))) {
 				throw new ServiceException("REQUEST_FAILED", "Cannot delete [" . $item->id() . "]");
-
 			}
 		} else {
-
 			$this->deleteFolderRecursively($this->localPath($item));
 		}
 	}

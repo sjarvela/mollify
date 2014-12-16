@@ -519,7 +519,7 @@ var mollifyDefaults = {
                 actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
                 handler: {
                     onSelect: function(f) {
-                    	mfs._validated(mfs._copy, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", i.name)).done(df.resolve).fail(df.reject);
+                    	mfs._validated(mfs._copy, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", i.name)).done(df2.resolve).fail(df2.reject);
                     },
                     canSelect: function(f) {
                         return mfs.canCopyTo(i, f);
@@ -668,7 +668,7 @@ var mollifyDefaults = {
                 actionTitle: mollify.ui.texts.get('moveFileDialogAction'),
                 handler: {
                     onSelect: function(f) {
-                        mfs._validated(mfs._move, [i, f], "move", mollify.ui.texts.get("actionDeniedMove"), mollify.ui.texts.get("actionAcceptMove", i.name)).done(df.resolve).fail(df.reject);
+                        mfs._validated(mfs._move, [i, f], "move", mollify.ui.texts.get("actionDeniedMove"), mollify.ui.texts.get("actionAcceptMove", i.name)).done(df2.resolve).fail(df2.reject);
                     },
                     canSelect: function(f) {
                         return mfs.canMoveTo(i, f);
