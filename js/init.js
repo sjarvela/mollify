@@ -741,63 +741,13 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._handleDenied = function(action, data, msgTitleDenied, msgTitleAccept) {
-        var df = $.Deferred();
-        var handlers = [];
-        var findItem = function(id) {
-            if (!window.isArray(data.target)) return data.target;
-
-            for (var i = 0, j = data.target.length; i < j; i++) {
-                if (data.target[i].id == id) return data.target[i];
-            }
-            return null;
-        };
-        for (var k in data.items) {
-            var plugin = mollify.plugins.get(k);
-            if (!plugin || !plugin.actionValidationHandler) return false;
-
-            var handler = plugin.actionValidationHandler();
-            handlers.push(handler);
-
-            var items = data.items[k];
-            for (var m = 0, l = items.length; m < l; m++) {
-                var item = items[m];
-                item.item = findItem(item.item);
-            }
-        }
-
-        var validationMessages = [];
-        var nonAcceptable = [];
-        var acceptKeys = [];
-        var allAcceptable = true;
-        for (var ind = 0, j = handlers.length; ind < j; ind++) {
-            var msg = handlers[ind].getValidationMessages(action, data.items[k], data);
-            for (var mi = 0, mj = msg.length; mi < mj; mi++) {
-                var ms = msg[mi];
-                acceptKeys.push(ms.acceptKey);
-                validationMessages.push(ms.message);
-                if (!ms.acceptable) nonAcceptable.push(ms.message);
-            }
-        }
-        if (nonAcceptable.length === 0) {
-            // retry with accept keys
-            mollify.ui.dialogs.confirmActionAccept(msgTitleAccept, validationMessages, function() {
-                df.resolve(acceptKeys);
-            }, df.reject);
-        } else {
-            mollify.ui.dialogs.showActionDeniedMessage(msgTitleDenied, nonAcceptable);
-            df.reject();
-        }
-        return df;
-    }
-
     mfs._validated = function(cbf, args, action, validationTitle, validationMessage) {
         var df = $.Deferred();
         cbf.apply(mfs, args).done(df.resolve).fail(function(e) {
             // request denied
             if (e.code == 109 && e.data && e.data.items) {
                 this.handled = true;
-                mfs._handleDenied(action, e.data, validationTitle, validationMessage).done(function(acceptKeys) {
+                mollify.ui.actions.handleDenied(action, e.data, validationTitle, validationMessage).done(function(acceptKeys) {
                 	var argsWithKeys = args.slice(0);
                 	argsWithKeys.push(acceptKeys);
 

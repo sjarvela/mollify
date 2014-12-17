@@ -10,8 +10,6 @@
  */
 
 class Registration extends PluginBase {
-	const EVENT_TYPE_REGISTRATION = 'registration';
-
 	public function setup() {
 
 		$this->addService("registration", "RegistrationServices");
@@ -42,14 +40,18 @@ class Registration extends PluginBase {
 }
 
 class RegistrationEvent extends Event {
+	const EVENT_TYPE = 'registration';
+
 	const REGISTER = "register";
 	const CONFIRM = "confirm";
 	const USER_CREATED = "user_created";
+	const USER_FOLDER_CREATED = "user_folder_created";
 
 	static function register($eventHandler) {
-		$eventHandler->registerEventType(Registration::EVENT_TYPE_REGISTRATION, self::REGISTER, "User registered");
-		$eventHandler->registerEventType(Registration::EVENT_TYPE_REGISTRATION, self::CONFIRM, "User registration confirmed");
-		$eventHandler->registerEventType(Registration::EVENT_TYPE_REGISTRATION, self::USER_CREATED, "Registered user created");
+		$eventHandler->registerEventType(RegistrationEvent::EVENT_TYPE, self::REGISTER, "User registered");
+		$eventHandler->registerEventType(RegistrationEvent::EVENT_TYPE, self::CONFIRM, "User registration confirmed");
+		$eventHandler->registerEventType(RegistrationEvent::EVENT_TYPE, self::USER_CREATED, "Registered user created");
+		$eventHandler->registerEventType(RegistrationEvent::EVENT_TYPE, self::USER_FOLDER_CREATED, "Registered user folder created");
 	}
 
 	static function registered($name, $email, $id, $key) {
@@ -61,15 +63,19 @@ class RegistrationEvent extends Event {
 	}
 
 	static function userCreated($id, $name, $email) {
-		return new RegistrationEvent(self::USER_CREATED, $id, $name, $mail);
+		return new RegistrationEvent(self::USER_CREATED, $id, $name, $email);
+	}
+
+	static function userFolderCreated($userId, $username, $email, $registrationId, $userFolder) {
+		return new RegistrationEvent(self::USER_FOLDER_CREATED, $userId, $username, $email, $registrationId, FALSE, $userFolder);
 	}
 
 	private $registrationId;
-
 	private $registrationKey;
+	private $data;
 
-	function __construct($type, $userId, $username, $email = FALSE, $registrationId = FALSE, $registrationKey = FALSE) {
-		parent::__construct(time(), Registration::EVENT_TYPE_REGISTRATION, $type);
+	function __construct($type, $userId, $username, $email = FALSE, $registrationId = FALSE, $registrationKey = FALSE, $data = NULL) {
+		parent::__construct(time(), RegistrationEvent::EVENT_TYPE, $type);
 		$this->user = array("id" => $userId, "name" => $username);
 		$this->email = $email;
 		if ($email) {
@@ -78,6 +84,8 @@ class RegistrationEvent extends Event {
 
 		$this->registrationId = $registrationId;
 		$this->registrationKey = $registrationKey;
+
+		$this->data = $data;
 	}
 
 	public function setUser($user) {}
@@ -107,10 +115,15 @@ class RegistrationEvent extends Event {
 			$values["registration_approve_link"] = $formatter->getClientUrl("?v=registration/approve&id=" . $this->registrationId);
 		} else if ($this->subType() == self::CONFIRM) {
 			$values["registration_id"] = $this->registrationId;
-
 			$values["registration_approve_link"] = $formatter->getClientUrl("?v=registration/approve&id=" . $this->registrationId);
+		} else if ($this->subType() == self::USER_FOLDER_CREATED) {
+			$values["user_folder_id"] = $this->data->id();
 		}
 		return $values;
+	}
+
+	public function data() {
+		return $this->data;
 	}
 }
 ?>

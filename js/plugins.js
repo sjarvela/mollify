@@ -3126,8 +3126,8 @@
                         id: "path",
                         title: mollify.ui.texts.get('pluginShareConfigViewPathTitle'),
                         formatter: function(item) {
-                            if (item.customType) return "";
-                            var p = mollify.filesystem.rootsById[item.root_id].name + ":";
+                            if (item.customType || !item.path) return "";
+                            var p = (mollify.filesystem.rootsById[item.root_id] ? mollify.filesystem.rootsById[item.root_id].name : item.root_id) + ":";
                             var path = item.path.substring(0, item.path.length - (item.name.length + (item.is_file ? 0 : 1)));
                             return p + "/" + path;
                         }

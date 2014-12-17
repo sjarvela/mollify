@@ -242,7 +242,7 @@ class RegistrationServices extends ServicesBase {
 
 		$db->update("DELETE from " . $db->table("registration") . " where `id`=" . $db->string($registration['id'], TRUE));
 
-		$this->addUserProperties($id, $registration['name'], $plugin);
+		$this->addUserProperties($id, $registration, $plugin);
 
 		//if (file_exists("plugin/Registration/custom/CustomRegistrationHandler.php")) include("custom/CustomRegistrationHandler.php");
 		//if (function_exists("onConfirmCustomData")) onConfirmCustomData($registration, $id);
@@ -250,7 +250,9 @@ class RegistrationServices extends ServicesBase {
 		$this->env->events()->onEvent(RegistrationEvent::userCreated($id, $registration['name'], $registration['email']));
 	}
 
-	private function addUserProperties($id, $name, $plugin) {
+	private function addUserProperties($id, $registration, $plugin) {
+		$name = $registration["name"];
+
 		$groups = $plugin->getSetting("groups", array());
 		if (count($groups) > 0) {
 			$existing = array();
@@ -262,6 +264,20 @@ class RegistrationServices extends ServicesBase {
 
 			if (count($existing) > 0) {
 				$this->env->configuration()->addUsersGroups($id, $existing);
+			}
+		}
+
+		$permissions = $plugin->getSetting("permissions", NULL);
+		// add user default/generic permissions
+		if ($permissions != NULL) {
+			if (!is_array($permissions)) {
+				$permissions = array("filesystem_item_access" => $permissions);
+			}
+
+			Logging::logDebug("Setting user permissions: " . Util::array2str($permissions));
+			foreach ($permissions as $pk => $pv) {
+				//TODO validate permission key (pv) and value (pv)
+				$this->env->permissions()->addGenericPermission($pk, $id, $pv);
 			}
 		}
 
@@ -352,8 +368,27 @@ class RegistrationServices extends ServicesBase {
 		$this->env->configuration()->addUserFolder($id, $uf["id"], $uf["name"]);
 
 		$fs = $this->env->filesystem()->filesystem($uf, FALSE);
-		$this->env->permissions()->addFilesystemPermission($fs->root(), "filesystem_item_access", $id, FilesystemController::PERMISSION_LEVEL_READWRITEDELETE);
+		$fsroot = $fs->root();
 
+		// add user folder permissions
+		$permissions = array();
+		if (isset($userFolder["permissions"])) {
+			$permissions = $userFolder["permissions"];
+			if (!is_array($permissions)) {
+				$permissions = array("filesystem_item_access" => $permissions);
+
+			}
+		} else {
+			$permissions = array("filesystem_item_access" => FilesystemController::PERMISSION_LEVEL_READWRITEDELETE);
+		}
+
+		Logging::logDebug("Setting user folder permissions: " . Util::array2str($permissions));
+		foreach ($permissions as $pk => $pv) {
+			//TODO validate permission key (pv) and value (pv)
+			$this->env->permissions()->addFilesystemPermission($fsroot, $pk, $id, $pv);
+		}
+
+		// assign folder to other users
 		if (isset($userFolder["add_to_users"]) and count($userFolder["add_to_users"]) > 0) {
 			$users = $userFolder["add_to_users"];
 			$existing = array();
@@ -367,6 +402,7 @@ class RegistrationServices extends ServicesBase {
 				$this->env->configuration()->addFolderUsers($uf["id"], $existing);
 			}
 		}
+		$this->env->events()->onEvent(RegistrationEvent::userFolderCreated($id, $registration['name'], $registration['email'], $registration["id"], $fsroot));
 	}
 
 	private function notifyRegister($name, $email, $key, $password) {

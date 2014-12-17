@@ -138,6 +138,7 @@
 		"actionDeniedMoveMany": "One or more items cannot be moved because:",
 		"actionAcceptMove": "Are you sure you want to move \"{0}\":",
 		"actionAcceptMoveMany": "Are you sure you want to move {0} items:",
+		"actionDeniedUpload": "Upload was rejected because:",
 
 		"fileItemDetailsGroupFile": "File",
 		"fileItemContextDataName": "Name",
