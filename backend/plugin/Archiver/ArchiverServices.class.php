@@ -28,7 +28,7 @@ class ArchiverServices extends ServicesBase {
 			throw $this->invalidRequestException();
 		}
 
-		if (!$this->isActionEnabled("download")) {
+		if (!$this->archiveManager()->isActionEnabled("download")) {
 			throw $this->invalidRequestException();
 		}
 
@@ -76,7 +76,7 @@ class ArchiverServices extends ServicesBase {
 			throw $this->invalidRequestException();
 		}
 
-		if (!$this->isActionEnabled($action)) {
+		if (!$this->archiveManager()->isActionEnabled($action)) {
 			throw $this->invalidRequestException();
 		}
 
