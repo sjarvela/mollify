@@ -126,6 +126,7 @@
 		"actionDeleteMultiple": "Delete ",
 		"actionRenameItem": "Rename...",
 
+		"genericActionDeniedMsg": "Action was denied because:",
 		"actionDeniedDelete": "Item \"{0}\" cannot be deleted because:",
 		"actionDeniedDeleteMany": "One or more items cannot be deleted because:",
 		"actionAcceptDelete": "Are you sure you want to delete \"{0}\":",

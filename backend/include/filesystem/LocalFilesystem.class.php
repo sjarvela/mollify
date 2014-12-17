@@ -259,7 +259,6 @@ class LocalFilesystem extends MollifyFilesystem {
 	}
 
 	public function copy($item, $to) {
-
 		$nativeTarget = $this->localPath($to);
 
 		if (file_exists($nativeTarget)) {
@@ -284,7 +283,6 @@ class LocalFilesystem extends MollifyFilesystem {
 
 	/* assumes paths are native charset, not utf8 */
 	private function copyFolderRecursively($from, $to) {
-
 		$dir = opendir($from);
 
 		@mkdir($to);
@@ -421,7 +419,12 @@ class LocalFilesystem extends MollifyFilesystem {
 	}
 
 	public function size($file) {
-		return sprintf("%u", filesize($this->localPath($file)));
+		$p = $this->localPath($file);
+		if (!file_exists($p)) {
+			return NULL;
+		}
+
+		return sprintf("%u", filesize($p));
 	}
 
 	public function lastModified($item) {

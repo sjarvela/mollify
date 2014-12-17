@@ -155,7 +155,7 @@ class FilesystemController {
 		}
 	}
 
-	private function triggerActionInterceptor($action, $item, $data = NULL) {
+	public function triggerActionInterceptor($action, $item, $data = NULL) {
 		foreach ($this->actionInterceptors as $key => $v) {
 			$v->onAction($action, $item, $data);
 		}
@@ -1000,6 +1000,7 @@ class FileEvent extends Event {
 	const DOWNLOAD = "download";
 	const UPLOAD = "upload";
 	const VIEW = "view";
+	const CREATE_ITEM = "create_item";
 
 	private $item;
 	private $info;
@@ -1013,6 +1014,7 @@ class FileEvent extends Event {
 		$eventHandler->registerEventType(FilesystemController::EVENT_TYPE_FILE, self::DOWNLOAD, "Download file");
 		$eventHandler->registerEventType(FilesystemController::EVENT_TYPE_FILE, self::VIEW, "View file");
 		$eventHandler->registerEventType(FilesystemController::EVENT_TYPE_FILE, self::UPLOAD, "Upload file");
+		$eventHandler->registerEventType(FilesystemController::EVENT_TYPE_FILE, self::CREATE_ITEM, "Create item");
 	}
 
 	static function rename($item, $to) {
@@ -1045,6 +1047,10 @@ class FileEvent extends Event {
 
 	static function view($item) {
 		return new FileEvent($item, self::VIEW);
+	}
+
+	static function createItem($item) {
+		return new FileEvent($item, self::CREATE_ITEM);
 	}
 
 	function __construct($item, $type, $info = NULL) {

@@ -125,18 +125,20 @@ class ArchiverServices extends ServicesBase {
 			$name = substr($name, 0, strlen($name) - $extl);
 		}
 
-		$name = str_replace(".", "_", $name);
-		$target = rtrim($folder->internalPath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $name . $ext;
+		$name = str_replace(".", "_", $name) . $ext;
+		$target = $folder->fileWithName($name);
+		//$target = rtrim($folder->internalPath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $name . $ext;
 
-		if (file_exists($target)) {
-			if (!$overwrite) {
-				throw new ServiceException("FILE_ALREADY_EXISTS", $target);
-			}
-
-			$parent->fileWithName($name)->delete();
+		if ($target->exists()) {
+			throw new ServiceException("FILE_ALREADY_EXISTS", $target);
 		}
 
-		$this->archiveManager()->compress($items, $target);
+		$this->env->filesystem()->validateAction(FileEvent::CREATE_ITEM, $target);
+		$this->env->filesystem()->triggerActionInterceptor(FileEvent::CREATE_ITEM, $target);
+
+		$this->archiveManager()->compress($items, $target->internalPath());
+		$this->env->events()->onEvent(FileEvent::createItem($target));
+
 		$this->response()->success(array());
 	}
 
@@ -202,19 +204,25 @@ class ArchiverServices extends ServicesBase {
 		$this->env->filesystem()->assertRights($parent, FilesystemController::PERMISSION_LEVEL_READWRITE, "extract");
 
 		$name = str_replace(".", "_", basename($archive->internalPath()));
-		$target = $parent->internalPath() . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
-
-		if (file_exists($target)) {
-			if (!$overwrite) {
-				throw new ServiceException("DIR_ALREADY_EXISTS", $target);
-			}
-
-			$parent->folderWithName($name)->delete();
+		$target = $parent->folderWithName($name);
+		if ($target->exists() and !$overwrite) {
+			throw new ServiceException("DIR_ALREADY_EXISTS", $target);
 		}
 
-		mkdir($target);
+		//$target = $parent->internalPath() . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
 
-		$this->archiveManager()->extract($archive->internalPath(), $target);
+		$this->env->filesystem()->validateAction(FileEvent::CREATE_ITEM, $target);
+		$this->env->filesystem()->triggerActionInterceptor(FileEvent::CREATE_ITEM, $target);
+
+		if ($target->exists() and $overwrite) {
+			$target->delete();
+		}
+
+		$target->create();
+
+		$this->archiveManager()->extract($archive->internalPath(), $target->internalPath());
+		$this->env->events()->onEvent(FileEvent::createItem($target));
+
 		$this->response()->success(array());
 	}
 

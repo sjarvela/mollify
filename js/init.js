@@ -394,7 +394,13 @@ var mollifyDefaults = {
                 // push default handler to end of callback list
                 setTimeout(function() {
                     df.fail(function(err) {
-                        if (!failContext.handled) mollify.ui.dialogs.showError(err);
+                        if (failContext.handled) return;
+                        // request denied
+                        if (err.code == 109 && err.data && err.data.items) {
+                            mollify.ui.actions.handleDenied(null, err.data, mollify.ui.texts.get('genericActionDeniedMsg'));
+                        } else {
+                            mollify.ui.dialogs.showError(err);
+                        }
                     });
                 }, 0);
                 return df.rejectWith(failContext, [error]);
@@ -519,7 +525,7 @@ var mollifyDefaults = {
                 actionTitle: mollify.ui.texts.get('copyFileDialogAction'),
                 handler: {
                     onSelect: function(f) {
-                    	mfs._validated(mfs._copy, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", i.name)).done(df2.resolve).fail(df2.reject);
+                        mfs._validated(mfs._copy, [i, f], "copy", mollify.ui.texts.get("actionDeniedCopy"), mollify.ui.texts.get("actionAcceptCopy", i.name)).done(df2.resolve).fail(df2.reject);
                     },
                     canSelect: function(f) {
                         return mfs.canCopyTo(i, f);
@@ -646,7 +652,7 @@ var mollifyDefaults = {
                     actionTitle: mollify.ui.texts.get('moveFileDialogAction'),
                     handler: {
                         onSelect: function(f) {
-                        	mfs._validated(mfs._moveMany, [i, f], "move", mollify.ui.texts.get("actionDeniedMoveMany"), mollify.ui.texts.get("actionAcceptMoveMany", i.length)).done(df.resolve).fail(df.reject);
+                            mfs._validated(mfs._moveMany, [i, f], "move", mollify.ui.texts.get("actionDeniedMoveMany"), mollify.ui.texts.get("actionAcceptMoveMany", i.length)).done(df.resolve).fail(df.reject);
                         },
                         canSelect: function(f) {
                             return mfs.canMoveTo(i, f);
@@ -741,15 +747,15 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._validated = function(cbf, args, action, validationTitle, validationMessage) {
+    mfs._validated = function(cbf, args, action, denyMessage, acceptMessage) {
         var df = $.Deferred();
         cbf.apply(mfs, args).done(df.resolve).fail(function(e) {
             // request denied
             if (e.code == 109 && e.data && e.data.items) {
                 this.handled = true;
-                mollify.ui.actions.handleDenied(action, e.data, validationTitle, validationMessage).done(function(acceptKeys) {
-                	var argsWithKeys = args.slice(0);
-                	argsWithKeys.push(acceptKeys);
+                mollify.ui.actions.handleDenied(action, e.data, denyMessage, acceptMessage).done(function(acceptKeys) {
+                    var argsWithKeys = args.slice(0);
+                    argsWithKeys.push(acceptKeys);
 
                     cbf.apply(mfs, argsWithKeys).done(df.resolve).fail(df.reject);
                 }).fail(function() {
