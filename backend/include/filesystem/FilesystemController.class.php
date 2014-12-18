@@ -157,8 +157,13 @@ class FilesystemController {
 
 	public function triggerActionInterceptor($action, $item, $data = NULL) {
 		foreach ($this->actionInterceptors as $key => $v) {
-			$v->onAction($action, $item, $data);
+			if ($v->onAction($action, $item, $data)) {
+				Logging::logDebug("Action [" . $action . "] intercepted by [" . $key . "], aborting original action");
+				return TRUE;
+			}
 		}
+
+		return FALSE;
 	}
 
 	private function getItemData($i) {
@@ -533,7 +538,9 @@ class FilesystemController {
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "copy");
 		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
 		$this->validateAction(FileEvent::COPY, $item, array("to" => $to));
-		$this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to))) {
+			return;
+		}
 
 		$to = $item->copy($to);
 		$this->env->events()->onEvent(FileEvent::copy($item, $to));
@@ -543,7 +550,9 @@ class FilesystemController {
 		Logging::logDebug('copying ' . count($items) . ' items to [' . $folder->path() . ']');
 		$this->assertRights($items, self::PERMISSION_LEVEL_READ, "copy");
 		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder));
-		$this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder))) {
+			return;
+		}
 
 		foreach ($items as $item) {
 			if ($item->isFile()) {
@@ -567,7 +576,9 @@ class FilesystemController {
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "move");
 		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
 		$this->validateAction(FileEvent::MOVE, $item, array("to" => $to));
-		$this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to));
+		if ($this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to))) {
+			return;
+		}
 
 		$to = $item->move($to);
 
@@ -585,7 +596,9 @@ class FilesystemController {
 
 		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITE, "move");
 		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to));
-		$this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to));
+		if ($this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to))) {
+			return;
+		}
 
 		foreach ($items as $item) {
 			$this->move($item, $to);
@@ -600,7 +613,9 @@ class FilesystemController {
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
 		$this->validateAction(FileEvent::DELETE, $item);
-		$this->triggerActionInterceptor(FileEvent::DELETE, $item);
+		if ($this->triggerActionInterceptor(FileEvent::DELETE, $item)) {
+			return;
+		}
 
 		$item->delete();
 
@@ -624,7 +639,9 @@ class FilesystemController {
 
 		$this->validateAction(FileEvent::DELETE, $items);
 		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
-		$this->triggerActionInterceptor(FileEvent::DELETE, $items);
+		if ($this->triggerActionInterceptor(FileEvent::DELETE, $items)) {
+			return;
+		}
 
 		foreach ($items as $item) {
 			$this->delete($item);
@@ -646,6 +663,10 @@ class FilesystemController {
 		}
 
 		$this->assertRights($file, self::PERMISSION_LEVEL_READ, "download");
+		if ($this->triggerActionInterceptor(FileEvent::DOWNLOAD, $file, array("mobile" => $mobile, "range" => $range))) {
+			return;
+		}
+
 		if (!$file->filesystem()->isDirectDownload()) {
 			$this->env->response()->redirect($file->filesystem()->getDownloadUrl($file));
 			return;
@@ -653,38 +674,42 @@ class FilesystemController {
 
 		$name = $file->name();
 		$size = $file->size();
+		$range = $this->getDownloadRangeInfo($range);
 
-		if ($range != NULL) {
-			list($unit, $range) = explode('=', $range, 2);
-
-			if ($unit == 'bytes') {
-				$pos = strpos(",", $range);
-				if ($pos != false) {
-					if ($pos === 0) {
-						$range = NULL;
-					} else if ($pos >= 0) {
-						$range = substr($range, 0, $pos);
-					}
-				}
-			} else {
-				$range = NULL;
-			}
-		}
-
-		if ($range != NULL) {
-			list($start, $end) = explode('-', $range, 2);
-
-			$end = (empty($end)) ? ($size - 1) : min(abs(intval($end)), ($size - 1));
-			$start = (empty($start) || $end < abs(intval($start))) ? 0 : max(abs(intval($start)), 0);
-			$range = array($start, $end, $size);
-			Logging::logDebug("Download range " . $start . "-" . $end);
-		}
-
-		if (!$range) {
+		if ($range) {
+			Logging::logDebug("Download range " . $range[0] . "-" . $range[1]);
+		} else {
 			$this->env->events()->onEvent(FileEvent::download($file));
 		}
 
 		$this->env->response()->download($name, $file->extension(), $mobile, $file->read($range), $size, $range);
+	}
+
+	// TODO somewhere else
+	public function getDownloadRangeInfo($range) {
+		if ($range == NULL) {
+			return NULL;
+		}
+		list($unit, $range) = explode('=', $range, 2);
+
+		if ($unit == 'bytes') {
+			$pos = strpos(",", $range);
+			if ($pos != false) {
+				if ($pos === 0) {
+					return NULL;
+				} else if ($pos >= 0) {
+					$range = substr($range, 0, $pos);
+				}
+			}
+		} else {
+			return NULL;
+		}
+
+		list($start, $end) = explode('-', $range, 2);
+
+		$end = (empty($end)) ? ($size - 1) : min(abs(intval($end)), ($size - 1));
+		$start = (empty($start) || $end < abs(intval($start))) ? 0 : max(abs(intval($start)), 0);
+		return array($start, $end, $size);
 	}
 
 	public function view($file) {
@@ -706,9 +731,11 @@ class FilesystemController {
 			throw new ServiceException("NOT_A_FILE", $item->path());
 		}
 		$this->validateAction(FileEvent::UPLOAD, $item);
-		$this->triggerActionInterceptor(FileEvent::UPLOAD, $item->parent(), array("name" => $item->name(), "target" => $item));
+		if ($this->triggerActionInterceptor(FileEvent::UPLOAD, $item->parent(), array("name" => $item->name(), "target" => $item))) {
+			return;
+		}
 
-		Logging::logDebug('update file contents [' . $item->id() . ']');
+		Logging::logDebug('updating file contents [' . $item->id() . ']');
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITE, "update content");
 		$this->env->events()->onEvent(FileEvent::upload($item));
 		$item->put($content);
@@ -822,7 +849,9 @@ class FilesystemController {
 
 		if (!$append) {
 			$this->validateAction(FileEvent::UPLOAD, $target, array("size" => $size));
-			$this->triggerActionInterceptor(FileEvent::UPLOAD, $target, array("size" => $size));
+			if ($this->triggerActionInterceptor(FileEvent::UPLOAD, $target, array("size" => $size))) {
+				return;
+			}
 		}
 
 		if (!$append and $target->exists()) {
@@ -849,11 +878,7 @@ class FilesystemController {
 			unlink($origin);
 		}
 
-		// is finished?
-		//if ($size != NULL && $target->size() == $size) {
-		//}
-
-		if (!$append or ($range[2] >= $range[3]-1)) {
+		if ($range == NULL or ($range[2] >= $range[3]-1)) {
 			$this->env->events()->onEvent(FileEvent::upload($target));
 		}
 	}

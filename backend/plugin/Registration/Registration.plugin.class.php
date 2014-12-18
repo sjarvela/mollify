@@ -104,6 +104,9 @@ class RegistrationEvent extends Event {
 			$d .= "registration_id=" . $this->registrationId . ';';
 		}
 
+		if ($this->subType() == self::USER_FOLDER_CREATED) {
+			$d .= "user_folder_id=" . $this->data->id() . ";";
+		}
 		return $d;
 	}
 
