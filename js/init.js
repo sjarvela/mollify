@@ -448,10 +448,11 @@ var mollifyDefaults = {
     };
 
     mfs.itemDetails = function(item, data) {
-        return mollify.service.post("filesystem/" + item.id + "/details/", {
+        return mollify.service.post((item.detailsId ? (item.detailsId + "/details/") : ("filesystem/" + item.id + "/details/")), {
             data: data
         }).done(function(r) {
-            mollify.filesystem.permissionCache[item.id] = r.permissions;
+            if (r.permissions)
+                mollify.filesystem.permissionCache[item.id] = r.permissions;
             if (item.parent_id && r.parent_permissions) mollify.filesystem.permissionCache[item.parent_id] = r.parent_permissions;
         });
     };

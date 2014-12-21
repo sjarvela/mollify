@@ -864,20 +864,18 @@
             });
         };
 
-        this.view = function(item, opt) {
+        this.view = function(item) {
             var doView = function(d) {
                 if (!d || !d.plugins || !d.plugins['plugin-fileviewereditor']) return;
-                that.onView(item, [], d.plugins['plugin-fileviewereditor'], opt);
+                that.onView(item, [], d.plugins['plugin-fileviewereditor']);
             }
 
-            if (opt && opt.itemDetails) doView(opt.itemDetails);
-            else
-                mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
-                    doView(d);
-                });
+            mollify.filesystem.itemDetails(item, mollify.plugins.getItemContextRequestData(item)).done(function(d) {
+                doView(d);
+            });
         };
 
-        this.onView = function(item, all, spec, opt) {
+        this.onView = function(item, all, spec) {
             var loaded = {};
             var list = [{
                 embedded: spec.view.embedded,
@@ -918,7 +916,7 @@
                 if (loaded[id]) return;
                 $.ajax({
                     type: 'GET',
-                    url: itm.embedded + ((opt && opt.rq) ? '&'+ opt.rq : '')
+                    url: mollify.helpers.noncachedUrl(itm.embedded)
                 }).done(function(data) {
                     loaded[id] = true;
 

@@ -813,7 +813,7 @@
                 },
                 close: this.hide
             };
-            var $el = $('<div class="popover mollify-bubble-popover"><div class="arrow"></div><div class="popover-inner"><div class="popover-content"><p></p></div></div></div>');
+            var $el = $('<div class="popover mollify-bubble-popover ' + (o.cls || '') + '"><div class="arrow"></div><div class="popover-inner"><div class="popover-content"><p></p></div></div></div>');
             $e.popover({
                 title: false,
                 html: true,
@@ -894,7 +894,7 @@
                 position: pos
             };
             api.close = api.hide;
-            var $el = $('<div class="popover mollify-bubble-popover"><div class="arrow"></div>' + (o.title ? '<h3 class="popover-title"></h3>' : '') + '<div class="popover-content"></div></div>');
+            var $el = $('<div class="popover mollify-bubble-popover ' + (o.cls || '') + '"><div class="arrow"></div>' + (o.title ? '<h3 class="popover-title"></h3>' : '') + '<div class="popover-content"></div></div>');
 
             $e.popover({
                 title: o.title ? o.title : false,

@@ -436,18 +436,27 @@ class FilesystemController {
 		$details["description"] = $this->description($item);
 		$details["permissions"] = $this->env->permissions()->getAllFilesystemPermissions($item);
 		$details["parent_permissions"] = $item->isRoot() ? NULL : $this->env->permissions()->getAllFilesystemPermissions($item->parent());
-		$details["plugins"] = array();
+		$details["plugins"] = $this->getItemContextData($item, $details, $data);
 
+		return $details;
+	}
+
+	public function getItemContextData($item, $details, $data = NULL, $list = NULL) {
+		$result = array();
 		foreach ($this->contextPlugins as $k => $p) {
+			if ($list != NULL and !in_array($k, $list)) {
+				continue;
+			}
+
 			$d = ($data != NULL and isset($data[$k])) ? $data[$k] : NULL;
 			$l = $p->getItemContextData($item, $details, $k, $d);
 			if (!$l) {
 				continue;
 			}
 
-			$details["plugins"][$k] = $l;
+			$result[$k] = $l;
 		}
-		return $details;
+		return $result;
 	}
 
 	public function checkExisting($folder, $files) {
