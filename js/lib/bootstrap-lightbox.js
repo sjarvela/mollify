@@ -238,8 +238,10 @@
 			if(that.options.resizeToFit)
 			{
 				
-				resizedOffs = 10;
+				//resizedOffs = 10;
 				$img = that.$element.find('.lightbox-content').find('img:first');
+				if ($img.length === 0) return;
+
 				// Save original filesize
 				if(!$img.data('osizew')) $img.data('osizew', $img.width());
 				if(!$img.data('osizeh')) $img.data('osizeh', $img.height());
@@ -258,14 +260,14 @@
 				$img.css('max-width', $(window).width() - sOffs);
 				$img.css('max-height', $(window).height() - sOffs);
 				
-				that.w = $img.width();
-				that.h = $img.height();
+				that.w = Math.max(that.w, $img.width());
+				that.h = Math.max(that.h, $img.height());
 			}
 
 			that.$element.css({
 				"position": "fixed",
 				"left": ( $(window).width()  / 2 ) - ( that.w / 2 ),
-				"top":  ( $(window).height() / 2 ) - ( that.h / 2 ) - resizedOffs
+				"top":  Math.max(0, ( $(window).height() / 2 ) - ( that.h / 2 ) - resizedOffs )
 			});
 			that.enforceFocus();
 		},

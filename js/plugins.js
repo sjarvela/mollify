@@ -893,8 +893,13 @@
             var $i = false;
             var maxW;
             var maxH;
+            var isImage = false;
             var resize = function() {
-                maxW = ($(window).width() - 100);
+                if (isImage)
+                    $lb.lightbox('centerImage');
+                else
+                    $lb.lightbox('center');
+                /*maxW = ($(window).width() - 100);
                 maxH = ($(window).height() - 100);
                 $lbc.css({
                     "max-width": maxW + "px",
@@ -906,9 +911,9 @@
                         "max-height": maxH + "px"
                     });
                 }
-                $lb.lightbox('center');
+                $lb.lightbox('center');*/
             };
-            $(window).resize(resize);
+            //$(window).resize(resize);
             var load = function(itm) {
                 var id = itm.item.id;
                 activeItem = itm;
@@ -923,6 +928,8 @@
                     $i = $("#mollify-fileviewereditor-viewer-item-" + id);
                     var $ic = $i.find(".mollify-fileviewereditor-viewer-item-content");
                     $ic.removeClass("loading").html(data.result.html);
+                    isImage = ($ic.children("img").length > 0);
+
                     if (data.result.size) {
                         var sp = data.result.size.split(';');
                         $("#" + data.result["resized_element_id"]).css({
@@ -932,7 +939,7 @@
                     }
 
                     // if img, wait until it is loaded
-                    var $img = $ic.find('img:first');
+                    /*var $img = $ic.find('img:first');
                     if ($img.length > 0) {
                         $img.one('load', function() {
                             var w = $img.width();
@@ -945,11 +952,14 @@
                         });
                     } else {
                         resize();
-                    }
+                    }*/
 
+
+                    resize();
                     if (!visible) {
                         $lb.lightbox('show');
                         visible = true;
+                        $(window).resize(resize);
                     }
                 });
             };
@@ -968,7 +978,7 @@
 
             $lb = $v.lightbox({
                 backdrop: true,
-                resizeToFit: false,
+                //resizeToFit: true,
                 show: false,
                 onHide: onHide
             });
