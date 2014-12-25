@@ -407,6 +407,16 @@ class FilesystemController {
 		return array('mollify.dsc', 'mollify.uac');//TODO get from settings and/or configuration etc
 	}
 
+	public function createItem($item) {
+		if ($item == NULL or $item->exists()) {
+			return;
+		}
+
+		$parent = $item->parent();
+		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create file/folder");
+		return $item->create();
+	}
+
 	public function items($folder) {
 		$this->env->permissions()->prefetchFilesystemChildrenPermissions("filesystem_item_access", $folder);
 		$this->assertRights($folder, self::PERMISSION_LEVEL_READ, "items");

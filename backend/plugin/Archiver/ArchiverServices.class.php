@@ -218,7 +218,7 @@ class ArchiverServices extends ServicesBase {
 			$target->delete();
 		}
 
-		$target->create();
+		$this->env->filesystem()->createItem($target);
 
 		$this->archiveManager()->extract($archive->internalPath(), $target->internalPath());
 		$this->env->events()->onEvent(FileEvent::createItem($target));

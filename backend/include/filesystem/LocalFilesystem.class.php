@@ -234,6 +234,15 @@ class LocalFilesystem extends MollifyFilesystem {
 		return $this->itemWithPath($this->publicPath($parentPath));
 	}
 
+	public function createNewItem($item) {
+		$parent = $item->parent();
+		if ($item->isFile()) {
+			return $this->createFile($parent, $item->name());
+		} else {
+			return $this->createFolder($parent, $item->name());
+		}
+	}
+
 	public function rename($item, $name) {
 		self::assertFilename($name);
 
@@ -400,6 +409,7 @@ class LocalFilesystem extends MollifyFilesystem {
 		if (file_exists($nativeTarget)) {
 			throw new ServiceException("FILE_ALREADY_EXISTS");
 		}
+		touch($nativeTarget);
 
 		return $this->itemWithPath($this->publicPath($target));
 	}

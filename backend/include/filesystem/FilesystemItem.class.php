@@ -104,6 +104,10 @@ abstract class FilesystemItem {
 		return FALSE;
 	}
 
+	public function create() {
+		return $this->filesystem->createNewItem($this);
+	}
+
 	public function data() {
 		$p = $this->parent();
 		return array(
