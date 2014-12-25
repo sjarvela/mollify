@@ -480,9 +480,13 @@ class LocalFilesystem extends MollifyFilesystem {
 				$name = $item->name();
 
 				$files = $this->allFilesRecursively($nativePath);//TODO rights!
-				foreach ($files as $file) {
-					$st = stat($file);
-					$c->add($name . DIRECTORY_SEPARATOR . $this->filesystemInfo->env()->convertCharset(substr($file, $offset)), $file, $st['size']);
+				if (count($files) > 0) {
+					foreach ($files as $file) {
+						$st = stat($file);
+						$c->add($name . DIRECTORY_SEPARATOR . $this->filesystemInfo->env()->convertCharset(substr($file, $offset)), $file, $st['size']);
+					}
+				} else {
+					$c->addEmptyDir($item->name());
 				}
 			}
 		}
