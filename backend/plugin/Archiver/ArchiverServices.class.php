@@ -65,7 +65,6 @@ class ArchiverServices extends ServicesBase {
 		}
 
 		$this->env->response()->download($name, 'zip', FALSE, $handle);
-		$handle->close();
 		unlink($a);
 	}
 
