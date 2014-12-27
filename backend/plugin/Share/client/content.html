@@ -106,3 +106,39 @@
 		<button id="share-addedit-btn-cancel" class="btn localized" text-key="shareDialogCancel"></button>
 	</div>
 </script>
+
+<script id="mollify-tmpl-share-admin-options" type="text/x-jquery-tmpl">
+	<div class="mollify-share-admin-options accordion">
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle localized" data-toggle="collapse" href="#shareOptions" text-key="pluginShareAdminOptionsTitle"></a>
+			</div>
+			<div id="shareOptions" class="accordion-body">
+				<div class="accordion-inner">
+		      
+					<form class="form-horizontal">
+						
+						<div class="control-group">
+							<label class="control-label localized" for="share-user" text-key="pluginPermissionsAdminOptionUser"></label>
+							<div class="controls">
+								<select id="share-user"></select>
+							</div>
+						</div>
+						
+						<div class="control-group">
+							<label class="control-label localized" for="share-item-option" text-key="pluginShareAdminOptionItem"></label>
+							<div class="controls">
+								<select id="share-item"></select>
+								<div id="share-filesystem-item-selector" style="display:none">
+									<input id="share-filesystem-item-value" type="text" disabled></input>
+									<button id="share-filesystem-item-select" class="btn">...</button>
+								</div>
+							</div>
+						</div>
+					</form>
+		
+				</div>
+			</div>
+		</div>
+	</div>
+</script>

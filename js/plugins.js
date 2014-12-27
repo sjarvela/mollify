@@ -3181,7 +3181,259 @@
                 }
             });
             updateShares();
-        }
+        };
+
+        this.processUserData = function(l) {
+            var userData = {
+                users: [],
+                groups: [],
+                all: [],
+                usersById: {}
+            };
+            for (var i = 0, j = l.length; i < j; i++) {
+                var u = l[i];
+                if (u.is_group == "0") {
+                    userData.users.push(u);
+                    userData.all.push(u);
+                    userData.usersById[u.id] = u;
+                } else {
+                    userData.groups.push(u);
+                    userData.all.push(u);
+                    userData.usersById[u.id] = u;
+                }
+            }
+            return userData;
+        };
+
+        this.onActivateConfigAdminView = function($c, cv) {
+            var pathFormatter = new mollify.ui.formatters.FilesystemItemPath();
+
+            mollify.templates.load("shares-content", mollify.helpers.noncachedUrl(mollify.plugins.url("Share", "content.html"))).done(function() {
+                mollify.service.get("configuration/users").done(function(l) {
+                    var users = that.processUserData(l);
+
+                    var shares = false;
+                    var items = false;
+                    var invalid = [];
+                    var nonfs = [];
+                    var listView = false;
+
+                    var getQueryParams = function(i) {
+                        var user = $optionUser.get();
+                        var item = $optionItem.get();
+
+                        var params = {};
+                        if (user) params.user_id = user.id;
+                        if (item) {
+                            params.item = item;
+
+                            if (item == 'filesystem_item' || item == 'filesystem_child') {
+                                if (selectedItem)
+                                    params.item_id = selectedItem.id;
+                                else
+                                    params.item_id = null;
+                            }
+                        }
+
+                        return params;
+                    };
+
+                    var refresh = function() {
+                        cv.showLoading(true);
+                        listView.table.refresh().done(function() {
+                            cv.showLoading(false);
+                        });
+                    };
+
+                    listView = new mollify.view.ConfigListView($c, {
+                        actions: [{
+                            id: "action-remove",
+                            content: '<i class="icon-trash"></i>',
+                            cls: "btn-danger",
+                            depends: "table-selection",
+                            callback: function(sel) {
+                                mollify.ui.dialogs.confirmation({
+                                    title: mollify.ui.texts.get("pluginShareConfigRemoveShareTitle"),
+                                    message: mollify.ui.texts.get("pluginShareConfigRemoveShareMessage", [sel.length]),
+                                    callback: function() {
+                                        //TODO removePermissions(sel).done(refresh);
+                                    }
+                                });
+                            }
+                        }, {
+                            id: "action-refresh",
+                            content: '<i class="icon-refresh"></i>',
+                            callback: refresh
+                        }],
+                        table: {
+                            key: "id",
+                            narrow: true,
+                            remote: {
+                                path: "share/query",
+                                paging: {
+                                    max: 50
+                                },
+                                queryParams: getQueryParams,
+                                onData: function(l) {
+                                    shares = l.data;
+                                    invalid = l.invalid;
+                                    nonfs = l.nonfs;
+                                    items = l.items;
+
+                                    $.each(l.nonfs, function(i, itm) {
+                                        items[itm.id] = {
+                                            id: itm.id,
+                                            name: itm.name,
+                                            customType: itm.type
+                                        };
+                                    });
+                                },
+                                onLoad: function(pr) {
+                                    $c.addClass("loading");
+                                    pr.done(function(r) {
+                                        $c.removeClass("loading");
+                                    });
+                                }
+                            },
+                            columns: [{
+                                type: "selectrow"
+                            }, {
+                                id: "icon",
+                                title: "",
+                                valueMapper: function(s) {
+                                    if (items[s.item_id].customType) return ""; //TODO type icon
+                                    return s.invalid ? '<i class="icon-exclamation"></i>' : '<i class="icon-file"></i>';
+                                }
+                            }, {
+                                id: "user_id",
+                                title: mollify.ui.texts.get('pluginShareConfigViewUserTitle'),
+                                formatter: function(s) {
+                                    return users.usersById[s.user_id].name;
+                                }
+                            }, {
+                                id: "item_name",
+                                title: mollify.ui.texts.get('fileListColumnTitleName'),
+                                valueMapper: function(s) {
+                                    if (s.invalid) return ""; //TODO
+                                    return items[s.item_id].name;
+                                }
+                            }, {
+                                id: "path",
+                                title: mollify.ui.texts.get('pluginShareConfigViewPathTitle'),
+                                formatter: function(s) {
+                                    if (s.invalid) return ""; //TODO
+
+                                    var item = items[s.item_id];
+
+                                    if (item.customType || !item.path) return "";
+                                    var p = (mollify.filesystem.rootsById[item.root_id] ? mollify.filesystem.rootsById[item.root_id].name : item.root_id) + ":";
+                                    var path = item.path.substring(0, item.path.length - (item.name.length + (item.is_file ? 0 : 1)));
+                                    return p + "/" + path;
+                                }
+                            }, {
+                                id: "name",
+                                title: mollify.ui.texts.get('pluginShareConfigViewNameTitle')
+                            }, {
+                                id: "edit",
+                                title: "",
+                                type: "action",
+                                formatter: function(s) {
+                                    return s.invalid ? '' : '<i class="icon-edit"></i>';
+                                }
+                            }, {
+                                id: "remove",
+                                title: "",
+                                type: "action",
+                                content: '<i class="icon-trash"></i>'
+                            }],
+                            onRow: function($r, s) {
+                                if (s.invalid) $r.addClass("error");
+                            },
+                            onRowAction: function(id, s) {
+                                if (id == "edit") {
+                                    /*var shareTitle = false;
+                                    if (item.customType) {
+                                        // TODO register type handlers from plugins
+                                        if (item.customType == 'ic') shareTitle = mollify.ui.texts.get("pluginItemCollectionShareTitle");
+                                    }
+                                    that.onOpenShares({
+                                        id: item.id,
+                                        name: item.name,
+                                        shareTitle: shareTitle,
+                                        is_file: item.is_file
+                                    });*/
+                                } else if (id == "remove") {
+                                    //that.removeAllItemShares(item).done(updateShares);
+                                }
+                            }
+                        }
+                    });
+                    var $options = $c.find(".mollify-configlistview-options");
+                    mollify.dom.template("mollify-tmpl-share-admin-options").appendTo($options);
+                    mollify.ui.process($options, ["localize"]);
+
+                    var $optionUser = mollify.ui.controls.select("share-user", {
+                        values: users.users,
+                        title: "name",
+                        none: mollify.ui.texts.get('pluginShareAdminAny')
+                    });
+
+                    var $itemSelector = $("#share-filesystem-item-selector");
+                    var $itemSelectorValue = $("#share-filesystem-item-value");
+                    var selectedItem = false;
+                    var onSelectItem = function(i) {
+                        selectedItem = i;
+                        $itemSelectorValue.val(pathFormatter.format(i));
+                    };
+                    $("#share-filesystem-item-select").click(function(e) {
+                        if ($optionItem.get() == 'filesystem_item') {
+                            mollify.ui.dialogs.itemSelector({
+                                title: mollify.ui.texts.get('pluginShareSelectItemTitle'),
+                                message: mollify.ui.texts.get('pluginShareSelectItemMsg'),
+                                actionTitle: mollify.ui.texts.get('ok'),
+                                handler: {
+                                    onSelect: onSelectItem,
+                                    canSelect: function(f) {
+                                        return true;
+                                    }
+                                }
+                            });
+                        } else {
+                            mollify.ui.dialogs.folderSelector({
+                                title: mollify.ui.texts.get('pluginShareSelectFolderTitle'),
+                                message: mollify.ui.texts.get('pluginShareSelectFolderMsg'),
+                                actionTitle: mollify.ui.texts.get('ok'),
+                                handler: {
+                                    onSelect: onSelectItem,
+                                    canSelect: function(f) {
+                                        return true;
+                                    }
+                                }
+                            });
+                        }
+                        return false;
+                    });
+                    var $optionItem = mollify.ui.controls.select("share-item", {
+                        values: ['none', 'filesystem_item', 'filesystem_child'],
+                        formatter: function(s) {
+                            return mollify.ui.texts.get('pluginShareAdminOptionSubject_' + s);
+                        },
+                        none: mollify.ui.texts.get('pluginShareAdminAny'),
+                        onChange: function(s) {
+                            if (s == 'filesystem_item' || s == 'filesystem_child') {
+                                selectedItem = false;
+                                $itemSelectorValue.val("");
+                                $itemSelector.show();
+                            } else {
+                                $itemSelector.hide();
+                            }
+                        }
+                    });
+
+                    refresh();
+                });
+            });
+        };
 
         return {
             id: "plugin-share",
@@ -3193,11 +3445,20 @@
 
             configViewHandler: {
                 views: function() {
-                    return [{
+                    var views = [{
                         viewId: "shares",
                         title: mollify.ui.texts.get("pluginShareConfigViewNavTitle"),
                         onActivate: that.onActivateConfigView
                     }];
+
+                    if (mollify.session.user.admin) views.push({
+                        viewId: "allshares",
+                        admin: true,
+                        title: mollify.ui.texts.get("pluginShareConfigViewNavTitle"),
+                        onActivate: that.onActivateConfigAdminView
+                    });
+
+                    return views;
                 }
             },
             fileViewHandler: {

@@ -95,6 +95,11 @@ class ShareHandler {
 		return $this->dao()->getUserShares($this->env->session()->userId());
 	}
 
+	public function processShareQuery($query) {
+		//TODO query params
+		return $this->dao()->processQuery($query);
+	}
+
 	public function getShares($itemId) {
 		return $this->dao()->getShares($itemId, $this->env->session()->userId());
 	}

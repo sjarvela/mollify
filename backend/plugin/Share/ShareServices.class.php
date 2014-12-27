@@ -106,14 +106,79 @@ class ShareServices extends ServicesBase {
 	}
 
 	public function processPost() {
-		if (count($this->path) > 0) {
+		if (count($this->path) > 1) {
 			throw $this->invalidRequestException();
 		}
 
 		$data = $this->request->data;
 
+		if (count($this->path) == 1 and $this->path[0] == "query") {
+			$this->env->authentication()->assertAdmin();
+			$res = $this->handler()->processShareQuery($data);
+			$items = array();
+			$invalid = array();
+			$nonFs = array();
+			foreach ($res["data"] as $s) {
+				$s["active"] = ($s["active"] == "1");
+
+				//process item
+				$ik = $s["item_id"];
+				if (array_key_exists($ik, $items) || in_array($ik, $invalid)) {
+					continue;
+				}
+				if (strpos($ik, "_") !== FALSE) {
+					$s["nonfs"] = TRUE;
+
+					$parts = explode("_", $ik);
+					$info = $this->handler()->getCustomShareInfo($parts[0], $parts[1], $s);
+					if ($info == NULL) {
+						continue;
+					}
+
+					$nonFs[] = array("id" => $ik, "type" => $parts[0], "name" => $info["name"]);
+					continue;
+				}
+
+				$item = NULL;
+				try {
+					$item = $this->item($ik);
+				} catch (ServiceException $se) {
+					$s["invalid"] = TRUE;
+
+					Logging::logError("Invalid share item: " . $ik);
+					$invalid[] = $ik;
+					$items[$ik] = array(
+						"id" => $ik,
+						"name" => "-",
+					);
+					continue;
+				}
+				if (!$item->exists()) {
+					$s["invalid"] = TRUE;
+
+					Logging::logError("Invalid share item (item does not exist): " . $ik);
+					$invalid[] = $ik;
+					$items[$ik] = array(
+						"id" => $ik,
+						"name" => "-",
+					);
+					continue;
+				}
+				$items[$ik] = $item->data();
+			}
+			$res["items"] = $items;
+			$res["invalid"] = $invalid;
+			$res["nonfs"] = $nonFs;
+
+			$this->response()->success($res);
+			return;
+		}
+
 		if (!isset($data["item"]) or !isset($data["name"])) {
 			throw $this->invalidRequestException("No data");
+		}
+		if (count($this->path) != 0) {
+			throw $this->invalidRequestException();
 		}
 
 		$itemId = $data["item"];
