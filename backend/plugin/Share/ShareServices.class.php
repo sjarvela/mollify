@@ -94,6 +94,17 @@ class ShareServices extends ServicesBase {
 			$id = $this->path[1];
 			$this->handler()->deleteSharesForItem($id);
 			$this->response()->success(array());
+		} else if ($this->path[0] == "list") {
+			if (count($this->path) != 1) {
+				throw $this->invalidRequestException();
+			}
+
+			if (!isset($this->request->data["list"]) or !is_array($this->request->data["list"])) {
+				throw $this->invalidRequestException();
+			}
+
+			$this->handler()->deleteShares($this->request->data["list"]);
+			$this->response()->success(array());
 		} else {
 			if (count($this->path) != 1) {
 				throw $this->invalidRequestException();

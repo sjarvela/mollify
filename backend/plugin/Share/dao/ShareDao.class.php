@@ -216,6 +216,21 @@ class ShareDao {
 		return $success;
 	}
 
+	public function deleteSharesById($ids) {
+		$db = $this->env->db();
+		$idList = $db->arrayString($ids, TRUE);
+
+		$db->startTransaction();
+
+		$success = $db->update("DELETE FROM " . $db->table("share") . " WHERE id in (" . $idList . ")");
+		if ($success) {
+			$db->update("DELETE FROM " . $db->table("share_auth") . " WHERE id in (" . $idList . ")");
+		}
+
+		$db->commit();
+		return $success;
+	}
+
 	public function deleteShares($item) {
 		$db = $this->env->db();
 		$db->startTransaction();

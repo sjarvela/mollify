@@ -96,7 +96,6 @@ class ShareHandler {
 	}
 
 	public function processShareQuery($query) {
-		//TODO query params
 		return $this->dao()->processQuery($query);
 	}
 
@@ -139,6 +138,10 @@ class ShareHandler {
 
 	public function deleteShare($id) {
 		$this->dao()->deleteShare($id);
+	}
+
+	public function deleteShares($ids) {
+		$this->dao()->deleteSharesById($ids);
 	}
 
 	public function deleteSharesForItem($itemId) {

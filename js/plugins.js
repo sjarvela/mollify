@@ -3246,6 +3246,8 @@
                         });
                     };
 
+                    var currentTime = mollify.helpers.formatInternalTime(new Date());
+
                     listView = new mollify.view.ConfigListView($c, {
                         actions: [{
                             id: "action-remove",
@@ -3257,7 +3259,9 @@
                                     title: mollify.ui.texts.get("pluginShareConfigRemoveShareTitle"),
                                     message: mollify.ui.texts.get("pluginShareConfigRemoveShareMessage", [sel.length]),
                                     callback: function() {
-                                        //TODO removePermissions(sel).done(refresh);
+                                        mollify.service.del("share/list/", {
+                                            list: mollify.helpers.extractValue(sel, "id")
+                                        }).done(refresh);
                                     }
                                 });
                             }
@@ -3296,6 +3300,10 @@
                                     });
                                 }
                             },
+                            onRow: function($r, s) {
+                                if (s.invalid) $r.addClass("error");
+                                if (s.expiration && s.expiration <= currentTime) $r.addClass("warning");
+                            },
                             columns: [{
                                 type: "selectrow"
                             }, {
@@ -3325,8 +3333,8 @@
                                     if (s.invalid) return ""; //TODO
 
                                     var item = items[s.item_id];
-
                                     if (item.customType || !item.path) return "";
+
                                     var p = (mollify.filesystem.rootsById[item.root_id] ? mollify.filesystem.rootsById[item.root_id].name : item.root_id) + ":";
                                     var path = item.path.substring(0, item.path.length - (item.name.length + (item.is_file ? 0 : 1)));
                                     return p + "/" + path;
@@ -3360,9 +3368,6 @@
                                 type: "action",
                                 content: '<i class="icon-trash"></i>'
                             }],
-                            onRow: function($r, s) {
-                                if (s.invalid) $r.addClass("error");
-                            },
                             onRowAction: function(id, s) {
                                 if (id == "edit") {
                                     var _editor = false;
