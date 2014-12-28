@@ -85,9 +85,9 @@ class ShareDao {
 			if ($q["item"] == 'filesystem_item' and isset($q["item_id"])) {
 				$criteria .= " and item_id = " . $db->string($q["item_id"], TRUE);
 			} else if ($q["item"] == 'filesystem_child' and isset($q["item_id"])) {
-				$item = $this->env->filesystem()->item($data["item_id"]);
+				$item = $this->env->filesystem()->item($q["item_id"]);
 				$location = str_replace("'", "\'", $item->location());
-				$criteria .= sprintf(" AND item_id in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", $location);
+				$criteria .= sprintf(" AND item_id in (select id from " . $db->table("item_id") . " where path like '%s%%')", $location);
 			} else if ($q["item"] == 'none') {
 				$criteria .= " AND item_id like '%_%'";
 			}

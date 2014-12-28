@@ -2851,17 +2851,13 @@
         this.openContextContent = function(toolbarId, contentTemplateId, tmplData) {
             /*var $c = $("#share-context").empty();*/
             var $c = that._context.getContentElement().empty();
-
             mollify.dom.template(contentTemplateId, tmplData).appendTo($c);
-            mollify.ui.process($c, ["localize"]);
-            mollify.ui.controls.datepicker("share-validity-expirationdate-value", {
-                format: mollify.ui.texts.get('shortDateTimeFormat'),
-                time: true
-            });
+
             that._context.show(false, 280);
             /*$("#share-context-container").animate({
                 "top" : "18px"
             }, 500);*/
+            return $c;
         }
 
         this.closeAddEdit = function() {
@@ -2872,68 +2868,70 @@
         }
 
         this.onAddShare = function(item) {
-            that.openContextContent('add-share-title', 'share-context-addedit-template');
-            $("#share-general-name").val('');
-            $('#share-general-active').attr('checked', true);
-            $("#share-access-norestriction").attr('checked', true);
-            $("#share-access-public-password-value").attr("placeholder", mollify.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
-
-            $("#share-addedit-btn-ok").click(function() {
-                $("#share-access-public-password-value").removeClass("error");
-
-                var name = $("#share-general-name").val();
-                var active = $("#share-general-active").is(":checked");
-                var expiration = $("#share-validity-expirationdate-value").data("mollify-datepicker").get();
-
-                var restriction = false;
-                if ($("#share-access-private-loggedin").is(":checked")) restriction = {
-                    type: "private"
-                };
-                else if ($("#share-access-public-password").is(":checked")) {
-                    var value = $("#share-access-public-password-value").val();
-                    if (!value || value.length === 0) {
-                        $("#share-access-public-password-value").addClass("error");
-                        return;
-                    }
-                    restriction = {
-                        type: "pw",
-                        value: value
-                    };
+            var $c = that.openContextContent('add-share-title', 'share-context-addedit-template');
+            that._initShareEditor(false, $c, {
+                onEdit: function(v) {
+                    $("#share-items").empty().append('<div class="loading"/>')
+                    that.closeAddEdit();
+                    that.addShare(item, v.name || '', v.expiration, v.active, v.restriction);
+                },
+                onCancel: function() {
+                    that.closeAddEdit();
                 }
-
-                $("#share-items").empty().append('<div class="loading"/>');
-                that.closeAddEdit();
-                that.addShare(item, name || '', expiration, active, restriction);
-            });
-
-            $("#share-addedit-btn-cancel").click(function() {
-                that.closeAddEdit();
             });
         };
 
         this.onEditShare = function(item, share) {
-            that.openContextContent('edit-share-title', 'share-context-addedit-template', {
+            var $c = that.openContextContent('edit-share-title', 'share-context-addedit-template', {
                 edit: true
             });
+            that._initShareEditor(share, $c, {
+                onEdit: function(v) {
+                    $("#share-items").empty().append('<div class="loading"/>')
+                    that.closeAddEdit();
+                    that.editShare(share.id, v.name || '', v.expiration, v.active, v.restriction).done(function(result) {
+                        var share = that.getShare(id);
+                        share.name = v.name;
+                        share.active = v.active;
+                        share.expiration = mollify.helpers.formatInternalTime(v.expiration);
+                        share.restriction = v.restriction ? v.restriction.type : false;
+                        that.updateShareList(item);
+                    }).fail(that.d.close);
+                },
+                onCancel: function() {
+                    that.closeAddEdit();
+                }
+            });
+        }
 
-            $("#share-general-name").val(share.name);
-            $("#share-general-active").attr("checked", share.active);
+        this._initShareEditor = function(share, $c, o) {
+            mollify.ui.process($c, ["localize"]);
+            mollify.ui.controls.datepicker("share-validity-expirationdate-value", {
+                format: mollify.ui.texts.get('shortDateTimeFormat'),
+                time: true
+            });
 
-            var oldRestrictionPw = (share.restriction == 'pw');
-            if (share.restriction == 'pw')
-                $("#share-access-public-password").attr('checked', true);
-            else if (share.restriction == 'private')
-                $("#share-access-private-loggedin").attr('checked', true);
-            else
+            $("#share-general-name").val(share ? share.name : '');
+            $("#share-general-active").attr("checked", share ? share.active : true);
+
+            var oldRestrictionPw = (share ? share.restriction == 'pw' : false);
+            if (share) {
+                if (share.restriction == 'pw')
+                    $("#share-access-public-password").attr('checked', true);
+                else if (share.restriction == 'private')
+                    $("#share-access-private-loggedin").attr('checked', true);
+                else
+                    $("#share-access-norestriction").attr('checked', true);
+            } else
                 $("#share-access-norestriction").attr('checked', true);
 
-            if (share.expiration)
+            if (share && share.expiration)
                 $("#share-validity-expirationdate-value").data("mollify-datepicker").set(mollify.helpers.parseInternalTime(share.expiration));
 
             if (oldRestrictionPw) $("#share-access-public-password-value").attr("placeholder", mollify.ui.texts.get("shareDialogShareAccessChangePwTitle"));
             else $("#share-access-public-password-value").attr("placeholder", mollify.ui.texts.get("shareDialogShareAccessEnterPwTitle"));
 
-            $("#share-addedit-btn-ok").click(function() {
+            var getValues = function() {
                 var name = $("#share-general-name").val();
                 var active = $("#share-general-active").is(":checked");
                 var expiration = $("#share-validity-expirationdate-value").data("mollify-datepicker").get();
@@ -2954,15 +2952,25 @@
                     };
                 }
 
-                $("#share-items").empty().append('<div class="loading"/>')
-                that.closeAddEdit();
-                that.editShare(item, share.id, name || '', expiration, active, restriction);
+                return {
+                    name: name,
+                    expiration: expiration,
+                    active: active,
+                    restriction: restriction
+                };
+            }
+            $("#share-addedit-btn-ok").click(function() {
+                o.onEdit(getValues());
             });
 
             $("#share-addedit-btn-cancel").click(function() {
-                that.closeAddEdit();
+                o.onCancel();
             });
-        }
+
+            return {
+                getValues: getValues
+            }
+        };
 
         this.onOpenShares = function(item) {
             mollify.templates.load("shares-content", mollify.helpers.noncachedUrl(mollify.plugins.url("Share", "content.html"))).done(function() {
@@ -3005,21 +3013,14 @@
             }).fail(that.d.close);
         }
 
-        this.editShare = function(item, id, name, expiration, active, restriction) {
+        this.editShare = function(id, name, expiration, active, restriction) {
             return mollify.service.put("share/" + id, {
                 id: id,
                 name: name,
                 expiration: mollify.helpers.formatInternalTime(expiration),
                 active: active,
                 restriction: restriction
-            }).done(function(result) {
-                var share = that.getShare(id);
-                share.name = name;
-                share.active = active;
-                share.expiration = mollify.helpers.formatInternalTime(expiration);
-                share.restriction = restriction ? restriction.type : false;
-                that.updateShareList(item);
-            }).fail(that.d.close);
+            });
         }
 
         this.removeShare = function(item, share) {
@@ -3312,7 +3313,7 @@
                                 }
                             }, {
                                 id: "item_name",
-                                title: mollify.ui.texts.get('fileListColumnTitleName'),
+                                title: mollify.ui.texts.get('pluginShareConfigViewItemNameTitle'),
                                 valueMapper: function(s) {
                                     if (s.invalid) return ""; //TODO
                                     return items[s.item_id].name;
@@ -3332,7 +3333,20 @@
                                 }
                             }, {
                                 id: "name",
-                                title: mollify.ui.texts.get('pluginShareConfigViewNameTitle')
+                                title: mollify.ui.texts.get('pluginShareConfigViewShareNameTitle')
+                            }, {
+                                id: "restriction",
+                                title: mollify.ui.texts.get('pluginShareConfigViewRestrictionTitle')
+                            }, {
+                                id: "expiration",
+                                title: mollify.ui.texts.get('pluginShareConfigViewExpirationTitle'),
+                                formatter: function(s) {
+                                    if (!s.expiration) return "";
+                                    return that._timestampFormatter.format(s.expiration);
+                                }
+                            }, {
+                                id: "active",
+                                title: mollify.ui.texts.get('pluginShareConfigViewActiveTitle')
                             }, {
                                 id: "edit",
                                 title: "",
@@ -3351,19 +3365,39 @@
                             },
                             onRowAction: function(id, s) {
                                 if (id == "edit") {
-                                    /*var shareTitle = false;
-                                    if (item.customType) {
-                                        // TODO register type handlers from plugins
-                                        if (item.customType == 'ic') shareTitle = mollify.ui.texts.get("pluginItemCollectionShareTitle");
-                                    }
-                                    that.onOpenShares({
-                                        id: item.id,
-                                        name: item.name,
-                                        shareTitle: shareTitle,
-                                        is_file: item.is_file
-                                    });*/
+                                    var _editor = false;
+
+                                    mollify.ui.dialogs.custom({
+                                        resizable: true,
+                                        initSize: [600, 400],
+                                        title: s.id, //TODO
+                                        content: mollify.dom.template("share-context-addedit-template", {
+                                            editDialog: true
+                                        }),
+                                        buttons: [{
+                                            id: "yes",
+                                            "title": mollify.ui.texts.get('dialogSave')
+                                        }, {
+                                            id: "no",
+                                            "title": mollify.ui.texts.get('dialogCancel')
+                                        }],
+                                        "on-button": function(btn, d) {
+                                            if (btn.id == 'no') {
+                                                d.close();
+                                                return;
+                                            }
+                                            var values = _editor.getValues();
+                                            that.editShare(s.id, values.name || '', values.expiration, values.active, values.restriction).done(function() {
+                                                d.close();
+                                                refresh();
+                                            }).fail(d.close);
+                                        },
+                                        "on-show": function(h, $d) {
+                                            _editor = that._initShareEditor(s, $d);
+                                        }
+                                    });
                                 } else if (id == "remove") {
-                                    //that.removeAllItemShares(item).done(updateShares);
+                                    mollify.service.del("share/" + s.id).done(refresh);
                                 }
                             }
                         }
@@ -3416,7 +3450,7 @@
                     var $optionItem = mollify.ui.controls.select("share-item", {
                         values: ['none', 'filesystem_item', 'filesystem_child'],
                         formatter: function(s) {
-                            return mollify.ui.texts.get('pluginShareAdminOptionSubject_' + s);
+                            return mollify.ui.texts.get('pluginShareAdminOptionItem_' + s);
                         },
                         none: mollify.ui.texts.get('pluginShareAdminAny'),
                         onChange: function(s) {
