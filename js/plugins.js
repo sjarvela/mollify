@@ -2890,11 +2890,11 @@
                     $("#share-items").empty().append('<div class="loading"/>')
                     that.closeAddEdit();
                     that.editShare(share.id, v.name || '', v.expiration, v.active, v.restriction).done(function(result) {
-                        var share = that.getShare(id);
-                        share.name = v.name;
-                        share.active = v.active;
-                        share.expiration = mollify.helpers.formatInternalTime(v.expiration);
-                        share.restriction = v.restriction ? v.restriction.type : false;
+                        var s = that.getShare(share.id);
+                        s.name = v.name;
+                        s.active = v.active;
+                        s.expiration = mollify.helpers.formatInternalTime(v.expiration);
+                        s.restriction = v.restriction ? v.restriction.type : false;
                         that.updateShareList(item);
                     }).fail(that.d.close);
                 },
