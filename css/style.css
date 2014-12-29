@@ -1280,6 +1280,10 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 	float: left;
 }
 
+.mollify-configlistview-table tr.inactive {
+	color: #949494;
+}
+
 .mollify-table tr.mollify-table-empty-hint td {
 	font-style: italic;
 	color: #949494;

@@ -3265,6 +3265,22 @@
                                     }
                                 });
                             }
+                        },{
+                            id: "action-activate",
+                            content: '<i class="icon-check"></i>',
+                            depends: "table-selection",
+                            tooltip: mollify.ui.texts.get('pluginShareConfigViewShareActivate'),
+                            callback: function(sel) {
+                                
+                            }
+                        },{
+                            id: "action-deactivate",
+                            content: '<i class="icon-check-empty"></i>',
+                            depends: "table-selection",
+                            tooltip: mollify.ui.texts.get('pluginShareConfigViewShareDeactivate'),
+                            callback: function(sel) {
+                                
+                            }
                         }, {
                             id: "action-refresh",
                             content: '<i class="icon-refresh"></i>',
@@ -3303,6 +3319,7 @@
                             onRow: function($r, s) {
                                 if (s.invalid) $r.addClass("error");
                                 if (s.expiration && s.expiration <= currentTime) $r.addClass("warning");
+                                if (s.active != "1") $r.addClass("inactive");
                             },
                             columns: [{
                                 type: "selectrow"
@@ -3346,8 +3363,9 @@
                                 id: "restriction",
                                 title: mollify.ui.texts.get('pluginShareConfigViewRestrictionTitle'),
                                 formatter: function(s) {
-                                    if (s.restriction == 'private') return '<i class="icon-user"/>';
-                                    else if (s.restriction == 'pw') return '<i class="icon-lock"/>';
+                                    if (s.restriction == 'private') return '<i class="icon-user" title="' + mollify.ui.texts.get('shareDialogShareAccessLoggedInTitle') + '" />';
+                                    else if (s.restriction == 'pw') return '<i class="icon-lock" title="' + mollify.ui.texts.get('shareDialogShareAccessPasswordTitle').replace(':', '') + '" />';
+                                    else return '<i class="icon-globe" title="' + mollify.ui.texts.get('shareDialogShareAccessNoRestrictionTitle') + '" />';
                                 }
                             }, {
                                 id: "expiration",
@@ -3360,7 +3378,8 @@
                                 id: "active",
                                 title: mollify.ui.texts.get('pluginShareConfigViewActiveTitle'),
                                 formatter: function(s) {
-                                    if (s.active == 1) return '<i class="icon-check"/>';
+                                    if (s.active == "1") return '<i class="icon-check"/>';
+                                    else return '<i class="icon-check-empty"/>';
                                 }
                             }, {
                                 id: "edit",
