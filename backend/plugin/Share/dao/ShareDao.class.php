@@ -203,6 +203,19 @@ class ShareDao {
 		$db->commit();
 	}
 
+	public function updateShares($ids, $update) {
+		$db = $this->env->db();
+		$idList = $db->arrayString($ids, TRUE);
+
+		$upd = "";
+		if (isset($update["active"])) {
+			$upd .= "active = " . ($update["active"] ? "1" : "0");
+		}
+
+		$db->update("UPDATE " . $db->table("share") . " set " . $upd . " WHERE id in (" . $idList . ")");
+		return TRUE;
+	}
+
 	public function deleteShare($id) {
 		$db = $this->env->db();
 		$db->startTransaction();

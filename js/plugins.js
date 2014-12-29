@@ -3265,21 +3265,27 @@
                                     }
                                 });
                             }
-                        },{
+                        }, {
                             id: "action-activate",
                             content: '<i class="icon-check"></i>',
                             depends: "table-selection",
                             tooltip: mollify.ui.texts.get('pluginShareConfigViewShareActivate'),
                             callback: function(sel) {
-                                
+                                mollify.service.put("share/list/", {
+                                    ids: mollify.helpers.extractValue(sel, "id"),
+                                    active: true
+                                }).done(refresh);
                             }
-                        },{
+                        }, {
                             id: "action-deactivate",
                             content: '<i class="icon-check-empty"></i>',
                             depends: "table-selection",
                             tooltip: mollify.ui.texts.get('pluginShareConfigViewShareDeactivate'),
                             callback: function(sel) {
-                                
+                                mollify.service.put("share/list/", {
+                                    ids: mollify.helpers.extractValue(sel, "id"),
+                                    active: false
+                                }).done(refresh);
                             }
                         }, {
                             id: "action-refresh",

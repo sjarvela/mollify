@@ -136,6 +136,10 @@ class ShareHandler {
 		$this->dao()->editShare($id, $name, $expirationTs, $active, $restriction);
 	}
 
+	public function updateShares($ids, $update) {
+		$this->dao()->updateShares($ids, $update);
+	}
+
 	public function deleteShare($id) {
 		$this->dao()->deleteShare($id);
 	}

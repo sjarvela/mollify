@@ -205,9 +205,25 @@ class ShareServices extends ServicesBase {
 		if (count($this->path) != 1) {
 			throw $this->invalidRequestException();
 		}
+		$data = $this->request->data;
+
+		if ($this->path[0] == "list") {
+			if (!isset($data["ids"]) or !is_array($this->request->data["ids"])) {
+				throw $this->invalidRequestException("No data");
+			}
+			$update = array();
+			if (isset($data["active"])) {
+				$update["active"] = $data["active"];
+			} else {
+				throw $this->invalidRequestException("No data");
+			}
+			$this->handler()->updateShares($data["ids"], $update);
+			$this->response()->success(array());
+			return;
+		}
 
 		$id = $this->path[0];
-		$data = $this->request->data;
+
 		if (!isset($data["name"])) {
 			throw $this->invalidRequestException("No data");
 		}
