@@ -21,10 +21,12 @@
 	<div id="share-${id}" class="${$item.itemClass()}">
 		<div class="share-info">
 			<div class="share-icon">
-				{{if restriction}}
+				{{if restriction == 'private'}}
+				<i class="icon-user"></i>
+				{{else restriction == 'pw'}}
 				<i class="icon-lock"></i>
 				{{else}}
-				<i class="icon-share"></i>
+				<i class="icon-globe"></i>
 				{{/if}}
 			</div>
 			<div class="share-name">{{html name || '<span class="localized" text-key="shareDialogUnnamedShareTitle"></span>'}}</div>

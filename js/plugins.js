@@ -3344,7 +3344,11 @@
                                 title: mollify.ui.texts.get('pluginShareConfigViewShareNameTitle')
                             }, {
                                 id: "restriction",
-                                title: mollify.ui.texts.get('pluginShareConfigViewRestrictionTitle')
+                                title: mollify.ui.texts.get('pluginShareConfigViewRestrictionTitle'),
+                                formatter: function(s) {
+                                    if (s.restriction == 'private') return '<i class="icon-user"/>';
+                                    else if (s.restriction == 'pw') return '<i class="icon-lock"/>';
+                                }
                             }, {
                                 id: "expiration",
                                 title: mollify.ui.texts.get('pluginShareConfigViewExpirationTitle'),
@@ -3354,7 +3358,10 @@
                                 }
                             }, {
                                 id: "active",
-                                title: mollify.ui.texts.get('pluginShareConfigViewActiveTitle')
+                                title: mollify.ui.texts.get('pluginShareConfigViewActiveTitle'),
+                                formatter: function(s) {
+                                    if (s.active == 1) return '<i class="icon-check"/>';
+                                }
                             }, {
                                 id: "edit",
                                 title: "",
