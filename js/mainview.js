@@ -1400,6 +1400,7 @@
                     return;
                 }
                 var ctx = {
+                    fileview: that,
                     details: d,
                     folder: that._currentFolder,
                     folder_writable: that._currentFolder ? mollify.filesystem.hasPermission(that._currentFolder, "filesystem_item_access", "rw") : false
