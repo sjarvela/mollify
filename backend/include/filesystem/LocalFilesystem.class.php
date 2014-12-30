@@ -135,6 +135,11 @@ class LocalFilesystem extends MollifyFilesystem {
 			$nativePath = self::joinPath($nativeParentPath, $name);
 			$itemName = $this->filesystemInfo->env()->convertCharset($name);
 
+			if (is_link($nativePath) and !file_exists($nativePath)) {
+				Logging::logError("Symbolic link broken: " . $nativePath);
+				continue;
+			}
+
 			if (!is_dir($nativePath)) {
 				$p = $this->publicPath($path);
 				$result[] = new File($this->itemId($p), $this->rootId(), $p, $itemName, $this);
