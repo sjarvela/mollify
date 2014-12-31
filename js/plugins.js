@@ -3337,11 +3337,22 @@
                                     return s.invalid ? '<i class="icon-exclamation"></i>' : '<i class="icon-file"></i>';
                                 }
                             }, {
+                                id: "restriction",
+                                title: "",
+                                formatter: function(s) {
+                                    if (s.restriction == 'private') return '<i class="icon-user" title="' + mollify.ui.texts.get('shareDialogShareAccessLoggedInTitle') + '" />';
+                                    else if (s.restriction == 'pw') return '<i class="icon-lock" title="' + mollify.ui.texts.get('shareDialogShareAccessPasswordTitle').replace(':', '') + '" />';
+                                    else return '<i class="icon-globe" title="' + mollify.ui.texts.get('shareDialogShareAccessNoRestrictionTitle') + '" />';
+                                }
+                            }, {
                                 id: "user_id",
                                 title: mollify.ui.texts.get('pluginShareConfigViewUserTitle'),
                                 formatter: function(s) {
                                     return users.usersById[s.user_id].name;
                                 }
+                            }, {
+                                id: "name",
+                                title: mollify.ui.texts.get('pluginShareConfigViewShareNameTitle')
                             }, {
                                 id: "item_name",
                                 title: mollify.ui.texts.get('pluginShareConfigViewItemNameTitle'),
@@ -3361,17 +3372,6 @@
                                     var p = (mollify.filesystem.rootsById[item.root_id] ? mollify.filesystem.rootsById[item.root_id].name : item.root_id) + ":";
                                     var path = item.path.substring(0, item.path.length - (item.name.length + (item.is_file ? 0 : 1)));
                                     return p + "/" + path;
-                                }
-                            }, {
-                                id: "name",
-                                title: mollify.ui.texts.get('pluginShareConfigViewShareNameTitle')
-                            }, {
-                                id: "restriction",
-                                title: mollify.ui.texts.get('pluginShareConfigViewRestrictionTitle'),
-                                formatter: function(s) {
-                                    if (s.restriction == 'private') return '<i class="icon-user" title="' + mollify.ui.texts.get('shareDialogShareAccessLoggedInTitle') + '" />';
-                                    else if (s.restriction == 'pw') return '<i class="icon-lock" title="' + mollify.ui.texts.get('shareDialogShareAccessPasswordTitle').replace(':', '') + '" />';
-                                    else return '<i class="icon-globe" title="' + mollify.ui.texts.get('shareDialogShareAccessNoRestrictionTitle') + '" />';
                                 }
                             }, {
                                 id: "expiration",

@@ -833,7 +833,10 @@ var mollifyDefaults = {
             var p = pl._list[id];
             if (p.initialized) continue;
 
-            if (p.initialize) p.initialize();
+            if (p.initialize) {
+                var settings = ((mollify.settings.plugins && mollify.settings.plugins[id]) ? mollify.settings.plugins[id] : false) || {};
+                p.initialize(settings);
+            }
             if (p.resources) {
                 var pid = p.backendPluginId || id;
                 if (p.resources.texts) {
@@ -1213,11 +1216,11 @@ var mollifyDefaults = {
 
             var ts = new Date();
             /*ts.setUTCFullYear(time.substring(0,4));
-			ts.setUTCMonth(time.substring(4,6) - 1);
-			ts.setUTCDate(time.substring(6,8));
-			ts.setUTCHours(time.substring(8,10));
-			ts.setUTCMinutes(time.substring(10,12));
-			ts.setUTCSeconds(time.substring(12,14));*/
+            ts.setUTCMonth(time.substring(4,6) - 1);
+            ts.setUTCDate(time.substring(6,8));
+            ts.setUTCHours(time.substring(8,10));
+            ts.setUTCMinutes(time.substring(10,12));
+            ts.setUTCSeconds(time.substring(12,14));*/
             ts.setYear(time.substring(0, 4));
             ts.setMonth(time.substring(4, 6) - 1);
             ts.setDate(time.substring(6, 8));
@@ -1231,12 +1234,12 @@ var mollifyDefaults = {
             if (!time) return null;
 
             /*var year = pad(""+time.getUTCFullYear(), 4, '0', STR_PAD_LEFT);
-			var month = pad(""+(time.getUTCMonth() + 1), 2, '0', STR_PAD_LEFT);
-			var day = pad(""+time.getUTCDate(), 2, '0', STR_PAD_LEFT);
-			var hour = pad(""+time.getUTCHours(), 2, '0', STR_PAD_LEFT);
-			var min = pad(""+time.getUTCMinutes(), 2, '0', STR_PAD_LEFT);
-			var sec = pad(""+time.getUTCSeconds(), 2, '0', STR_PAD_LEFT);
-			return year + month + day + hour + min + sec;*/
+            var month = pad(""+(time.getUTCMonth() + 1), 2, '0', STR_PAD_LEFT);
+            var day = pad(""+time.getUTCDate(), 2, '0', STR_PAD_LEFT);
+            var hour = pad(""+time.getUTCHours(), 2, '0', STR_PAD_LEFT);
+            var min = pad(""+time.getUTCMinutes(), 2, '0', STR_PAD_LEFT);
+            var sec = pad(""+time.getUTCSeconds(), 2, '0', STR_PAD_LEFT);
+            return year + month + day + hour + min + sec;*/
             //var timeUTC = new Date(Date.UTC(time.getYear(), time.getMonth(), time.getDay(), time.getHours(), time.getMinutes(), time.getSeconds()));
             return mollify.helpers.formatDateTime(time, 'yyyyMMddHHmmss');
         },
