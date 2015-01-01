@@ -200,7 +200,9 @@ module.exports = function(grunt) {
                     '!backend/plugin/FileViewerEditor/viewers/FlexPaper/**',
                     '!backend/plugin/FileViewerEditor/editors/CKEditor/**',
                     '!backend/plugin/Quota/**',
-                    '!backend/plugin/History/**'
+                    '!backend/plugin/History/**',
+                    '!backend/plugin/Watermarking/**',
+                    '!backend/plugin/SendViaEmail/**'
                 ],
                 dest: 'dist/'
             },
