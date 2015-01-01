@@ -506,9 +506,15 @@ class LocalFilesystem extends MollifyFilesystem {
 			return;
 		}
 
+		if (strpos($name, "..\\") !== FALSE or strpos($name, "../") !== FALSE) {
+			throw new ServiceException("INVALID_REQUEST", "Invalid name [" . $name . "]");
+		}
+
 		if (strpos($name, "\\") !== FALSE or strpos($name, "/") !== FALSE) {
 			throw new ServiceException("INVALID_REQUEST", "Invalid name [" . $name . "]");
 		}
+
+		//TODO validate invalid chars?
 	}
 
 	public static function assertPath($path) {

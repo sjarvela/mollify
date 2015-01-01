@@ -19,8 +19,9 @@
         return {
             id: "plugin-core",
             itemContextHandler: function(item, ctx, data) {
-                var root = item.id == item.root_id;
-                var writable = !root && mollify.filesystem.hasPermission(item, "filesystem_item_access", "rw");
+                var root = (item.id == item.root_id);
+                var writable = mollify.filesystem.hasPermission(item, "filesystem_item_access", "rw");
+                var movable = writable && !root;
                 var deletable = !root && mollify.filesystem.hasPermission(item, "filesystem_item_access", "rwd");
                 var parentWritable = !root && mollify.filesystem.hasPermission(item.parent_id, "filesystem_item_access", "rw");
 
@@ -38,6 +39,32 @@
                     actions.push({
                         title: '-'
                     });
+                } else {
+                    if (writable && mollify.settings["file-view"]["create-empty-file-action"])
+                        actions.push({
+                            'title-key': 'actionCreateEmptyFileItem',
+                            icon: 'file',
+                            callback: function() {
+                                mollify.ui.dialogs.input({
+                                    message: mollify.ui.texts.get('actionCreateEmptyFileMessage'),
+                                    title: mollify.ui.texts.get('actionCreateEmptyFileTitle'),
+                                    defaultValue: "",
+                                    yesTitle: mollify.ui.texts.get('ok'),
+                                    noTitle: mollify.ui.texts.get('dialogCancel'),
+                                    handler: {
+                                        isAcceptable: function(v) {
+                                            if (!v || v.trim().length === 0) return false;
+                                            if (/[\/\\]|(\.\.)/.test(v)) return false;
+                                            return true;
+
+                                        },
+                                        onInput: function(v) {
+                                            mollify.filesystem.createEmptyFile(item, v);
+                                        }
+                                    }
+                                });
+                            }
+                        });
                 }
 
                 actions.push({
@@ -56,7 +83,7 @@
                         }
                     });
 
-                if (writable) {
+                if (movable) {
                     actions.push({
                         'title-key': 'actionMoveItem',
                         icon: 'mail-forward',

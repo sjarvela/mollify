@@ -408,8 +408,12 @@ class FilesystemController {
 	}
 
 	public function createItem($item) {
-		if ($item == NULL or $item->exists()) {
+		if ($item == NULL) {
 			return;
+		}
+
+		if ($item->exists()) {
+			throw new ServiceException("FILE_ALREADY_EXISTS");
 		}
 
 		$parent = $item->parent();
@@ -750,14 +754,15 @@ class FilesystemController {
 			throw new ServiceException("NOT_A_FILE", $item->path());
 		}
 		$this->validateAction(FileEvent::UPLOAD, $item);
-		if ($this->triggerActionInterceptor(FileEvent::UPLOAD, $item->parent(), array("name" => $item->name(), "target" => $item))) {
+		if ($this->triggerActionInterceptor(FileEvent::UPLOAD, $item, array("name" => $item->name(), "target" => $item))) {
 			return;
 		}
 
 		Logging::logDebug('updating file contents [' . $item->id() . ']');
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITE, "update content");
-		$this->env->events()->onEvent(FileEvent::upload($item));
+
 		$item->put($content);
+		$this->env->events()->onEvent(FileEvent::upload($item));
 	}
 
 	public function getUploadTempDir() {

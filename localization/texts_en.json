@@ -126,6 +126,10 @@
 		"actionDeleteMultiple": "Delete ",
 		"actionRenameItem": "Rename...",
 
+		"actionCreateEmptyFileItem": "Create Empty File...",
+		"actionCreateEmptyFileTitle": "Create Empty File",
+		"actionCreateEmptyFileMessage": "Enter name for the new empty file:",
+
 		"genericActionDeniedMsg": "Action was denied because:",
 		"actionDeniedDelete": "Item \"{0}\" cannot be deleted because:",
 		"actionDeniedDeleteMany": "One or more items cannot be deleted because:",

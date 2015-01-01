@@ -17,6 +17,7 @@ var mollifyDefaults = {
     "service-path": "backend/",
     "limited-http-methods": false,
     "file-view": {
+        "create-empty-file-action": false,
         "default-view-mode": false,
         "list-view-columns": {
             "name": {
@@ -488,6 +489,17 @@ var mollifyDefaults = {
             return df.promise();
         }
         return mollify.service.get("filesystem/" + parent.id + "/items/?files=" + (files ? '1' : '0'));
+    };
+
+    mfs.createEmptyFile = function(parent, name) {
+        return mollify.service.post("filesystem/" + parent.id + "/empty_file", {
+            name: name
+        }).done(function() {
+            mollify.events.dispatch('filesystem/create_item', {
+                parent: parent,
+                name: name
+            });
+        });
     };
 
     mfs.copy = function(i, to) {
