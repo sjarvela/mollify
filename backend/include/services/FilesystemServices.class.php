@@ -231,9 +231,9 @@ class FilesystemServices extends ServicesBase {
 
 				if (isset($data['folder'])) {
 					$folder = $this->item($data['folder'], FALSE);
-					$to = $folder->createFile($item->name());
+					$to = $folder->fileWithName($item->name());
 				} else {
-					$to = $item->parent()->createFile($data['name']);
+					$to = $item->parent()->fileWithName($data['name']);
 				}
 				$this->env->filesystem()->copy($item, $to);
 				break;

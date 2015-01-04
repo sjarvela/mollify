@@ -551,7 +551,7 @@ class FilesystemController {
 		Logging::logDebug('copying ' . $item->id() . "[" . $item->internalPath() . '] to ' . $to->id() . "[" . $to->internalPath() . ']');
 
 		if ($item->isFile() and !$to->isFile()) {
-			$to = $to->createFile($item->name());
+			$to = $to->fileWithName($item->name());
 		}
 
 		if (!$item->isFile() and $to->isFile()) {
@@ -579,7 +579,7 @@ class FilesystemController {
 
 		foreach ($items as $item) {
 			if ($item->isFile()) {
-				$this->copy($item, $folder->createFile($item->name()));
+				$this->copy($item, $folder->fileWithName($item->name()));
 			} else {
 				$this->copy($item, $folder->folderWithName($item->name()));
 			}
