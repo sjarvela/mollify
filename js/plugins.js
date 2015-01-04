@@ -1867,6 +1867,26 @@
 
                 var listView = new mollify.view.ConfigListView($c, {
                     actions: [{
+                        id: "action-item-permissions",
+                        content: '<i class="icon-file"></i>',
+                        tooltip: mollify.ui.texts.get('configAdminPermissionsEditItemPermissionsTooltip'),
+                        callback: function(sel) {
+                            mollify.ui.dialogs.itemSelector({
+                                title: mollify.ui.texts.get('configAdminPermissionsEditItemPermissionsTitle'),
+                                message: mollify.ui.texts.get('configAdminPermissionsEditItemPermissionsMessage'),
+                                actionTitle: mollify.ui.texts.get('ok'),
+                                allRoots: true,
+                                handler: {
+                                    onSelect: function(i) {
+                                        that.editItemPermissions(i);
+                                    },
+                                    canSelect: function(f) {
+                                        return true;
+                                    }
+                                }
+                            });
+                        },
+                    }, {
                         id: "action-remove",
                         content: '<i class="icon-trash"></i>',
                         cls: "btn-danger",

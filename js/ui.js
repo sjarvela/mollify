@@ -1956,7 +1956,8 @@
     dh.itemSelector = function(s) {
         var spec = $.extend({
             allowFiles: true,
-            allowFolders: true
+            allowFolders: true,
+            allRoots: false
         }, s);
         var selectedItem = false;
         var content = $("#mollify-tmpl-dialog-itemselector").tmpl({
@@ -1969,7 +1970,7 @@
             if (loaded[parent ? parent.id : "root"]) return;
 
             $selector.addClass("loading");
-            mollify.filesystem.items(parent, spec.allowFiles).done(function(r) {
+            mollify.filesystem.items(parent, spec.allowFiles, spec.allRoots).done(function(r) {
                 $selector.removeClass("loading");
                 loaded[parent ? parent.id : "root"] = true;
 

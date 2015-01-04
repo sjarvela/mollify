@@ -223,6 +223,9 @@
 		"pluginPermissionsEditDialogUnsaved" : "Unsaved modifications",
 		"configAdminPermissionsRemoveConfirmationTitle": "Remove permissions",
 		"configAdminPermissionsRemoveConfirmationMessage": "Are you sure you want to remove selected permissions?",
+		"configAdminPermissionsEditItemPermissionsTooltip": "Edit item permissions",
+		"configAdminPermissionsEditItemPermissionsTitle": "Select item",
+		"configAdminPermissionsEditItemPermissionsMessage": "Select the item which permissions are to be edited:",
 										
 		"pluginPermissionsEditColUser": "User",
 		"pluginPermissionsPermissionName": "Name",

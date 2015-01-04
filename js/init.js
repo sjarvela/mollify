@@ -479,11 +479,11 @@ var mollifyDefaults = {
         return mollify.helpers.hasPermission(mollify.filesystem.permissionCache[((typeof(item) === "string") ? item : item.id)], name, required);
     };
 
-    mfs.items = function(parent, files) {
+    mfs.items = function(parent, files, allRoots) {
         if (parent == null) {
             var df = $.Deferred();
             df.resolve({
-                folders: mfs.roots,
+                folders: (allRoots && mollify.session.user.admin) ? mfs.allRoots : mfs.roots,
                 files: []
             });
             return df.promise();
