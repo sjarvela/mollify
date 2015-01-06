@@ -172,6 +172,10 @@ class LocalFilesystem extends MollifyFilesystem {
 			}
 
 			$fullPath = self::joinPath($nativePath, $name);
+			if (is_link($fullPath) and !file_exists($fullPath)) {
+				Logging::logError("Symbolic link broken: " . $fullPath);
+				continue;
+			}
 			if (is_dir($fullPath)) {
 				$size = $size + $this->folderSizeRecursively($fullPath);
 				continue;
