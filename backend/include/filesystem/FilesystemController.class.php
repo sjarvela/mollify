@@ -407,20 +407,6 @@ class FilesystemController {
 		return array('mollify.dsc', 'mollify.uac');//TODO get from settings and/or configuration etc
 	}
 
-	public function createItem($item) {
-		if ($item == NULL) {
-			return;
-		}
-
-		if ($item->exists()) {
-			throw new ServiceException("FILE_ALREADY_EXISTS");
-		}
-
-		$parent = $item->parent();
-		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create file/folder");
-		return $item->create();
-	}
-
 	public function items($folder) {
 		$this->env->permissions()->prefetchFilesystemChildrenPermissions("filesystem_item_access", $folder);
 		$this->assertRights($folder, self::PERMISSION_LEVEL_READ, "items");
@@ -671,13 +657,51 @@ class FilesystemController {
 		}
 	}
 
+	public function createItem($item) {
+		if ($item == NULL) {
+			return;
+		}
+
+		if ($item->exists()) {
+			throw new ServiceException("FILE_ALREADY_EXISTS");
+		}
+
+		$parent = $item->parent();
+		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create item");
+		$this->validateAction(FileEvent::CREATE_ITEM, $item);
+		if ($this->triggerActionInterceptor(FileEvent::CREATE_ITEM, $item)) {
+			return;
+		}
+
+		return $item->create();
+	}
+
+	public function createFile($parent, $name) {
+		Logging::logDebug('creating file [' . $parent->id() . '/' . $name . ']');
+		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create file");
+
+		$target = $parent->fileWithName($name);
+		$this->validateAction(FileEvent::CREATE_ITEM, $target);
+		if ($this->triggerActionInterceptor(FileEvent::CREATE_ITEM, $target)) {
+			return;
+		}
+
+		$new = $parent->createFile($name);
+		$this->env->events()->onEvent(FileEvent::createItem($new));
+	}
+
 	public function createFolder($parent, $name) {
 		Logging::logDebug('creating folder [' . $parent->id() . '/' . $name . ']');
 		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create folder");
 
+		$target = $parent->folderWithName($name);
+		$this->validateAction(FileEvent::CREATE_FOLDER, $target);
+		if ($this->triggerActionInterceptor(FileEvent::CREATE_FOLDER, $target)) {
+			return;
+		}
+
 		$new = $parent->createFolder($name);
 		$this->env->events()->onEvent(FileEvent::createFolder($new));
-
 	}
 
 	public function download($file, $mobile, $range = NULL) {
@@ -1082,6 +1106,10 @@ class FileEvent extends Event {
 		return new FileEvent($item, self::DELETE);
 	}
 
+	static function createItem($item) {
+		return new FileEvent($item, self::CREATE_ITEM);
+	}
+
 	static function createFolder($folder) {
 		return new FileEvent($folder, self::CREATE_FOLDER);
 	}
@@ -1096,10 +1124,6 @@ class FileEvent extends Event {
 
 	static function view($item) {
 		return new FileEvent($item, self::VIEW);
-	}
-
-	static function createItem($item) {
-		return new FileEvent($item, self::CREATE_ITEM);
 	}
 
 	function __construct($item, $type, $info = NULL) {
