@@ -72,7 +72,8 @@ var mollifyDefaults = {
 
         mollify.App._initialized = false;
         mollify.App._views = {};
-        mollify.App.pageUrl = mollify.request.getBaseUrl(window.location.href);
+        mollify.App.baseUrl = mollify.request.getBaseUrl(window.location.href);
+        mollify.App.pageUrl = mollify.request.getPageUrl(window.location.href);
         mollify.App.pageParams = mollify.request.getParams(window.location.href);
         mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
@@ -287,10 +288,15 @@ var mollifyDefaults = {
         },
         getBaseUrl: function(url) {
             var param = url.lastIndexOf('?');
-            if (param >= 0) url = url.substring(0, param + 1);
+            if (param >= 0) url = url.substring(0, param);
 
             var dash = url.lastIndexOf('/');
             return url.substring(0, dash + 1);
+        },
+        getPageUrl: function(url) {
+            var param = url.lastIndexOf('?');
+            if (param >= 0) url = url.substring(0, param);
+            return url;
         }
     }
 
@@ -326,7 +332,7 @@ var mollifyDefaults = {
         if (u.startsWith('http')) return u;
         var url = mollify.settings["service-path"] + "r.php/" + u;
         if (!full) return url;
-        return mollify.App.pageUrl + url;
+        return mollify.App.baseUrl + url;
     };
 
     st.get = function(url, s, err) {
