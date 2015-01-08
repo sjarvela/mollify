@@ -676,18 +676,23 @@ class FilesystemController {
 		return $item->create();
 	}
 
-	public function createFile($parent, $name) {
+	public function createFile($parent, $name, $content = NULL, $size = 0) {
 		Logging::logDebug('creating file [' . $parent->id() . '/' . $name . ']');
 		$this->assertRights($parent, self::PERMISSION_LEVEL_READWRITE, "create file");
 
 		$target = $parent->fileWithName($name);
-		$this->validateAction(FileEvent::CREATE_ITEM, $target);
-		if ($this->triggerActionInterceptor(FileEvent::CREATE_ITEM, $target)) {
-			return;
+		$this->validateAction(FileEvent::CREATE_ITEM, $target, array("size" => $size));
+		if ($this->triggerActionInterceptor(FileEvent::CREATE_ITEM, $target, array("size" => $size))) {
+			return NULL;
 		}
 
 		$new = $parent->createFile($name);
+		if ($content != NULL) {
+			$new->put($content);
+		}
+
 		$this->env->events()->onEvent(FileEvent::createItem($new));
+		return $new;
 	}
 
 	public function createFolder($parent, $name) {
@@ -702,6 +707,7 @@ class FilesystemController {
 
 		$new = $parent->createFolder($name);
 		$this->env->events()->onEvent(FileEvent::createFolder($new));
+		return $new;
 	}
 
 	public function download($file, $mobile, $range = NULL) {
@@ -773,12 +779,13 @@ class FilesystemController {
 		return $file->read();
 	}
 
-	public function updateFileContents($item, $content) {
+	public function updateFileContents($item, $content, $size = 0) {
 		if (!$item->isFile()) {
 			throw new ServiceException("NOT_A_FILE", $item->path());
 		}
-		$this->validateAction(FileEvent::UPLOAD, $item);
-		if ($this->triggerActionInterceptor(FileEvent::UPLOAD, $item, array("name" => $item->name(), "target" => $item))) {
+
+		$this->validateAction(FileEvent::UPDATE_CONTENT, $item, array("size" => $size));
+		if ($this->triggerActionInterceptor(FileEvent::UPDATE_CONTENT, $item, array("name" => $item->name(), "target" => $item, "size" => $size))) {
 			return;
 		}
 
@@ -786,7 +793,7 @@ class FilesystemController {
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITE, "update content");
 
 		$item->put($content);
-		$this->env->events()->onEvent(FileEvent::upload($item));
+		$this->env->events()->onEvent(FileEvent::updateContent($item));
 	}
 
 	public function getUploadTempDir() {
@@ -1074,6 +1081,7 @@ class FileEvent extends Event {
 	const UPLOAD = "upload";
 	const VIEW = "view";
 	const CREATE_ITEM = "create_item";
+	const UPDATE_CONTENT = "update_content";
 
 	private $item;
 	private $info;
@@ -1120,6 +1128,10 @@ class FileEvent extends Event {
 
 	static function upload($item) {
 		return new FileEvent($item, self::UPLOAD);
+	}
+
+	static function updateContent($item) {
+		return new FileEvent($item, self::UPDATE_CONTENT);
 	}
 
 	static function view($item) {
