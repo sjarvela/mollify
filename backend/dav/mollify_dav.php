@@ -123,11 +123,12 @@ class Mollify_DAV_Folder extends Sabre_DAV_Directory {
 	}
 
 	public function createFile($name, $data = null) {
-		$file = $this->controller->createFile($this->folder, $name);
 		if ($data != NULL) {
 			checkUploadSize();
-			$this->controller->updateFileContents($file, $data);
 		}
+		$size = ($data != NULL and isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : 0;
+		$file = $this->controller->createFile($this->folder, $name, $data, $size);
+
 		return $file;
 	}
 
@@ -178,7 +179,8 @@ class Mollify_DAV_File extends Sabre_DAV_File {
 			checkUploadSize();
 		}
 
-		$this->controller->updateFileContents($this->file, $data);
+		$size = ($data != NULL and isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : 0;
+		$this->controller->updateFileContents($this->file, $data, $size);
 	}
 
 	public function delete() {
