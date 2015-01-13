@@ -463,6 +463,11 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 	float: left;
 }
 
+#mollify-fileview-folder-info {
+	display: inline-block;
+	vertical-align: middle;
+}
+
 #mollify-folder-name > h2, #mollify-fileview-folder-actions {
 	display: inline-block;
 	vertical-align: middle;

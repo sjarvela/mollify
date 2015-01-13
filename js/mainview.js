@@ -778,6 +778,10 @@
             var rq = (!that._currentFolder || !that._currentFolder.type) ? {
                 'core-parent-description': {}
             } : {};
+            $.each(mollify.plugins.getFileViewPlugins(), function(i, p) {
+                if (p.fileViewHandler.getDataRequest)
+                    rq = $.extend(rq, p.fileViewHandler.getDataRequest(that._currentFolder));
+            });
             return $.extend(rq, that.itemWidget.getDataRequest ? that.itemWidget.getDataRequest() : {});
         };
 
@@ -1102,6 +1106,13 @@
 
             // update file list
             that._updateList();
+
+            mollify.events.dispatch('fileview/init', {
+                folder: that._currentFolder,
+                data: that._currentFolderData,
+                canWrite: that._canWrite(),
+                fileview: that
+            });
 
             that.hideProgress();
         };
