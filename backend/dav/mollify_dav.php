@@ -19,13 +19,53 @@ class VoidResponseHandler {
 	public function addListener($l) {}
 }
 
-class TemporarySession extends Session {
+class WebDavSession extends Session {
 	public function __construct() {
 		parent::__construct(FALSE);// don't use cookies
 	}
 
+	public function init($user) {
+		$this->id = "webdav_" . $_SERVER['REMOTE_ADDR'] . "_" . $this->user["id"];
+		$this->user = $user;
+	}
+
 	protected function getDao() {
 		return $this;
+	}
+
+	public function setValue($name, $value) {
+		$now = $time = time();
+		$time = $this->env->configuration()->formatTimestampInternal($now);
+
+		$db = $this->env->db();
+		$idStr = $db->string($this->id, TRUE);
+		$timeStr = $db->string($time);
+
+		$count = $db->update(sprintf("UPDATE " . $db->table("session") . " set last_access=%s where id=%s", $db->string($time), $db->string($this->id, TRUE)));
+		if ($count === 0) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+			$db->update(sprintf("INSERT INTO " . $db->table("session") . " (id, user_id, ip, time, last_access) VALUES (%s, %s, %s, %s, %s)", $idStr, $db->string($this->user["id"]), $db->string($ip, TRUE), $timeStr, $timeStr));
+		}
+
+		$c = $db->update(sprintf("UPDATE " . $db->table("session_data") . " set value=%s where session_id=%s and name=%s", $db->string($value, TRUE), $idStr, $db->string($name, TRUE)));
+		if ($c === 0) {
+			$db->update(sprintf("INSERT INTO " . $db->table("session_data") . " (session_id, name, value) VALUES (%s, %s, %s)", $idStr, $db->string($name, TRUE), $db->string($value, TRUE)));
+		}
+	}
+
+	public function getValue($name) {
+		$db = $this->env->db();
+		$row = $db->query(sprintf("select name, value from " . $db->table("session_data") . " where session_id = %s and name=%s", $db->string($this->id, TRUE), $db->string($name, TRUE)))->firstRow();
+		if ($row != NULL) {
+			return $row["value"];
+		}
+
+		return NULL;
+	}
+
+	public function removeValue($name) {
+		$db = $this->env->db();
+		$db->update(sprintf("delete from " . $db->table("session_data") . " where session_id = %s and name=%s", $db->string($this->id, TRUE), $db->string($name, TRUE)));
 	}
 
 	// override session DAO persistence functions ->
@@ -52,6 +92,17 @@ class TemporarySession extends Session {
 }
 
 class Mollify_DAV_Request {
+	private $windowsClient = FALSE;
+
+	public function init($rq) {
+		$this->windowsClient = (stripos($rq->getHeader("user-agent"), "Microsoft") !== FALSE);
+		Logging::logDebug("Windows: " . ($this->windowsClient ? "1" : "0"));
+	}
+
+	public function isWindowsClient() {
+		return $this->windowsClient;
+	}
+
 	public function ip() {return $_SERVER['REMOTE_ADDR'];}
 
 	public function getSessionId() {return NULL;}
@@ -59,6 +110,14 @@ class Mollify_DAV_Request {
 	public function hasData($k) {return FALSE;}
 
 	public function log() {}
+
+	public function hasParam($param) {
+		return $param == "request-origin";
+	}
+
+	public function param($param) {
+		return ($param == "request-origin") ? "webdav" : NULL;
+	}
 }
 
 function checkUploadSize() {
@@ -74,18 +133,18 @@ function checkUploadSize() {
 }
 
 class Mollify_DAV_Root extends Sabre_DAV_Directory {
-	private $controller;
+	private $env;
 	private $roots;
 
-	function __construct($controller) {
-		$this->controller = $controller;
-		$this->roots = $this->controller->getRootFolders();
+	function __construct($env) {
+		$this->env = $env;
+		$this->roots = $this->env->filesystem()->getRootFolders();
 	}
 
 	function getChildren() {
 		$children = array();
 		foreach ($this->roots as $root) {
-			$children[] = new Mollify_DAV_Folder($this->controller, $root);
+			$children[] = new Mollify_DAV_Folder($this->env, $root);
 		}
 
 		return $children;
@@ -97,17 +156,17 @@ class Mollify_DAV_Root extends Sabre_DAV_Directory {
 }
 
 class Mollify_DAV_Folder extends Sabre_DAV_Directory {
-	private $controller;
+	private $env;
 	private $folder;
 
-	function __construct($controller, $folder) {
-		$this->controller = $controller;
+	function __construct($env, $folder) {
+		$this->env = $env;
 		$this->folder = $folder;
 	}
 
 	public function getChildren() {
 		$children = array();
-		foreach ($this->controller->items($this->folder) as $i) {
+		foreach ($this->env->filesystem()->items($this->folder) as $i) {
 			$children[] = $this->createItem($i);
 		}
 
@@ -116,10 +175,10 @@ class Mollify_DAV_Folder extends Sabre_DAV_Directory {
 
 	private function createItem($item) {
 		if ($item->isFile()) {
-			return new Mollify_DAV_File($this->controller, $item);
+			return new Mollify_DAV_File($this->env, $item);
 		}
 
-		return new Mollify_DAV_Folder($this->controller, $item);
+		return new Mollify_DAV_Folder($this->env, $item);
 	}
 
 	public function createFile($name, $data = null) {
@@ -127,17 +186,28 @@ class Mollify_DAV_Folder extends Sabre_DAV_Directory {
 			checkUploadSize();
 		}
 		$size = ($data != NULL and isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : 0;
-		$file = $this->controller->createFile($this->folder, $name, $data, $size);
+
+		try {
+			$file = $this->env->filesystem()->createFile($this->folder, $name, $data, $size);
+		} catch (Exception $e) {
+			Logging::logException($e);
+			throw new Sabre_DAV_Exception_Forbidden();
+		}
 
 		return $file;
 	}
 
 	public function createDirectory($name) {
-		return $this->controller->createFolder($this->folder, $name);
+		try {
+			return $this->env->filesystem()->createFolder($this->folder, $name);
+		} catch (Exception $e) {
+			Logging::logException($e);
+			throw new Sabre_DAV_Exception_Forbidden();
+		}
 	}
 
 	public function delete() {
-		$this->controller->delete($this->folder);
+		$this->env->filesystem()->delete($this->folder);
 	}
 
 	public function getName() {
@@ -145,7 +215,7 @@ class Mollify_DAV_Folder extends Sabre_DAV_Directory {
 	}
 
 	public function setName($name) {
-		$this->controller->rename($this->folder, $name);
+		$this->env->filesystem()->rename($this->folder, $name);
 	}
 
 	public function getLastModified() {
@@ -154,11 +224,11 @@ class Mollify_DAV_Folder extends Sabre_DAV_Directory {
 }
 
 class Mollify_DAV_File extends Sabre_DAV_File {
-	private $controller;
+	private $env;
 	private $file;
 
-	function __construct($controller, $file) {
-		$this->controller = $controller;
+	function __construct($env, $file) {
+		$this->env = $env;
 		$this->file = $file;
 	}
 
@@ -167,24 +237,59 @@ class Mollify_DAV_File extends Sabre_DAV_File {
 	}
 
 	public function setName($name) {
-		$this->controller->rename($this->file, $name);
+		$this->env->filesystem()->rename($this->file, $name);
 	}
 
 	public function get() {
-		return $this->controller->read($this->file);
+		return $this->env->filesystem()->read($this->file);
 	}
 
 	public function put($data) {
-		if ($data != NULL) {
-			checkUploadSize();
+		if ($data == NULL) {
+			Logging::logDebug("Ignoring empty update");
+			return;
+		}
+		checkUploadSize();
+
+		$oldSize = ($this->file->exists() ? filesize($this->file->internalPath()) : NULL);
+		$size = (isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : NULL;
+		Logging::logDebug("Update " . $size);
+		if ($size == 0) {
+			Logging::logDebug("Ignoring empty update");
+			return;
 		}
 
-		$size = ($data != NULL and isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : 0;
-		$this->controller->updateFileContents($this->file, $data, $size);
+		try {
+			$this->env->filesystem()->updateFileContents($this->file, $data, $size);
+		} catch (Exception $e) {
+			Logging::logException($e);
+			if ($oldSize != 0 and $this->env->request()->isWindowsClient()) {
+				// windows tries to clean up interrupted overwrite
+				// for existing files this is not acceptable, ignore later delete request
+				Logging::logDebug("File update failed, marking delete ignore");
+				$this->env->session()->setValue("ignore_delete_" . $this->file->id(), "" . time());
+			}
+			throw new Sabre_DAV_Exception_Forbidden();
+		}
 	}
 
 	public function delete() {
-		$this->controller->delete($this->file);
+		if ($this->env->request()->isWindowsClient()) {
+			$ignoreKey = "ignore_delete_" . $this->file->id();
+			$v = $this->env->session()->getValue($ignoreKey);
+			if ($v != NULL) {
+				$diff = time() - intval($v);
+				Logging::logDebug("Delete ignore: " . $v . " diff=" . $diff);
+				if ($diff < 60) {
+					Logging::logDebug("Item marked ignore for delete, skipping");
+					$this->env->session()->removeValue($ignoreKey);
+					return;
+				}
+			}
+		}
+		if ($this->file->exists()) {
+			$this->env->filesystem()->delete($this->file);
+		}
 	}
 
 	public function getSize() {
@@ -200,15 +305,23 @@ class Mollify_DAV_File extends Sabre_DAV_File {
 	}
 }
 
+class Mollify_DAV_Server extends Sabre_DAV_Server {
+	public function exec() {
+		Logging::logDebug("WebDAV request: " . Util::array2str($this->httpRequest->getHeaders()));
+		parent::exec();
+	}
+}
+
 try {
 	$settings = new Settings($CONFIGURATION);
 	$db = getDB($settings);
 	$conf = new ConfigurationDao($db);
+	$session = new WebDavSession();
 
-	$env = new ServiceEnvironment($db, new TemporarySession(), new VoidResponseHandler(), $conf, $settings);
+	$env = new ServiceEnvironment($db, $session, new VoidResponseHandler(), $conf, $settings);
 	$env->plugins()->setup();
-
-	$env->initialize(new Mollify_DAV_Request());
+	$rq = new Mollify_DAV_Request();
+	$env->initialize($rq);
 
 	if (isset($BASIC_AUTH) and $BASIC_AUTH == TRUE) {
 		$auth = new Sabre_HTTP_BasicAuth();
@@ -269,7 +382,11 @@ try {
 		$env->authentication()->setAuth($user, "pw");
 	}
 
-	$dav = new Sabre_DAV_Server(new Mollify_DAV_Root($env->filesystem()));
+	$session->init($user);
+
+	$dav = new Mollify_DAV_Server(new Mollify_DAV_Root($env));
+	$rq->init($dav->httpRequest);
+
 	$dav->setBaseUri($BASE_URI);
 	if ($ENABLE_LOCKING) {
 		$dav->addPlugin(new Sabre_DAV_Locks_Plugin(new Sabre_DAV_Locks_Backend_FS('data')));
