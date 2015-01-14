@@ -775,6 +775,7 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 	height: 145px;
 	margin-left: 13px;
 	margin-top: 14px;
+	overflow: hidden;
 }
 
 .mollify-iconview.iconview-small .mollify-iconview-item-icon, .mollify-iconview.iconview-small .mollify-iconview-item-icon-thumb {
