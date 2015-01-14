@@ -300,7 +300,7 @@ class Mollify_PermissionsController {
 	}
 
 	public function temporaryFilesystemPermission($name, $item, $permission) {
-		$this->putToCache($name, $item->id(), $permission);
+		$this->putToCache($name, is_array($item) ? $item["id"] : (is_string($item) ? $item : $item->id()), $permission);
 	}
 
 	public function getPermissions($name = NULL, $subject = NULL, $userId = NULL) {

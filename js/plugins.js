@@ -2991,7 +2991,7 @@
                     var value = $("#share-access-public-password-value").val();
                     if (!oldRestrictionPw && (!value || value.length === 0)) {
                         $("#share-access-public-password-value").addClass("error");
-                        return;
+                        return false;
                     }
                     restriction = {
                         type: "pw",
@@ -3007,7 +3007,9 @@
                 };
             }
             $("#share-addedit-btn-ok").click(function() {
-                o.onEdit(getValues());
+                var v = getValues();
+                if (!v) return;
+                o.onEdit(v);
             });
 
             $("#share-addedit-btn-cancel").click(function() {

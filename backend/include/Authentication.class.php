@@ -204,7 +204,7 @@ class Authentication {
 	}
 
 	public function isAuthenticated() {
-		return $this->env->session()->isActive();
+		return $this->env->session()->isActive() and ($this->env->session()->userId() != 0);
 	}
 
 	function assertAdmin() {
