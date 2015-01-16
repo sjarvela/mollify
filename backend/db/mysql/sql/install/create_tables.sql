@@ -43,12 +43,6 @@ CREATE TABLE `{TABLE_PREFIX}item_id` (
   `path` char(255) NOT NULL UNIQUE
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify item ids';
 
-CREATE TABLE `{TABLE_PREFIX}item_description` (
-  `item_id` char(255) NOT NULL,
-  `description` varchar(512) NOT NULL,
-  PRIMARY KEY (`item_id`)
-) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify item descriptions';
-
 CREATE TABLE `{TABLE_PREFIX}permission` (
   `name` char(64) NOT NULL,
   `user_id` int(11) NULL DEFAULT 0,
@@ -97,3 +91,10 @@ CREATE TABLE `{TABLE_PREFIX}session_data` (
   `value` varchar(128) NULL,
   PRIMARY KEY (`session_id`, `name`)
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify session data';
+
+CREATE TABLE `{TABLE_PREFIX}metadata` (
+  `item_id` char(255) NOT NULL,
+  `key` char(128) NOT NULL,
+  `value` varchar(512) NULL,
+  PRIMARY KEY (`item_id`, `key`)
+) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify metadata';

@@ -21,6 +21,7 @@ class FilesystemController {
 	const PERMISSION_LEVEL_READWRITEDELETE = "rwd";
 
 	private $env;
+	private $metadata;
 	private $allowedUploadTypes;
 	private $permissionCache = array();
 	private $folderCache = array();
@@ -46,6 +47,7 @@ class FilesystemController {
 
 		$this->env = $env;
 		$this->idProvider = new ItemIdProvider($env);
+		$this->metadata = new Mollify_MetadataController($env);
 
 		$this->allowedUploadTypes = $env->settings()->setting('allowed_file_upload_types');
 		$this->forbiddenUploadTypes = $env->settings()->setting('forbidden_file_upload_types');
@@ -69,6 +71,10 @@ class FilesystemController {
 		));
 
 		$this->env->permissions()->registerFilesystemPermission("edit_description");
+
+		$this->metadata->initialize();
+		$this->env->events()->register("filesystem/", $this->metadata);
+
 	}
 
 	public function itemIdProvider() {

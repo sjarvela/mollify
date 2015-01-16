@@ -776,7 +776,7 @@
 
         this.getDataRequest = function() {
             var rq = (!that._currentFolder || !that._currentFolder.type) ? {
-                'core-parent-description': {}
+                'parent-metadata': {}
             } : {};
             $.each(mollify.plugins.getFileViewPlugins(), function(i, p) {
                 if (p.fileViewHandler.getDataRequest)
