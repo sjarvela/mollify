@@ -71,6 +71,10 @@ class Mollify_MetadataController {
 		$this->dao->removeItemMetadata($item, $key);
 	}
 
+	public function find($parent, $key, $value = FALSE, $recursive = FALSE) {
+		return $this->dao->find($parent, $key, $value, $recursive);
+	}
+
 	public function __toString() {
 		return "MetadataController";
 	}

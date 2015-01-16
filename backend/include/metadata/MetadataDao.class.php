@@ -26,7 +26,49 @@ class Mollify_MetadataDao {
 	}
 
 	public function setItemMetadata($id, $key, $value) {
-		$this->db->update(sprintf("INSERT INTO " . $this->db->table("metadata") . " (item_id, md_key, md_value) VALUES (%s, %s, %s)", $this->db->string($id, TRUE), $this->db->string($key, TRUE), $this->db->string($value, TRUE)));
+		$idStr = $this->db->string($id, TRUE);
+		$count = $this->db->update(sprintf("UPDATE " . $this->db->table("metadata") . " set md_value=%s where item_id=%s and md_key=%s", $this->db->string($value, TRUE), $idStr, $this->db->string($key, TRUE)));
+		if ($count == 0) {
+			$this->db->update(sprintf("INSERT INTO " . $this->db->table("metadata") . " (item_id, md_key, md_value) VALUES (%s, %s, %s)", $idStr, $this->db->string($key, TRUE), $this->db->string($value, TRUE)));
+		}
+	}
+
+	public function find($parent, $key, $value = FALSE, $recursive = FALSE) {
+		$p = $this->db->string(str_replace("\\", "\\\\", str_replace("'", "\'", $parent->location())));
+
+		if ($recursive) {
+			$pathFilter = "i.path like '" . $p . "%'";
+		} else {
+			if (strcasecmp("mysql", $this->env->db()->type()) == 0) {
+				$pathFilter = "i.path REGEXP '^" . $p . "[^/\\\\]+[/\\\\]?$'";
+			} else {
+				$pathFilter = "REGEX(i.path, \"#^" . $p . "[^/\\\\]+[/\\\\]?$#\")";
+			}
+		}
+
+		$query = "SELECT item_id, md_key, md_value from " . $this->db->table("metadata") . " md, " . $this->db->table("item_id") . " i where md.item_id = i.id AND " . $pathFilter;
+		if ($value) {
+			$query .= " and md_value like '%" . $this->db->string($value) . "%'";
+		}
+
+		if ($value) {
+			return $this->db->query($query)->valueMap("item_id", "md_value");
+		} else {
+			return $this->db->query($query)->listMap("item_id");
+		}
+	}
+
+	public function getItemDescriptions($items) {
+		$itemIds = array();
+		foreach ($items as $item) {
+			$itemIds[] = $item->id();
+		}
+		if (count($itemIds) == 0) {
+			return array();
+		}
+
+		$query = "SELECT item_id, description from " . $this->db->table("item_description") . " where item_id in (" . $this->db->arrayString($itemIds, TRUE) . ")";
+		return $this->db->query($query)->valueMap("item_id", "description");
 	}
 
 	public function removeItemMetadata($item, $key = NULL) {
@@ -55,9 +97,9 @@ class Mollify_MetadataDao {
 
 	public function deleteMetadata($item) {
 		if ($item->isFile()) {
-			return $this->db->update("DELETE FROM " . $db->table("metadata") . " WHERE item_id = " . $this->db->string($item->id(), TRUE));
+			return $this->db->update("DELETE FROM " . $this->db->table("metadata") . " WHERE item_id = " . $this->db->string($item->id(), TRUE));
 		} else {
-			return $this->db->update(sprintf("DELETE FROM " . $db->table("metadata") . " WHERE item_id in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", str_replace("'", "\'", $this->db->string($item->location()))));
+			return $this->db->update(sprintf("DELETE FROM " . $this->db->table("metadata") . " WHERE item_id in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", str_replace("'", "\'", $this->db->string($item->location()))));
 		}
 	}
 

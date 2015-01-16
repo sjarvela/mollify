@@ -74,12 +74,45 @@ class FilesystemController {
 		$this->env->permissions()->registerFilesystemPermission("edit_description");
 
 		$this->metadata->initialize();
-		$this->env->events()->register("filesystem/", $this->metadata);
+		$this->env->events()->register("filesystem/", $this);
 
+	}
+
+	public function onEvent($e) {
+		if (strcmp(FilesystemController::EVENT_TYPE_FILE, $e->type()) != 0) {
+			return;
+		}
+
+		$this->metadata->onEvent($e);
+
+		$type = $e->subType();
+
+		if ($type === FileEvent::CREATE_ITEM or $type === FileEvent::CREATE_FOLDER or $type === FileEvent::UPLOAD) {
+			$this->setCreatedMetadata($e->item());
+		}
+	}
+
+	public function setCreatedMetadata($item, $time = NULL, $by = NULL) {
+		$t = $time;
+		if ($t == NULL) {
+			$t = '' . $this->env->configuration()->formatTimestampInternal(time());
+		}
+
+		$u = $by;
+		if ($u == NULL) {
+			$u = $this->env->session()->userId();
+		}
+
+		$this->metadata->set($item, "created", $t);
+		$this->metadata->set($item, "created_by", $u);
 	}
 
 	public function itemIdProvider() {
 		return $this->idProvider;
+	}
+
+	public function metadata() {
+		return $this->metadata;
 	}
 
 	public function registerFilesystem($id, $factory) {
@@ -440,7 +473,7 @@ class FilesystemController {
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "details");
 
 		$details = $item->details();
-		$details["description"] = $this->description($item);
+		$details["metadata"] = $this->metadata->get($item);
 		$details["permissions"] = $this->env->permissions()->getAllFilesystemPermissions($item);
 		$details["parent_permissions"] = $item->isRoot() ? NULL : $this->env->permissions()->getAllFilesystemPermissions($item->parent());
 		$details["plugins"] = $this->getItemContextData($item, $details, $data);
@@ -635,10 +668,6 @@ class FilesystemController {
 
 		$item->delete();
 
-		if ($this->env->features()->isFeatureEnabled("descriptions")) {
-			$this->env->configuration()->removeItemDescription($item);
-		}
-
 		$this->env->permissions()->removeFilesystemPermissions($item);
 
 		$this->env->events()->onEvent(FileEvent::delete($item));
@@ -680,7 +709,14 @@ class FilesystemController {
 			return;
 		}
 
-		return $item->create();
+		$new = $item->create();
+		if ($new->isFile()) {
+			$this->env->events()->onEvent(FileEvent::createItem($new));
+		} else {
+			$this->env->events()->onEvent(FileEvent::createFolder($new));
+		}
+
+		return $new;
 	}
 
 	public function createFile($parent, $name, $content = NULL, $size = 0) {

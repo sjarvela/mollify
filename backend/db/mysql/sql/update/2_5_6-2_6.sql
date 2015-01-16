@@ -7,6 +7,6 @@ CREATE TABLE `{TABLE_PREFIX}metadata` (
   PRIMARY KEY (`item_id`, `md_key`)
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify metadata';
 
-INSERT INTO `{TABLE_PREFIX}metadata` (item_id, md_key, md_value) (SELECT item_id, 'description' as 'md_key', description as 'md_value' FROM `{TABLE_PREFIX}item_description`);
+INSERT INTO `{TABLE_PREFIX}metadata` (item_id, md_key, md_value) (SELECT item_id, 'description' as md_key, description as md_value FROM `{TABLE_PREFIX}item_description`);
 
 DROP TABLE `{TABLE_PREFIX}item_description`;
