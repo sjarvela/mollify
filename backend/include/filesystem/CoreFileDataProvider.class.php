@@ -17,7 +17,7 @@ class CoreFileDataProvider {
 	}
 
 	public function init($c) {
-		$c->registerDataRequestPlugin(array("core-file-modified", "core-item-description", "core-parent-description"), $this);
+		$c->registerDataRequestPlugin(array("core-file-modified"), $this);
 	}
 
 	public function getRequestData($parent, $items, $key, $requestData) {

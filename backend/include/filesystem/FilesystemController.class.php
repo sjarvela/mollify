@@ -44,6 +44,7 @@ class FilesystemController {
 		require_once "FilesystemSearcher.class.php";
 		require_once "CoreFileDataProvider.class.php";
 		require_once "ItemIdProvider.class.php";
+		require_once "include/metadata/MetadataController.class.php";
 
 		$this->env = $env;
 		$this->idProvider = new ItemIdProvider($env);
@@ -483,7 +484,7 @@ class FilesystemController {
 	}
 
 	public function description($item) {
-		return $this->env->configuration()->getItemDescription($item);
+		return $this->metadata->get($item, "description");
 	}
 
 	public function setDescription($item, $desc) {
@@ -491,7 +492,7 @@ class FilesystemController {
 			throw new ServiceException("INSUFFICIENT_PERMISSIONS");
 		}
 
-		return $this->env->configuration()->setItemDescription($item, $desc);
+		return $this->metadata->set($item, "description", $desc);
 	}
 
 	public function removeDescription($item) {
@@ -499,7 +500,7 @@ class FilesystemController {
 			throw new ServiceException("INSUFFICIENT_PERMISSIONS");
 		}
 
-		return $this->env->configuration()->removeItemDescription($item);
+		return $this->metadata->remove($item, "description");
 	}
 
 	private function allowedFileUploadTypes() {

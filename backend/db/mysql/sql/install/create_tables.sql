@@ -94,7 +94,7 @@ CREATE TABLE `{TABLE_PREFIX}session_data` (
 
 CREATE TABLE `{TABLE_PREFIX}metadata` (
   `item_id` char(255) NOT NULL,
-  `key` char(128) NOT NULL,
-  `value` varchar(512) NULL,
+  `md_key` char(128) NOT NULL,
+  `md_value` varchar(512) NULL,
   PRIMARY KEY (`item_id`, `key`)
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify metadata';

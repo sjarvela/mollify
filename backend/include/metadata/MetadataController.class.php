@@ -44,31 +44,31 @@ class Mollify_MetadataController {
 		$result = array();
 		if (strcmp("item-metadata", $key) === 0) {
 			if ($parent != NULL) {
-				$result = array_merge($result, $this->groupDataByItem($this->dao()->getItemMetadataForChildren($parent->id())));
+				$result = array_merge($result, $this->dao->getItemMetadataForChildren($parent));
 			} else {
 				foreach ($items as $i) {
-					$result[$i->id()] = $this->dao()->getItemMetadata($i->id());
+					$result[$i->id()] = $this->dao->getItemMetadata($i->id());
 				}
 			}
 		} else if (strcmp("parent-metadata", $key) === 0) {
 			if ($parent != NULL) {
-				$result = $this->dao()->getItemMetadata($parent->id());
+				$result = $this->dao->getItemMetadata($parent->id());
 			}
 		}
 
 		return $result;
 	}
 
-	private function groupDataByItem($data) {
-		$result = array();
-		foreach ($data as $row) {
-			$id = $row["item_id"];
-			if (!isset($result[$id])) {
-				$result[$id] = array();
-			}
-			$result[$id][$row["key"]] = $row["value"];
-		}
-		return $result;
+	public function get($item, $key = NULL) {
+		return $this->dao->getItemMetadata($item->id(), $key);
+	}
+
+	public function set($item, $key, $value) {
+		$this->dao->setItemMetadata($item->id(), $key, $value);
+	}
+
+	public function remove($item, $key = NULL) {
+		$this->dao->removeItemMetadata($item, $key);
 	}
 
 	public function __toString() {
