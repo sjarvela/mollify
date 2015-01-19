@@ -68,7 +68,7 @@ class FilesystemController {
 			self::PERMISSION_LEVEL_NONE,
 			self::PERMISSION_LEVEL_READ,
 			self::PERMISSION_LEVEL_READWRITE,
-			self::PERMISSION_LEVEL_READWRITEDELETE
+			self::PERMISSION_LEVEL_READWRITEDELETE,
 		));
 
 		$this->env->permissions()->registerFilesystemPermission("edit_description");
@@ -105,6 +105,31 @@ class FilesystemController {
 
 		$this->metadata->set($item, "created", $t);
 		$this->metadata->set($item, "created_by", $u);
+	}
+
+	public function getCreatedMetadataInfo($item) {
+		$at = $this->metadata->get($item, "created");
+		if ($at == NULL) {
+			return NULL;
+		}
+
+		$by = $this->metadata->get($item, "created_by");
+		if ($by != NULL) {
+			$user = $this->env->configuration()->getUser($by);
+			if ($user == NULL) {
+				$by = NULL;
+			} else {
+				$by = array(
+					"id" => $user["id"],
+					"name" => $user["name"],
+				);
+			}
+
+		}
+		return array(
+			"at" => $at,
+			"by" => $by,
+		);
 	}
 
 	public function itemIdProvider() {
@@ -339,7 +364,7 @@ class FilesystemController {
 			"max_upload_file_size" => Util::inBytes(ini_get("upload_max_filesize")),
 			"max_upload_total_size" => Util::inBytes(ini_get("post_max_size")),
 			"allowed_file_upload_types" => $this->allowedFileUploadTypes(),
-			"forbidden_file_upload_types" => $this->forbiddenFileUploadTypes()
+			"forbidden_file_upload_types" => $this->forbiddenFileUploadTypes(),
 		);
 
 		$this->itemIdProvider()->loadRoots();
@@ -355,7 +380,7 @@ class FilesystemController {
 				"group" => implode("/", $nameParts),
 				"parent_id" => NULL,
 				"root_id" => $folder->id(),
-				"path" => ""
+				"path" => "",
 			);
 		}
 
@@ -371,7 +396,7 @@ class FilesystemController {
 					"group" => implode("/", $nameParts),
 					"parent_id" => NULL,
 					"root_id" => $folder->id(),
-					"path" => ""
+					"path" => "",
 				);
 			}
 		}
@@ -444,7 +469,7 @@ class FilesystemController {
 	}
 
 	public function ignoredItems($filesystem, $path) {
-		return array('mollify.dsc', 'mollify.uac');//TODO get from settings and/or configuration etc
+		return array('mollify.dsc', 'mollify.uac'); //TODO get from settings and/or configuration etc
 	}
 
 	public function items($folder) {
@@ -976,7 +1001,7 @@ class FilesystemController {
 			unlink($origin);
 		}
 
-		if ($range == NULL or ($range[2] >= $range[3]-1)) {
+		if ($range == NULL or ($range[2] >= $range[3] - 1)) {
 			$this->env->events()->onEvent(FileEvent::upload($target));
 		}
 	}

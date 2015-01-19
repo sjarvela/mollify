@@ -13,6 +13,7 @@ require_once "MetadataDao.class.php";
 class Mollify_MetadataController {
 	private $env;
 	private $dao;
+	private $_cache = array();
 
 	public function __construct($env) {
 		$this->env = $env;
@@ -47,12 +48,12 @@ class Mollify_MetadataController {
 				$result = array_merge($result, $this->dao->getItemMetadataForChildren($parent));
 			} else {
 				foreach ($items as $i) {
-					$result[$i->id()] = $this->dao->getItemMetadata($i->id());
+					$result[$i->id()] = $this->get($i);
 				}
 			}
 		} else if (strcmp("parent-metadata", $key) === 0) {
 			if ($parent != NULL) {
-				$result = $this->dao->getItemMetadata($parent->id());
+				$result = $this->get($parent);
 			}
 		}
 
@@ -60,15 +61,40 @@ class Mollify_MetadataController {
 	}
 
 	public function get($item, $key = NULL) {
-		return $this->dao->getItemMetadata($item->id(), $key);
+		$id = $item->id();
+		if (!isset($this->_cache[$id])) {
+			$md = $this->dao->getItemMetadata($id);
+			$this->_cache[$id] = $md;
+		} else {
+			$md = $this->_cache[$id];
+		}
+		if ($key != NULL) {
+			return isset($md[$key]) ? $md[$key] : NULL;
+		}
+
+		return $md;
 	}
 
 	public function set($item, $key, $value) {
-		$this->dao->setItemMetadata($item->id(), $key, $value);
+		$id = $item->id();
+		$this->dao->setItemMetadata($id, $key, $value);
+
+		if (isset($this->_cache[$id])) {
+			$this->_cache[$id][$key] = $value;
+		}
 	}
 
 	public function remove($item, $key = NULL) {
 		$this->dao->removeItemMetadata($item, $key);
+
+		$id = $item->id();
+		if (isset($this->_cache[$id])) {
+			if ($key != NULL) {
+				unset($this->_cache[$id][$key]);
+			} else {
+				unset($this->_cache[$id]);
+			}
+		}
 	}
 
 	public function find($parent, $key, $value = FALSE, $recursive = FALSE) {

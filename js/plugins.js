@@ -302,6 +302,7 @@
             if (dataKey == 'extension') return mollify.ui.texts.get('fileItemContextDataExtension');
             if (dataKey == 'last-modified') return mollify.ui.texts.get('fileItemContextDataLastModified');
             if (dataKey == 'image-size') return mollify.ui.texts.get('fileItemContextDataImageSize');
+            if (dataKey == 'metadata-created') return mollify.ui.texts.get('fileItemContextDataCreated');
 
             /*if (that.specs[dataKey]) {
                 var spec = that.specs[dataKey];
@@ -315,6 +316,7 @@
             if (key == 'size') return that.fileSizeFormatter.format(data);
             if (key == 'last-modified') return that.timestampFormatter.format(mollify.helpers.parseInternalTime(data));
             if (key == 'image-size') return mollify.ui.texts.get('fileItemContextDataImageSizePixels', [data]);
+            if (key == 'metadata-created') return that.timestampFormatter.format(mollify.helpers.parseInternalTime(data.at)) + "&nbsp;<i class='icon-user'/>&nbsp;" + data.by.name;
 
             if (that.specs[key]) {
                 var spec = that.specs[key];

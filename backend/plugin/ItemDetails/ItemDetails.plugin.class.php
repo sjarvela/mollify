@@ -3,7 +3,7 @@
 /**
  * ItemDetails.plugin.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -76,7 +76,20 @@ class ItemDetails extends PluginBase {
 			return $this->env->configuration()->formatTimestampInternal($item->lastModified());
 		}
 
+		if (strcmp($key, "metadata-created") === 0) {
+			return $this->env->filesystem()->getCreatedMetadataInfo($item);
+		}
+
 		if (strcmp($key, "image-size") === 0) {
+			if (!$item->exists()) {
+				return "0x0";
+			}
+
+			$filesize = filesize($item->internalPath());
+			if ($filesize == 0) {
+				return "0x0";
+			}
+
 			$size = getimagesize($item->internalPath());
 			return $size == NULL ? NULL : $size[0] . "x" . $size[1];
 		}
