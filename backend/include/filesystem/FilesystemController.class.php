@@ -87,8 +87,13 @@ class FilesystemController {
 
 		$type = $e->subType();
 
-		if ($type === FileEvent::CREATE_ITEM or $type === FileEvent::CREATE_FOLDER or $type === FileEvent::UPLOAD) {
-			$this->setCreatedMetadata($e->item());
+		if ($type === FileEvent::CREATE_ITEM or $type === FileEvent::CREATE_FOLDER or $type === FileEvent::UPLOAD or $type === FileEvent::COPY) {
+			$item = $e->item();
+			if ($type === FileEvent::COPY) {
+				$item = $e->info();
+			}
+
+			$this->setCreatedMetadata($item);
 		}
 	}
 
