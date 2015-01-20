@@ -412,6 +412,7 @@
 		"configAdminGroupsRemoveGroupConfirmationTitle": "Gruppe entfernen",
 		"configAdminGroupsRemoveGroupConfirmationMessage": "Gruppe \"{0}\" wirklich entfernen?",
 		"configAdminGroupsPermissionsTitle": "Allgemeine/Standard Gruppenberechtigungen",
+		"configAdminGroupsNameTitle": "Gruppenname",
 		
 		"registrationNewTitle": "Registrieren",
 		"registrationNewName": "Name",
