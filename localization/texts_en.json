@@ -87,6 +87,9 @@
 		"mainViewSearchResultsTitle" : "Found {0} results",
 		"mainViewSearchResultsDesc" : "Searching \"{0}\"",
 		"mainViewSearchResultTooltipMatches" : "Matches: ",
+		"mainViewSearchResultTooltipMatchType_name" : "Name",
+		"mainViewSearchResultTooltipMatchType_description" : "Description",
+		"mainViewSearchResultTooltipMatchType_comment" : "Comment",
 
 		"uploaderWidgetTitle": "Upload new file(s) by clicking or dragging files here:",
 		"mainviewUploadProgressOneMessage": "Uploading 1 file",

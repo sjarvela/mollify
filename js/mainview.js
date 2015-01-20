@@ -522,7 +522,7 @@
                         var first = true;
                         $.each(l, function(i, li) {
                             if (!first) r = r + ", ";
-                            r = r + li.type;
+                            r = r + mollify.ui.texts.get('mainViewSearchResultTooltipMatchType_' + li.type);
                             first = false;
                         });
                         return r;
@@ -1148,7 +1148,7 @@
                 }
             });
 
-            // REFRESH					
+            // REFRESH                  
             mollify.dom.template("mollify-tmpl-fileview-foldertools-action", {
                 icon: 'icon-refresh'
             }, opt).appendTo($c).click(that.refresh);
@@ -1156,7 +1156,7 @@
 
         this._getViewItems = function() {
             //if (that._currentFolder && that._currentFolder.type && that._customFolderTypes[that._currentFolder.type])
-            //	return
+            //  return
             return that._currentFolderData.items;
         };
 
@@ -1525,14 +1525,14 @@
                 '-ms-user-select': 'none'
             });
             /*.draggable({
-				revert: "invalid",
-				distance: 10,
-				addClasses: false,
-				zIndex: 2700
-			}).droppable({
-				hoverClass: "drophover",
-				accept: function(i) { return t.p.canDrop ? t.p.canDrop($(this).tmplItem().data, $(i).tmplItem().data) : false; }
-			})*/
+                revert: "invalid",
+                distance: 10,
+                addClasses: false,
+                zIndex: 2700
+            }).droppable({
+                hoverClass: "drophover",
+                accept: function(i) { return t.p.canDrop ? t.p.canDrop($(this).tmplItem().data, $(i).tmplItem().data) : false; }
+            })*/
 
             if (mollify.ui.draganddrop) {
                 mollify.ui.draganddrop.enableDrag($items, {
@@ -1573,8 +1573,8 @@
         };
 
         /*this.getItemContextElement = function(item) {
-			return t.$l.find("#mollify-iconview-item-"+item.id);
-		};*/
+            return t.$l.find("#mollify-iconview-item-"+item.id);
+        };*/
 
         this.getItemContextElement = function(item) {
             return t.$l.find("#mollify-iconview-item-" + item.id);
@@ -1677,11 +1677,11 @@
                         }
                     });
                     /*.draggable({
-                    						axis: "x",
-                    						helper: "clone",
-                    						revert: "invalid",
-                    						distance: 30
-                    					});*/
+                                            axis: "x",
+                                            helper: "clone",
+                                            revert: "invalid",
+                                            distance: 30
+                                        });*/
                 }
                 if (col["on-init"]) col["on-init"](t);
             });
@@ -1817,25 +1817,25 @@
             }
 
             /*.click(function(e) {
-				e.preventDefault();
-				t.onItemClick($(this), $(e.srcElement), true);
-				return false;
-			})*/
+                e.preventDefault();
+                t.onItemClick($(this), $(e.srcElement), true);
+                return false;
+            })*/
 
             /*t.$i.find(".mollify-filelist-quickmenu").click(function(e) {
-				e.preventDefault();
-				var $t = $(this);
-				t.p.onMenuOpen($t.tmplItem().data, $t);
-			});*/
+                e.preventDefault();
+                var $t = $(this);
+                t.p.onMenuOpen($t.tmplItem().data, $t);
+            });*/
 
             /*t.$i.find(".mollify-filelist-item-name-title").click(function(e) {
-				e.preventDefault();
-				t.p.onClick($(this).tmplItem().data, "name");
-			});*/
+                e.preventDefault();
+                t.p.onClick($(this).tmplItem().data, "name");
+            });*/
             /*t.$i.find(".item-folder .mollify-filelist-item-name-title").click(function(e) {
-				e.preventDefault();
-				t.p.onFolderSelected($(this).tmplItem().data);
-			});*/
+                e.preventDefault();
+                t.p.onFolderSelected($(this).tmplItem().data);
+            });*/
 
             t.updateColWidths();
 
