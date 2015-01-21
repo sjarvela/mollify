@@ -32,6 +32,7 @@ class PDFViewer extends EmbeddedContentViewer {
 
 	private function convert($item, $page) {
 		$im = new Imagick($item->internalPath() . '[' . ($page - 1) . ']');
+		$im->setResolution(1600, 1600);
 		$im->setImageFormat('jpg');
 		header('Content-Type: image/jpeg');
 		echo $im;
