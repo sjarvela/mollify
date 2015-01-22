@@ -633,16 +633,33 @@ var mollifyDefaults = {
         });
     };
 
-    mfs._copy = function(i, to, acceptKeys) {
-        return mollify.service.post("filesystem/" + i.id + "/copy/", {
+    mfs._copy = function(i, to, acceptKeys, overwrite) {
+        var df = $.Deferred();
+        mollify.service.post("filesystem/" + i.id + "/copy/", {
             folder: to.id,
+            overwrite: !!overwrite,
             acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/copy', {
                 items: [i],
                 to: to
             });
+            df.resolve(r);
+        }).fail(function(e) {
+            if (e.code == 204) {
+                this.handled = true;
+                mollify.ui.dialogs.confirmation({
+                    title: mollify.ui.texts.get('copyOverwriteConfirmationTitle'),
+                    message: mollify.ui.texts.get('copyOverwriteConfirmationMsg', [i.name]),
+                    callback: function() {
+                        mfs._copy(i, to, acceptKeys, true).done(df.resolve).fail(df.reject);
+                    }
+                })
+            } else {
+                df.reject(e);
+            }
         });
+        return df;
     };
 
     mfs._copyMany = function(i, to, acceptKeys) {

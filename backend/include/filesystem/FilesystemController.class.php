@@ -65,7 +65,7 @@ class FilesystemController {
 			self::PERMISSION_LEVEL_NONE,
 			self::PERMISSION_LEVEL_READ,
 			self::PERMISSION_LEVEL_READWRITE,
-			self::PERMISSION_LEVEL_READWRITEDELETE
+			self::PERMISSION_LEVEL_READWRITEDELETE,
 		));
 
 		$this->env->permissions()->registerFilesystemPermission("edit_description");
@@ -299,7 +299,7 @@ class FilesystemController {
 			"max_upload_file_size" => Util::inBytes(ini_get("upload_max_filesize")),
 			"max_upload_total_size" => Util::inBytes(ini_get("post_max_size")),
 			"allowed_file_upload_types" => $this->allowedFileUploadTypes(),
-			"forbidden_file_upload_types" => $this->forbiddenFileUploadTypes()
+			"forbidden_file_upload_types" => $this->forbiddenFileUploadTypes(),
 		);
 
 		$this->itemIdProvider()->loadRoots();
@@ -315,7 +315,7 @@ class FilesystemController {
 				"group" => implode("/", $nameParts),
 				"parent_id" => NULL,
 				"root_id" => $folder->id(),
-				"path" => ""
+				"path" => "",
 			);
 		}
 
@@ -331,7 +331,7 @@ class FilesystemController {
 					"group" => implode("/", $nameParts),
 					"parent_id" => NULL,
 					"root_id" => $folder->id(),
-					"path" => ""
+					"path" => "",
 				);
 			}
 		}
@@ -404,7 +404,7 @@ class FilesystemController {
 	}
 
 	public function ignoredItems($filesystem, $path) {
-		return array('mollify.dsc', 'mollify.uac');//TODO get from settings and/or configuration etc
+		return array('mollify.dsc', 'mollify.uac'); //TODO get from settings and/or configuration etc
 	}
 
 	public function items($folder) {
@@ -546,13 +546,29 @@ class FilesystemController {
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "copy");
 		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
-		$this->validateAction(FileEvent::COPY, $item, array("to" => $to));
-		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to))) {
+
+		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
+		if ($item->isFile() and $to->exists()) {
+			if (!$overwrite) {
+				throw new ServiceException("FILE_ALREADY_EXISTS");
+			}
+
+		}
+
+		$this->validateAction(FileEvent::COPY, $item, array("to" => $to, "overwrite" => $overwrite));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to, "overwrite" => $overwrite))) {
 			return;
 		}
 
+		if ($item->isFile() and $to->exists()) {
+			if ($overwrite) {
+				Logging::logDebug("File exists, overwriting");
+				$to->delete();
+			}
+		}
+
 		$to = $item->copy($to);
-		$this->env->events()->onEvent(FileEvent::copy($item, $to));
+		$this->env->events()->onEvent(FileEvent::copy($item, $to, $overwrite));
 	}
 
 	public function copyItems($items, $folder) {
@@ -933,7 +949,7 @@ class FilesystemController {
 			unlink($origin);
 		}
 
-		if ($range == NULL or ($range[2] >= $range[3]-1)) {
+		if ($range == NULL or ($range[2] >= $range[3] - 1)) {
 			$this->env->events()->onEvent(FileEvent::upload($target));
 		}
 	}
@@ -1099,15 +1115,15 @@ class FileEvent extends Event {
 	}
 
 	static function rename($item, $to) {
-		return new FileEvent($item, self::RENAME, $to);
+		return new FileEvent($item, self::RENAME, array("to" => $to));
 	}
 
-	static function copy($item, $to) {
-		return new FileEvent($item, self::COPY, $to);
+	static function copy($item, $to, $overwrite = FALSE) {
+		return new FileEvent($item, self::COPY, array("to" => $to, "overwrite" => $overwrite));
 	}
 
 	static function move($item, $to) {
-		return new FileEvent($item, self::MOVE, $to);
+		return new FileEvent($item, self::MOVE, array("to" => $to));
 	}
 
 	static function delete($item) {
@@ -1160,7 +1176,7 @@ class FileEvent extends Event {
 		$f = $this->item->id();
 
 		if ($this->subType() === self::RENAME or $this->subType() === self::COPY or $this->subType() === self::MOVE) {
-			return 'item id=' . $f . ';to=' . $this->info->id();
+			return 'item id=' . $f . ';to=' . $this->info["to"]->id();
 		}
 
 		return 'item id=' . $f;
@@ -1175,11 +1191,13 @@ class FileEvent extends Event {
 		$values["root_name"] = $this->item->root()->name();
 
 		if ($this->subType() === self::RENAME or $this->subType() === self::COPY or $this->subType() === self::MOVE) {
-			$values["to_item_id"] = $this->info->id();
-			$values["to_item_name"] = $this->info->name();
-			$values["to_item_path"] = $this->info->path();
-			$values["to_item_internal_path"] = $this->info->internalPath();
-			$values["to_root_name"] = $this->info->root()->name();
+			$to = $this->info["to"];
+
+			$values["to_item_id"] = $to->id();
+			$values["to_item_name"] = $to->name();
+			$values["to_item_path"] = $to->path();
+			$values["to_item_internal_path"] = $to->internalPath();
+			$values["to_root_name"] = $to->root()->name();
 		}
 
 		return $values;
