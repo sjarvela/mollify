@@ -548,11 +548,13 @@ class FilesystemController {
 		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
+		if (!$item->isFile() and $to->exists()) {
+			throw new ServiceException("FOLDER_ALREADY_EXISTS");
+		}
 		if ($item->isFile() and $to->exists()) {
 			if (!$overwrite) {
 				throw new ServiceException("FILE_ALREADY_EXISTS");
 			}
-
 		}
 
 		$this->validateAction(FileEvent::COPY, $item, array("to" => $to, "overwrite" => $overwrite));
@@ -572,16 +574,57 @@ class FilesystemController {
 	}
 
 	public function copyItems($items, $folder) {
-		Logging::logDebug('copying ' . count($items) . ' items to [' . $folder->path() . ']');
+		Logging::logDebug('copying ' . count($items) . ' items to [' . $folder->internalPath() . ']');
 		$this->assertRights($items, self::PERMISSION_LEVEL_READ, "copy");
-		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder));
-		if ($this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder))) {
+
+		$existingFiles = array();
+		$existingFolders = array();
+
+		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
+		foreach ($items as $item) {
+			if ($item->isFile()) {
+				$to = $folder->fileWithName($item->name());
+				if ($to->exists()) {
+					$existingFiles[] = $to;
+				}
+
+			} else {
+				$to = $folder->folderWithName($item->name());
+				if ($to->exists()) {
+					$existingFolders[] = $to;
+				}
+			}
+		}
+
+		if (count($existingFolders) > 0) {
+			// cannot overwrite folders
+			throw new ServiceException("FOLDER_ALREADY_EXISTS");
+		}
+		if (count($existingFiles) > 0 and !$overwrite) {
+			//TODO return list of overwritable files
+			$info = array();
+			foreach ($existingFiles as $file) {
+				$info[] = $file->data();
+			}
+			throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
+		}
+
+		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder, "overwrite" => $overwrite));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder, "overwrite" => $overwrite))) {
 			return;
 		}
 
 		foreach ($items as $item) {
 			if ($item->isFile()) {
-				$this->copy($item, $folder->fileWithName($item->name()));
+				$to = $folder->fileWithName($item->name());
+				if ($to->exists() and $overwrite) {
+					if (Logging::isDebug()) {
+						Logging::logDebug("File exists " . $item->internalPath() . ", overwriting");
+					}
+
+					$to->delete();
+				}
+				$this->copy($item, $to);
 			} else {
 				$this->copy($item, $folder->folderWithName($item->name()));
 			}

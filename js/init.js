@@ -662,18 +662,37 @@ var mollifyDefaults = {
         return df;
     };
 
-    mfs._copyMany = function(i, to, acceptKeys) {
+    mfs._copyMany = function(i, to, acceptKeys, overwrite) {
+        var df = $.Deferred();
         return mollify.service.post("filesystem/items/", {
             action: 'copy',
             items: i,
             to: to,
+            overwrite: !!overwrite,
             acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/copy', {
                 items: i,
                 to: to
             });
+            df.resolve(r);
+        }).fail(function(e) {
+            if (e.code == 204) {
+                this.handled = true;
+                var files = e.data.files;
+
+                mollify.ui.dialogs.confirmation({
+                    title: mollify.ui.texts.get(files.length > 1 ? 'copyManyOverwriteConfirmationTitle' : 'copyOverwriteConfirmationTitle'),
+                    message: files.length > 1 ? mollify.ui.texts.get('copyManyOverwriteConfirmationMsg', [files.length]) : mollify.ui.texts.get('copyOverwriteConfirmationMsg', [files[0].name]),
+                    callback: function() {
+                        mfs._copyMany(i, to, acceptKeys, true).done(df.resolve).fail(df.reject);
+                    }
+                })
+            } else {
+                df.reject(e);
+            }
         });
+        return df;
     };
 
     mfs.move = function(i, to) {
