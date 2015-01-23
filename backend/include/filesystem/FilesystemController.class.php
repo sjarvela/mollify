@@ -549,7 +549,7 @@ class FilesystemController {
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
 		if (!$item->isFile() and $to->exists()) {
-			throw new ServiceException("FOLDER_ALREADY_EXISTS");
+			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
 		if ($item->isFile() and $to->exists()) {
 			if (!$overwrite) {
@@ -598,7 +598,7 @@ class FilesystemController {
 
 		if (count($existingFolders) > 0) {
 			// cannot overwrite folders
-			throw new ServiceException("FOLDER_ALREADY_EXISTS");
+			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
 		if (count($existingFiles) > 0 and !$overwrite) {
 			//TODO return list of overwritable files
@@ -614,21 +614,28 @@ class FilesystemController {
 			return;
 		}
 
+		$targets = array();
 		foreach ($items as $item) {
 			if ($item->isFile()) {
 				$to = $folder->fileWithName($item->name());
+				$fileOverwrite = FALSE;
 				if ($to->exists() and $overwrite) {
+					$fileOverwrite = TRUE;
 					if (Logging::isDebug()) {
 						Logging::logDebug("File exists " . $item->internalPath() . ", overwriting");
 					}
 
 					$to->delete();
 				}
-				$this->copy($item, $to);
+				$to = $item->copy($to);
+				$targets[] = $to;
 			} else {
-				$this->copy($item, $folder->folderWithName($item->name()));
+				$to = $item->copy($folder->folderWithName($item->name()));
+				$targets[] = $to;
 			}
 		}
+
+		$this->env->events()->onEvent(MultiFileEvent::copy($items, $folder, $targets));
 	}
 
 	public function move($item, $to) {
@@ -639,6 +646,24 @@ class FilesystemController {
 
 		if ($to->isFile()) {
 			throw new ServiceException("NOT_A_DIR", $to->path());
+		}
+
+		if ($item->parent()->id() == $to->id()) {
+			if ($item->isFile()) {
+				throw new ServiceException("FILE_ALREADY_EXISTS");
+			} else {
+				throw new ServiceException("DIR_ALREADY_EXISTS");
+			}
+		}
+
+		if ($item->isFile()) {
+			if ($to->fileExists($item->name())) {
+				throw new ServiceException("FILE_ALREADY_EXISTS");
+			}
+		} else {
+			if ($to->folderExists($item->name())) {
+				throw new ServiceException("DIR_ALREADY_EXISTS");
+			}
 		}
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "move");
@@ -656,9 +681,25 @@ class FilesystemController {
 
 	public function moveItems($items, $to) {
 		Logging::logDebug('moving ' . count($items) . ' items');
+
+		if ($to->isFile()) {
+			throw new ServiceException("NOT_A_DIR", $to->path());
+		}
+
 		foreach ($items as $item) {
 			if ($item->isRoot()) {
 				throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot move root folder:" . $item->id());
+			}
+
+			//TODO support overwrite?
+			if ($item->isFile()) {
+				if ($to->fileExists($item->name())) {
+					throw new ServiceException("FILE_ALREADY_EXISTS");
+				}
+			} else {
+				if ($to->folderExists($item->name())) {
+					throw new ServiceException("DIR_ALREADY_EXISTS");
+				}
 			}
 		}
 
@@ -668,8 +709,13 @@ class FilesystemController {
 			return;
 		}
 
+		$new = array();
 		foreach ($items as $item) {
-			$this->move($item, $to);
+			$new[$item->id()] = $item->move($to);
+		}
+		$this->env->events()->onEvent(MultiFileEvent::move($items, $to));
+		foreach ($items as $item) {
+			$this->idProvider->move($item, $new[$item->id()]);
 		}
 	}
 
@@ -712,7 +758,18 @@ class FilesystemController {
 		}
 
 		foreach ($items as $item) {
-			$this->delete($item);
+			//$this->delete($item);
+			$item->delete();
+
+			if ($this->env->features()->isFeatureEnabled("descriptions")) {
+				$this->env->configuration()->removeItemDescription($item);
+			}
+
+			$this->env->permissions()->removeFilesystemPermissions($item);
+		}
+		$this->env->events()->onEvent(MultiFileEvent::delete($items));
+		foreach ($items as $item) {
+			$this->idProvider->delete($item);
 		}
 	}
 
@@ -1203,6 +1260,10 @@ class FileEvent extends Event {
 		$this->info = $info;
 	}
 
+	public function items() {
+		return array($this->item);
+	}
+
 	public function item() {
 		return $this->item;
 	}
@@ -1258,12 +1319,29 @@ class MultiFileEvent extends Event {
 		return new MultiFileEvent($items, FileEvent::DOWNLOAD);
 	}
 
-	function __construct($items, $type) {
+	static function copy($items, $to, $targets = NULL) {
+		return new MultiFileEvent($items, FileEvent::COPY, array("to" => $to, "targets" => $targets));
+	}
+
+	static function move($items, $to, $targets = NULL) {
+		return new MultiFileEvent($items, FileEvent::MOVE, array("to" => $to, "targets" => $targets));
+	}
+
+	static function delete($items) {
+		return new MultiFileEvent($items, FileEvent::DELETE);
+	}
+
+	function __construct($items, $type, $info = NULL) {
 		parent::__construct(time(), FileSystemController::EVENT_TYPE_FILE, $type);
 		$this->items = $items;
+		$this->info = $info;
 	}
 
 	public function items() {
+		return $this->items;
+	}
+
+	public function item() {
 		return $this->items;
 	}
 

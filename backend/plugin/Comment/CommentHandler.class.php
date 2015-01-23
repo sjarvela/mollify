@@ -56,7 +56,9 @@ class CommentHandler extends BaseSearcher {
 
 		$type = $e->subType();
 		if ($type === FileEvent::DELETE) {
-			$this->getDao()->deleteComments($e->item());
+			foreach ($e->items() as $item) {
+				$this->getDao()->deleteComments($item);
+			}
 		}
 
 	}

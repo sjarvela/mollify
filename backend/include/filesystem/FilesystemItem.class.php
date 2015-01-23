@@ -116,7 +116,7 @@ abstract class FilesystemItem {
 			"parent_id" => ($p != NULL) ? $p->id() : "",
 			"name" => $this->name,
 			"path" => $this->path,
-			"is_file" => $this->isFile()
+			"is_file" => $this->isFile(),
 		);
 	}
 
@@ -171,6 +171,14 @@ class Folder extends FilesystemItem {
 
 	public function folderWithName($name) {
 		return $this->filesystem->folderWithName($this, $name);
+	}
+
+	public function fileExists($name) {
+		return $this->filesystem->fileExists($this, $name);
+	}
+
+	public function folderExists($name) {
+		return $this->filesystem->folderExists($this, $name);
 	}
 
 	public function isRoot() {

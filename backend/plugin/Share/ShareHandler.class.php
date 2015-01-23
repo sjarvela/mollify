@@ -3,7 +3,7 @@
 /**
  * ShareHandler.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -35,12 +35,12 @@ class ShareHandler {
 		$others = FALSE;
 		if ($count > 0) {
 			$own = in_array($this->env->session()->userId(), $users);
-			$others = ($count-($own ? 1 : 0) > 0);
+			$others = ($count - ($own ? 1 : 0) > 0);
 		}
 
 		return array(
 			"count" => $own ? $this->dao()->getShareCount($item, $this->env->session()->userId()) : 0,
-			"other_users" => $others
+			"other_users" => $others,
 		);
 	}
 
@@ -76,7 +76,7 @@ class ShareHandler {
 			}
 
 			$own = in_array($this->env->session()->userId(), $users);
-			$others = ($count-($own ? 1 : 0) > 0);
+			$others = ($count - ($own ? 1 : 0) > 0);
 
 			$sharedOwnKey = "item_shared-" . $itemId;
 			$sharedOthersKey = "item_shared_others-" . $itemId;
@@ -406,7 +406,9 @@ class ShareHandler {
 		$type = $e->subType();
 
 		if ($type === FileEvent::DELETE) {
-			$this->dao()->deleteShares($e->item());
+			foreach ($e->items() as $item) {
+				$this->dao()->deleteShares($item);
+			}
 		}
 	}
 

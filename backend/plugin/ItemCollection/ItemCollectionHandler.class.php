@@ -3,7 +3,7 @@
 /**
  * ItemCollectionHandler.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -74,7 +74,7 @@ class ItemCollectionHandler {
 			$name = "items";
 		}
 
-		$type = "zip";//TODO get from archiver
+		$type = "zip"; //TODO get from archiver
 
 		$mobile = ($this->env->request()->hasParam("m") and strcmp($this->env->request()->param("m"), "1") == 0);
 		$this->env->response()->sendFile($file, $name . "." . $type, $type, $mobile, filesize($file));
@@ -144,7 +144,9 @@ class ItemCollectionHandler {
 		$subType = $e->subType();
 
 		if (strcmp(FilesystemController::EVENT_TYPE_FILE, $type) == 0 and $subType === FileEvent::DELETE) {
-			$this->dao()->deleteCollectionItems($e->item());
+			foreach ($e->items() as $item) {
+				$this->dao()->deleteCollectionItems($item);
+			}
 		} else if (strcmp(UserEvent::EVENT_TYPE_USER, $type) == 0 and $subType === UserEvent::USER_REMOVE) {
 			$ids = $this->dao()->deleteUserItemCollections($e->id());
 			if ($this->env->plugins()->hasPlugin("Share") and count($ids) > 0) {

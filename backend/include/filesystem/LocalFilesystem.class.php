@@ -437,6 +437,16 @@ class LocalFilesystem extends MollifyFilesystem {
 		return $this->itemWithPath($this->publicPath($path));
 	}
 
+	public function fileExists($folder, $name) {
+		self::assertFilename($name);
+		return file_exists(self::joinPath($folder->internalPath(), $name));
+	}
+
+	public function folderExists($folder, $name) {
+		self::assertFilename($name);
+		return file_exists(self::folderPath(self::joinPath($folder->internalPath(), $name)));
+	}
+
 	public function size($file) {
 		$p = $this->localPath($file);
 		if (!file_exists($p)) {
@@ -485,10 +495,10 @@ class LocalFilesystem extends MollifyFilesystem {
 			if ($c->acceptFolders()) {
 				$c->add($item->name(), $nativePath);
 			} else {
-				$offset = strlen($this->localPath($item));// - strlen($item->name()) - 1;
+				$offset = strlen($this->localPath($item)); // - strlen($item->name()) - 1;
 				$name = $item->name();
 
-				$files = $this->allFilesRecursively($nativePath);//TODO rights!
+				$files = $this->allFilesRecursively($nativePath); //TODO rights!
 				if (count($files) > 0) {
 					foreach ($files as $file) {
 						$st = stat($file);
