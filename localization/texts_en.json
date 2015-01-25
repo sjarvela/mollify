@@ -167,8 +167,12 @@
 
 		"copyOverwriteConfirmationTitle": "File already exists",
 		"copyOverwriteConfirmationMsg": "File \"{0}\" already exists in the target folder. Do you want to overwrite the file?",
-		"copyManyOverwriteConfirmationTitle": "File(s) already exists",
-		"copyManyOverwriteConfirmationMsg": "{0} files already exist in the target folder. Do you want to overwrite the file(s)?",
+		"copyManyOverwriteConfirmationTitle": "Files already exists",
+		"copyManyOverwriteConfirmationMsg": "{0} files already exist in the target folder. Do you want to overwrite the files?",
+		"moveOverwriteConfirmationTitle": "File already exists",
+		"moveOverwriteConfirmationMsg": "File \"{0}\" already exists in the target folder. Do you want to overwrite the file?",
+		"moveManyOverwriteConfirmationTitle": "Files already exists",
+		"moveManyOverwriteConfirmationMsg": "{0} files already exist in the target folder. Do you want to overwrite the files?",
 
 		"copyMultipleFileDialogTitle": "Copy",
 		"copyMultipleFileMessage": "Select folder where {0} files are copied into:",

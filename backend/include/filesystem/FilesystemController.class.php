@@ -601,7 +601,6 @@ class FilesystemController {
 			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
 		if (count($existingFiles) > 0 and !$overwrite) {
-			//TODO return list of overwritable files
 			$info = array();
 			foreach ($existingFiles as $file) {
 				$info[] = $file->data();
@@ -622,7 +621,7 @@ class FilesystemController {
 				if ($to->exists() and $overwrite) {
 					$fileOverwrite = TRUE;
 					if (Logging::isDebug()) {
-						Logging::logDebug("File exists " . $item->internalPath() . ", overwriting");
+						Logging::logDebug("File exists " . $to->internalPath() . ", overwriting");
 					}
 
 					$to->delete();
@@ -656,9 +655,16 @@ class FilesystemController {
 			}
 		}
 
+		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "move");
+		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
+
+		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
+
 		if ($item->isFile()) {
 			if ($to->fileExists($item->name())) {
-				throw new ServiceException("FILE_ALREADY_EXISTS");
+				if (!$overwrite) {
+					throw new ServiceException("FILE_ALREADY_EXISTS");
+				}
 			}
 		} else {
 			if ($to->folderExists($item->name())) {
@@ -666,13 +672,18 @@ class FilesystemController {
 			}
 		}
 
-		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "move");
-		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
 		$this->validateAction(FileEvent::MOVE, $item, array("to" => $to));
 		if ($this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to))) {
 			return;
 		}
 
+		if ($item->isFile() and $to->fileExists($item->name())) {
+			if ($overwrite) {
+				Logging::logDebug("File exists, overwriting");
+				$target = $to->fileWithName($item->name());
+				$target->delete();
+			}
+		}
 		$to = $item->move($to);
 
 		$this->env->events()->onEvent(FileEvent::move($item, $to));
@@ -686,24 +697,41 @@ class FilesystemController {
 			throw new ServiceException("NOT_A_DIR", $to->path());
 		}
 
+		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITE, "move");
+
+		$existingFiles = array();
+		$existingFolders = array();
+
+		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
 		foreach ($items as $item) {
 			if ($item->isRoot()) {
-				throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot move root folder:" . $item->id());
+				throw new ServiceException("INVALID_REQUEST", "Cannot move root folder:" . $item->id());
 			}
 
 			//TODO support overwrite?
 			if ($item->isFile()) {
 				if ($to->fileExists($item->name())) {
-					throw new ServiceException("FILE_ALREADY_EXISTS");
+					$existingFiles[] = $to->fileWithName($item->name());
 				}
 			} else {
 				if ($to->folderExists($item->name())) {
-					throw new ServiceException("DIR_ALREADY_EXISTS");
+					$existingFolders[] = $item->name();
 				}
 			}
 		}
 
-		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITE, "move");
+		if (count($existingFolders) > 0) {
+			// cannot overwrite folders
+			throw new ServiceException("DIR_ALREADY_EXISTS");
+		}
+		if (count($existingFiles) > 0 and !$overwrite) {
+			$info = array();
+			foreach ($existingFiles as $file) {
+				$info[] = $file->data();
+			}
+			throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
+		}
+
 		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to));
 		if ($this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to))) {
 			return;
@@ -711,6 +739,19 @@ class FilesystemController {
 
 		$new = array();
 		foreach ($items as $item) {
+			if ($item->isFile()) {
+				$fileOverwrite = FALSE;
+				if ($overwrite and $to->fileExists($item->name())) {
+					$fileOverwrite = TRUE;
+
+					$target = $to->fileWithName($item->name());
+					if (Logging::isDebug()) {
+						Logging::logDebug("File exists " . $target->internalPath() . ", overwriting");
+					}
+					$target->delete();
+				}
+			}
+
 			$new[$item->id()] = $item->move($to);
 		}
 		$this->env->events()->onEvent(MultiFileEvent::move($items, $to));
@@ -721,11 +762,12 @@ class FilesystemController {
 
 	public function delete($item) {
 		Logging::logDebug('deleting [' . $item->id() . ']');
-		if ($item->isRoot() and !$this->env->authentication()->isAdmin()) {
-			throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folders");
+		if ($item->isRoot()) {
+			throw new ServiceException("INVALID_REQUEST", "Cannot delete root folders");
 		}
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
+
 		$this->validateAction(FileEvent::DELETE, $item);
 		if ($this->triggerActionInterceptor(FileEvent::DELETE, $item)) {
 			return;
@@ -746,13 +788,15 @@ class FilesystemController {
 	public function deleteItems($items) {
 		Logging::logDebug('deleting ' . count($items) . ' items');
 		foreach ($items as $item) {
-			if ($item->isRoot() and !$this->env->authentication()->isAdmin()) {
-				throw new ServiceException("INSUFFICIENT_PERMISSIONS", "Cannot delete root folder:" . $item->id());
+			if ($item->isRoot()) {
+				throw new ServiceException("INVALID_REQUEST", "Cannot delete root folder:" . $item->id());
 			}
 		}
 
-		$this->validateAction(FileEvent::DELETE, $items);
 		$this->assertRights($items, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");
+
+		$this->validateAction(FileEvent::DELETE, $items);
+
 		if ($this->triggerActionInterceptor(FileEvent::DELETE, $items)) {
 			return;
 		}

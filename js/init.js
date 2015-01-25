@@ -741,30 +741,66 @@ var mollifyDefaults = {
             return mfs._move(i, to);
     };
 
-    mfs._move = function(i, to, acceptKeys) {
+    mfs._move = function(i, to, acceptKeys, overwrite) {
+        var df = $.Deferred();
         return mollify.service.post("filesystem/" + i.id + "/move/", {
             id: to.id,
+            overwrite: !!overwrite,
             acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/move', {
                 items: [i],
                 to: to
             });
+            df.resolve(r);
+        }).fail(function(e) {
+            if (e.code == 204) {
+                this.handled = true;
+                mollify.ui.dialogs.confirmation({
+                    title: mollify.ui.texts.get('moveOverwriteConfirmationTitle'),
+                    message: mollify.ui.texts.get('moveOverwriteConfirmationMsg', [i.name]),
+                    callback: function() {
+                        mfs._move(i, to, acceptKeys, true).done(df.resolve).fail(df.reject);
+                    }
+                })
+            } else {
+                df.reject(e);
+            }
         });
+        return df;
     };
 
-    mfs._moveMany = function(i, to, acceptKeys) {
+    mfs._moveMany = function(i, to, acceptKeys, overwrite) {
+        var df = $.Deferred();
         return mollify.service.post("filesystem/items/", {
             action: 'move',
             items: i,
             to: to,
+            overwrite: !!overwrite,
             acceptKeys: acceptKeys
         }).done(function(r) {
             mollify.events.dispatch('filesystem/move', {
                 items: i,
                 to: to
             });
+            df.resolve(r);
+        }).fail(function(e) {
+            if (e.code == 204) {
+                this.handled = true;
+                var files = e.data.files;
+                
+                mollify.ui.dialogs.confirmation({
+                    title: mollify.ui.texts.get(files.length > 1 ? 'moveManyOverwriteConfirmationTitle' : 'moveOverwriteConfirmationTitle'),
+                    message: files.length > 1 ? mollify.ui.texts.get('moveManyOverwriteConfirmationMsg', [files.length]) : mollify.ui.texts.get('moveOverwriteConfirmationMsg', [files[0].name]),
+                    callback: function() {
+                        mfs._moveMany(i, to, acceptKeys, true).done(df.resolve).fail(df.reject);
+                    }
+                })
+            } else {
+                df.reject(e);
+            }
         });
+        return df;
     };
 
     mfs.rename = function(item, name) {
