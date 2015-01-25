@@ -31,11 +31,6 @@ CREATE TABLE folder (
   path varchar(255) NOT NULL,
   type char(32) NOT NULL
 );
-CREATE TABLE item_description (
-  item_id char(255) NOT NULL,
-  description varchar(512) NOT NULL,
-  PRIMARY KEY (item_id)
-);
 CREATE TABLE item_id (
   id char(13) NOT NULL,
   path char(255) NOT NULL,
