@@ -394,7 +394,6 @@ class ConfigurationDao {
 
 		$this->db->startTransaction();
 		$this->db->update(sprintf("DELETE FROM " . $this->db->table("user_folder") . " WHERE folder_id='%s'", $folderId));
-		$this->db->update(sprintf("DELETE FROM " . $this->db->table("item_description") . " WHERE item_id in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", $rootLocation));
 		$this->db->update(sprintf("DELETE FROM " . $this->db->table("permission") . " WHERE subject in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", $rootLocation));
 		$affected = $this->db->update(sprintf("DELETE FROM " . $this->db->table("folder") . " WHERE id='%s'", $folderId));
 		if ($affected === 0) {
@@ -452,72 +451,6 @@ class ConfigurationDao {
 	public function removeUserFolder($userId, $folderId) {
 		$this->db->update(sprintf("DELETE FROM " . $this->db->table("user_folder") . " WHERE folder_id='%s' AND user_id='%s'", $this->db->string($folderId), $this->db->string($userId)));
 		return TRUE;
-	}
-
-	function getItemDescription($item) {
-		$result = $this->db->query(sprintf("SELECT description FROM " . $this->db->table("item_description") . " WHERE item_id='%s'", $this->itemId($item)));
-		if ($result->count() < 1) {
-			return NULL;
-		}
-
-		return $result->value();
-	}
-
-	function setItemDescription($item, $description) {
-		$id = $this->itemId($item);
-		$desc = $this->db->string($description);
-		$exists = $this->db->query(sprintf("SELECT COUNT(item_id) FROM " . $this->db->table("item_description") . " WHERE item_id='%s'", $id))->value() > 0;
-
-		if ($exists) {
-			$this->db->update(sprintf("UPDATE " . $this->db->table("item_description") . " SET description='%s' WHERE item_id='%s'", $desc, $id));
-		} else {
-			$this->db->update(sprintf("INSERT INTO " . $this->db->table("item_description") . " (item_id, description) VALUES ('%s','%s')", $id, $desc));
-		}
-
-		return TRUE;
-	}
-
-	function removeItemDescription($item) {
-		if (!$item->isFile()) {
-			$this->db->update(sprintf("DELETE FROM " . $this->db->table("item_description") . " WHERE item_id in (select id from " . $this->db->table("item_id") . " where path like '%s%%')", str_replace("'", "\'", $item->location())));
-		} else {
-			$this->db->update(sprintf("DELETE FROM " . $this->db->table("item_description") . " WHERE item_id='%s'", $this->itemId($item)));
-		}
-		return TRUE;
-	}
-
-	public function findItemsWithDescription($parent, $text = FALSE, $recursive = FALSE) {
-		$p = $this->db->string(str_replace("\\", "\\\\", str_replace("'", "\'", $parent->location())));
-
-		if ($recursive) {
-			$pathFilter = "i.path like '" . $p . "%'";
-		} else {
-			if (strcasecmp("mysql", $this->env->db()->type()) == 0) {
-				$pathFilter = "i.path REGEXP '^" . $p . "[^/\\\\]+[/\\\\]?$'";
-			} else {
-				$pathFilter = "REGEX(i.path, \"#^" . $p . "[^/\\\\]+[/\\\\]?$#\")";
-			}
-		}
-
-		$query = "SELECT item_id, description from " . $this->db->table("item_description") . " d, " . $this->db->table("item_id") . " i where d.item_id = i.id AND " . $pathFilter;
-		if ($text) {
-			$query .= " and description like '%" . $this->db->string($text) . "%'";
-		}
-
-		return $this->db->query($query)->valueMap("item_id", "description");
-	}
-
-	public function getItemDescriptions($items) {
-		$itemIds = array();
-		foreach ($items as $item) {
-			$itemIds[] = $item->id();
-		}
-		if (count($itemIds) == 0) {
-			return array();
-		}
-
-		$query = "SELECT item_id, description from " . $this->db->table("item_description") . " where item_id in (" . $this->db->arrayString($itemIds, TRUE) . ")";
-		return $this->db->query($query)->valueMap("item_id", "description");
 	}
 
 	public function cleanupItemIds($ids) {

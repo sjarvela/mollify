@@ -76,6 +76,10 @@ class ItemDetails extends PluginBase {
 			return $this->env->configuration()->formatTimestampInternal($item->lastModified());
 		}
 
+		if (strcmp($key, "metadata-created") === 0) {
+			return $this->env->filesystem()->getCreatedMetadataInfo($item);
+		}
+
 		if (strcmp($key, "image-size") === 0) {
 			if (!$item->exists()) {
 				return "0x0";

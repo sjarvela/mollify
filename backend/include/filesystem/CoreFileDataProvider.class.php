@@ -17,7 +17,7 @@ class CoreFileDataProvider {
 	}
 
 	public function init($c) {
-		$c->registerDataRequestPlugin(array("core-file-modified", "core-item-description", "core-parent-description"), $this);
+		$c->registerDataRequestPlugin(array("core-file-modified"), $this);
 	}
 
 	public function getRequestData($parent, $items, $key, $requestData) {
@@ -26,18 +26,6 @@ class CoreFileDataProvider {
 			foreach ($items as $i) {
 				$result[$i->id()] = $this->env->configuration()->formatTimestampInternal($i->lastModified());
 
-			}
-		} else if (strcmp("core-item-description", $key) === 0) {
-			if ($parent != NULL) {
-				$result = $this->env->configuration()->findItemsWithDescription($parent);
-			} else {
-				$result = $this->env->configuration()->getItemDescriptions($items);
-			}
-
-			//TODO get each item
-		} else if (strcmp("core-parent-description", $key) === 0) {
-			if ($parent != NULL) {
-				$result = $this->env->configuration()->getItemDescription($parent);
 			}
 		}
 

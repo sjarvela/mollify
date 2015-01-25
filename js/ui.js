@@ -375,7 +375,7 @@
             var df = mollify.features.hasFeature("descriptions");
             var dp = ctx.hasPermission("edit_description");
             var descriptionEditable = df && dp;
-            var showDescription = descriptionEditable || !!ctx.details.description;
+            var showDescription = descriptionEditable || !!ctx.details.metadata.description;
 
             var plugins = mollify.plugins.getItemContextPlugins(item, ctx);
             var actions = mollify.helpers.getPluginActions(plugins);
@@ -386,7 +386,7 @@
                 item: item,
                 details: ctx.details,
                 showDescription: showDescription,
-                description: ctx.details.description || '',
+                description: ctx.details.metadata.description || '',
                 session: mollify.session,
                 plugins: plugins,
                 primaryActions: primaryActions

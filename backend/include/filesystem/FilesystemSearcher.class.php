@@ -32,10 +32,11 @@ class FilesystemSearcher extends BaseSearcher {
 	}
 
 	public function preData($parent, $text) {
-		if (!$this->searchDescriptions) {return NULL;
+		if (!$this->searchDescriptions) {
+			return NULL;
 		}
 
-		$descMatches = $this->env->configuration()->findItemsWithDescription($parent, $text, TRUE);
+		$descMatches = $this->env->filesystem()->metadata()->find($parent, "description", $text, TRUE);
 		//Logging::logDebug(Util::array2str($descMatches));
 		return $descMatches;
 	}

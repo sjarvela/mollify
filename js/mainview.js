@@ -421,19 +421,22 @@
         });
         this._filelist.addColumn({
             "id": "item-description",
-            "request-id": "core-item-description",
+            "request-id": "item-metadata",
             "title-key": "fileListColumnTitleDescription",
             "sort": function(i1, i2, sort, data) {
                 if (!i1.is_file && !i2.is_file) return 0;
-                if (!data || !data["core-item-description"]) return 0;
+                if (!data || !data["item-metadata"]) return 0;
 
-                var d1 = data["core-item-description"][i1.id] ? data["core-item-description"][i1.id] : '';
-                var d2 = data["core-item-description"][i2.id] ? data["core-item-description"][i2.id] : '';
+                var d1 = (data["item-metadata"][i1.id] && data["item-metadata"][i1.id].description) ? data["item-metadata"][i1.id].description : '';
+                var d2 = (data["item-metadata"][i2.id] && data["item-metadata"][i2.id].description) ? data["item-metadata"][i2.id].description : '';
                 return ((d1 > d2) ? 1 : -1) * sort;
             },
             "content": function(item, data) {
-                if (!item.id || !data || !data["core-item-description"] || !data["core-item-description"][item.id]) return "";
-                var desc = data["core-item-description"][item.id];
+                if (!item.id || !data || !data["item-metadata"] || !data["item-metadata"][item.id]) return "";
+                var md = data["item-metadata"][item.id];
+                if (!md.description) return "";
+
+                var desc = md.description;
                 var stripped = desc.replace(/<\/?[^>]+(>|$)/g, '');
                 return '<div class="item-description-container" title="' + stripped + '">' + desc + '</div>';
             }
@@ -776,7 +779,7 @@
 
         this.getDataRequest = function() {
             var rq = (!that._currentFolder || !that._currentFolder.type) ? {
-                'core-parent-description': {}
+                'parent-metadata': {}
             } : {};
             $.each(mollify.plugins.getFileViewPlugins(), function(i, p) {
                 if (p.fileViewHandler.getDataRequest)
@@ -1084,9 +1087,9 @@
             that._updateSelect();
 
             // show description
-            var descriptionExists = that._currentFolderData.data && that._currentFolderData.data['core-parent-description'];
+            var descriptionExists = that._currentFolderData.data && that._currentFolderData.data['parent-metadata'];
             if (descriptionExists)
-                $("#mollify-folder-description").text(that._currentFolderData.data['core-parent-description']);
+                $("#mollify-folder-description").text(that._currentFolderData.data['parent-metadata'].description);
 
             var $dsc = $("#mollify-folder-description");
             var descriptionEditable = that._currentFolder && !that._currentFolder.type && $dsc.length > 0 && mollify.session.features.descriptions && mollify.filesystem.hasPermission(that._currentFolder, "edit_description");
