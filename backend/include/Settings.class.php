@@ -54,6 +54,7 @@ class Settings {
 		"mail_smtp" => NULL,
 		"published_folders_root" => NULL,
 		"customizations_folder" => NULL,
+		"customizations_folder_url" => NULL,
 		"no_udev_random" => FALSE,
 		"client_page" => NULL,
 	);

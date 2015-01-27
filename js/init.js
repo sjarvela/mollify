@@ -788,7 +788,7 @@ var mollifyDefaults = {
             if (e.code == 204) {
                 this.handled = true;
                 var files = e.data.files;
-                
+
                 mollify.ui.dialogs.confirmation({
                     title: mollify.ui.texts.get(files.length > 1 ? 'moveManyOverwriteConfirmationTitle' : 'moveOverwriteConfirmationTitle'),
                     message: files.length > 1 ? mollify.ui.texts.get('moveManyOverwriteConfirmationMsg', [files.length]) : mollify.ui.texts.get('moveOverwriteConfirmationMsg', [files[0].name]),
@@ -973,7 +973,12 @@ var mollifyDefaults = {
     };
 
     pl.url = function(id, p, admin) {
-        var url = mollify.settings["service-path"] + "plugin/" + id;
+        var ps = mollify.session && mollify.session.data.plugins[id];
+        var custom = (ps && ps.custom);
+
+        var url = custom ? mollify.session.data.resources.custom_url : mollify.settings["service-path"];
+        url = url + "plugin/" + id;
+
         if (!p) return url;
         return url + (admin ? "/admin/" : "/client/") + p;
     };
@@ -983,7 +988,7 @@ var mollifyDefaults = {
     };
 
     pl.getLocalizationUrl = function(id) {
-        return mollify.settings["service-path"] + "plugin/" + id + "/localization/texts_" + mollify.ui.texts.locale + ".json";
+        return pl.url(id) + "/localization/texts_" + mollify.ui.texts.locale + ".json";
     };
 
     pl.getStyleUrl = function(id, admin) {

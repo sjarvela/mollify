@@ -3,7 +3,7 @@
 /**
  * PluginController.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -42,7 +42,6 @@ class PluginController {
 	private function addPlugin($id, $settings) {
 		if (isset($settings["custom"]) and $settings["custom"] == TRUE) {
 			$this->env->resources()->loadCustomPlugin($id);
-
 		} else {
 			$cls = $id . "/" . $id . ".plugin.class.php";
 			$path = dirname(__FILE__) . DIRECTORY_SEPARATOR . $cls;
@@ -70,13 +69,19 @@ class PluginController {
 
 	public function getSessionInfo() {
 		$result = array();
+		$settings = $this->env->settings()->setting("plugins");
+
 		foreach ($this->plugins as $id => $p) {
+			$s = $settings[$id];
+			$custom = (isset($s["custom"]) and $s["custom"] == TRUE);
+
 			$info = $p->getSessionInfo();
+			$info["custom"] = $custom;
 			$info["admin"] = $p->hasAdminView();
 
 			$clientPlugin = $p->getClientPlugin();
 			if ($clientPlugin != NULL) {
-				$info["client_plugin"] = $this->env->getPluginUrl($id, $clientPlugin, TRUE);
+				$info["client_plugin"] = $custom ? $this->env->resources()->getCustomPluginUrl($id, $clientPlugin) : $this->env->getPluginUrl($id, $clientPlugin, TRUE);
 			}
 
 			$result[$id] = $info;
