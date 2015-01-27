@@ -33,7 +33,9 @@ class Mollify_MetadataController {
 		$type = $e->subType();
 
 		if ($type === FileEvent::DELETE) {
-			$this->dao->deleteMetadata($e->item());
+			foreach ($e->items() as $item) {
+				$this->dao->deleteMetadata($item);
+			}
 		}
 	}
 

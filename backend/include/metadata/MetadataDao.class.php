@@ -27,8 +27,11 @@ class Mollify_MetadataDao {
 
 	public function setItemMetadata($id, $key, $value) {
 		$idStr = $this->db->string($id, TRUE);
-		$count = $this->db->update(sprintf("UPDATE " . $this->db->table("metadata") . " set md_value=%s where item_id=%s and md_key=%s", $this->db->string($value, TRUE), $idStr, $this->db->string($key, TRUE)));
-		if ($count == 0) {
+
+		$count = $this->db->query(sprintf("SELECT count(item_id) FROM " . $this->db->table("metadata") . " where item_id=%s and md_key=%s", $idStr, $this->db->string($key, TRUE)))->value();
+		if ($count > 0) {
+			$this->db->update(sprintf("UPDATE " . $this->db->table("metadata") . " set md_value=%s where item_id=%s and md_key=%s", $this->db->string($value, TRUE), $idStr, $this->db->string($key, TRUE)));
+		} else {
 			$this->db->update(sprintf("INSERT INTO " . $this->db->table("metadata") . " (item_id, md_key, md_value) VALUES (%s, %s, %s)", $idStr, $this->db->string($key, TRUE), $this->db->string($value, TRUE)));
 		}
 	}

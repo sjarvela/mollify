@@ -447,13 +447,15 @@ class LocalFilesystem extends MollifyFilesystem {
 		return file_exists(self::folderPath(self::joinPath($folder->internalPath(), $name)));
 	}
 
-	public function size($file) {
+	public function size($file, $forceString = FALSE) {
 		$p = $this->localPath($file);
 		if (!file_exists($p)) {
 			return NULL;
 		}
-
-		return sprintf("%u", filesize($p));
+		if ($forceString) {
+			return sprintf("%u", filesize($p));
+		}
+		return filesize($p);
 	}
 
 	public function lastModified($item) {

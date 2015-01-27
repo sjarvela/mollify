@@ -85,8 +85,8 @@ class ItemDetails extends PluginBase {
 				return "0x0";
 			}
 
-			$filesize = filesize($item->internalPath());
-			if ($filesize == 0) {
+			$filesize = $item->size();
+			if ($filesize == NULL or $filesize == 0) {
 				return "0x0";
 			}
 
@@ -105,7 +105,7 @@ class ItemDetails extends PluginBase {
 	}
 
 	public function getExif($item) {
-		if (!$item->exists() or filesize($item->internalPath()) == 0) {
+		if (!$item->exists() or $item->size() == NULL or $item->size() == 0) {
 			return NULL;
 		}
 

@@ -21,7 +21,7 @@ class VoidResponseHandler {
 
 class WebDavSession extends Session {
 	public function __construct() {
-		parent::__construct(FALSE);// don't use cookies
+		parent::__construct(FALSE); // don't use cookies
 	}
 
 	public function init($user) {
@@ -251,7 +251,7 @@ class Mollify_DAV_File extends Sabre_DAV_File {
 		}
 		checkUploadSize();
 
-		$oldSize = ($this->file->exists() ? filesize($this->file->internalPath()) : NULL);
+		$oldSize = ($this->file->exists() ? $this->file->size() : NULL);
 		$size = (isset($_SERVER['CONTENT_LENGTH'])) ? $_SERVER['CONTENT_LENGTH'] : NULL;
 		Logging::logDebug("Update " . $size);
 		if ($size == 0) {

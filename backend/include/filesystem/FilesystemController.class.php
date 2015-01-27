@@ -88,12 +88,14 @@ class FilesystemController {
 		$type = $e->subType();
 
 		if ($type === FileEvent::CREATE_ITEM or $type === FileEvent::CREATE_FOLDER or $type === FileEvent::UPLOAD or $type === FileEvent::COPY) {
-			$item = $e->item();
+			$items = array($e->item());
 			if ($type === FileEvent::COPY) {
-				$item = $e->info();
+				$items = $e->info()["targets"];
 			}
 
-			$this->setCreatedMetadata($item);
+			foreach ($items as $item) {
+				$this->setCreatedMetadata($item);
+			}
 		}
 	}
 
@@ -606,41 +608,50 @@ class FilesystemController {
 	public function copy($item, $to) {
 		Logging::logDebug('copying ' . $item->id() . "[" . $item->internalPath() . '] to ' . $to->id() . "[" . $to->internalPath() . ']');
 
-		if ($item->isFile() and !$to->isFile()) {
-			$to = $to->fileWithName($item->name());
-		}
-
-		if (!$item->isFile() and $to->isFile()) {
-			throw new ServiceException("NOT_A_DIR", $to->path());
+		//TODO force $to being always target folder (parent), not target item? copy here?
+		$folder = $to;
+		$target = $to;
+		if ($item->isFile()) {
+			if (!$to->isFile()) {
+				$target = $to->fileWithName($item->name());
+			} else {
+				$folder = $target->parent();
+			}
+		} else {
+			if ($to->isFile()) {
+				throw new ServiceException("NOT_A_DIR", $to->path());
+			}
 		}
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "copy");
 		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
-		if (!$item->isFile() and $to->exists()) {
+		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::COPY, array("to" => $to)));
+
+		if (!$item->isFile() and $target->exists()) {
 			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
-		if ($item->isFile() and $to->exists()) {
-			if (!$overwrite) {
+		if ($item->isFile() and $target->exists()) {
+			if (!$replace) {
 				throw new ServiceException("FILE_ALREADY_EXISTS");
 			}
 		}
 
-		$this->validateAction(FileEvent::COPY, $item, array("to" => $to, "overwrite" => $overwrite));
-		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to, "overwrite" => $overwrite))) {
+		$this->validateAction(FileEvent::COPY, $item, array("to" => $folder, "target" => $target, "replace" => $replace));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $folder, "target" => $target, "replace" => $replace))) {
 			return;
 		}
 
-		if ($item->isFile() and $to->exists()) {
+		if ($item->isFile() and $target->exists()) {
 			if ($overwrite) {
 				Logging::logDebug("File exists, overwriting");
-				$to->delete();
+				$target->delete();
 			}
 		}
 
-		$to = $item->copy($to);
-		$this->env->events()->onEvent(FileEvent::copy($item, $to, $overwrite));
+		$target = $item->copy($target);
+		$this->env->events()->onEvent(FileEvent::copy($item, $target, $replace));
 	}
 
 	public function copyItems($items, $folder) {
@@ -653,15 +664,16 @@ class FilesystemController {
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
 		foreach ($items as $item) {
 			if ($item->isFile()) {
-				$to = $folder->fileWithName($item->name());
-				if ($to->exists()) {
-					$existingFiles[] = $to;
-				}
+				if ($folder->fileExists($item->name())) {
+					$replace = $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::COPY, array("to" => $folder));
 
+					if (!$replace) {
+						$existingFiles[] = $folder->fileWithName($item->name());
+					}
+				}
 			} else {
-				$to = $folder->folderWithName($item->name());
-				if ($to->exists()) {
-					$existingFolders[] = $to;
+				if ($folder->folderExists($item->name())) {
+					$existingFolders[] = $folder->folderWithName($item->name());
 				}
 			}
 		}
@@ -678,8 +690,8 @@ class FilesystemController {
 			throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
 		}
 
-		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder, "overwrite" => $overwrite));
-		if ($this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder, "overwrite" => $overwrite))) {
+		$this->validateAction(FileEvent::COPY, $items, array("to" => $folder, "replace" => $overwrite));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $items, array("to" => $folder, "replace" => $overwrite))) {
 			return;
 		}
 
@@ -704,7 +716,7 @@ class FilesystemController {
 			}
 		}
 
-		$this->env->events()->onEvent(MultiFileEvent::copy($items, $folder, $targets));
+		$this->env->events()->onEvent(MultiFileEvent::copy($items, $folder, $targets, $replace));
 	}
 
 	public function move($item, $to) {
@@ -729,10 +741,11 @@ class FilesystemController {
 		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
+		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to)));
 
 		if ($item->isFile()) {
 			if ($to->fileExists($item->name())) {
-				if (!$overwrite) {
+				if (!$replace) {
 					throw new ServiceException("FILE_ALREADY_EXISTS");
 				}
 			}
@@ -742,8 +755,8 @@ class FilesystemController {
 			}
 		}
 
-		$this->validateAction(FileEvent::MOVE, $item, array("to" => $to));
-		if ($this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to))) {
+		$this->validateAction(FileEvent::MOVE, $item, array("to" => $to, "replace" => $replace));
+		if ($this->triggerActionInterceptor(FileEvent::MOVE, $item, array("to" => $to, "replace" => $replace))) {
 			return;
 		}
 
@@ -756,7 +769,7 @@ class FilesystemController {
 		}
 		$to = $item->move($to);
 
-		$this->env->events()->onEvent(FileEvent::move($item, $to));
+		$this->env->events()->onEvent(FileEvent::move($item, $to, $replace));
 		$this->idProvider->move($item, $to);
 	}
 
@@ -781,7 +794,11 @@ class FilesystemController {
 			//TODO support overwrite?
 			if ($item->isFile()) {
 				if ($to->fileExists($item->name())) {
-					$existingFiles[] = $to->fileWithName($item->name());
+					$replace = $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to));
+
+					if (!$replace) {
+						$existingFiles[] = $to->fileWithName($item->name());
+					}
 				}
 			} else {
 				if ($to->folderExists($item->name())) {
@@ -802,12 +819,13 @@ class FilesystemController {
 			throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
 		}
 
-		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to));
-		if ($this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to))) {
+		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to, "replace" => $overwrite));
+		if ($this->triggerActionInterceptor(FileEvent::MOVE, $items, array("to" => $to, "replace" => $overwrite))) {
 			return;
 		}
 
 		$new = array();
+		$targets = array();
 		foreach ($items as $item) {
 			if ($item->isFile()) {
 				$fileOverwrite = FALSE;
@@ -822,9 +840,11 @@ class FilesystemController {
 				}
 			}
 
-			$new[$item->id()] = $item->move($to);
+			$target = $item->move($to);
+			$targets[] = $target;
+			$new[$item->id()] = $target;
 		}
-		$this->env->events()->onEvent(MultiFileEvent::move($items, $to));
+		$this->env->events()->onEvent(MultiFileEvent::move($items, $to, $targets, $overwrite));
 		foreach ($items as $item) {
 			$this->idProvider->move($item, $new[$item->id()]);
 		}
@@ -1335,12 +1355,12 @@ class FileEvent extends Event {
 		return new FileEvent($item, self::RENAME, array("to" => $to));
 	}
 
-	static function copy($item, $to, $overwrite = FALSE) {
-		return new FileEvent($item, self::COPY, array("to" => $to, "overwrite" => $overwrite));
+	static function copy($item, $target, $replace = FALSE) {
+		return new FileEvent($item, self::COPY, array("to" => $target, "targets" => array($target), "replace" => $replace));
 	}
 
-	static function move($item, $to) {
-		return new FileEvent($item, self::MOVE, array("to" => $to));
+	static function move($item, $to, $target, $replace = FALSE) {
+		return new FileEvent($item, self::MOVE, array("to" => $to, "targets" => array($target), "replace" => $replace));
 	}
 
 	static function delete($item) {
@@ -1436,12 +1456,12 @@ class MultiFileEvent extends Event {
 		return new MultiFileEvent($items, FileEvent::DOWNLOAD);
 	}
 
-	static function copy($items, $to, $targets = NULL) {
-		return new MultiFileEvent($items, FileEvent::COPY, array("to" => $to, "targets" => $targets));
+	static function copy($items, $to, $targets = NULL, $replace = FALSE) {
+		return new MultiFileEvent($items, FileEvent::COPY, array("to" => $to, "targets" => $targets, "replace" => $replace));
 	}
 
-	static function move($items, $to, $targets = NULL) {
-		return new MultiFileEvent($items, FileEvent::MOVE, array("to" => $to, "targets" => $targets));
+	static function move($items, $to, $targets = NULL, $replace = FALSE) {
+		return new MultiFileEvent($items, FileEvent::MOVE, array("to" => $to, "targets" => $targets, "replace" => $replace));
 	}
 
 	static function delete($items) {
