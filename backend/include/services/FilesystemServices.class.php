@@ -229,13 +229,14 @@ class FilesystemServices extends ServicesBase {
 					throw $this->invalidRequestException();
 				}
 
+				$name = NULL;
 				if (isset($data['folder'])) {
-					$folder = $this->item($data['folder'], FALSE);
-					$to = $folder->fileWithName($item->name());
+					$to = $this->item($data['folder'], FALSE);
 				} else {
-					$to = $item->parent()->fileWithName($data['name']);
+					$to = $item->parent();
+					$name = $data['name'];
 				}
-				$this->env->filesystem()->copy($item, $to);
+				$this->env->filesystem()->copy($item, $to, $name);
 				break;
 			case 'content':
 				$this->env->filesystem()->updateFileContents($item, file_get_contents("php://input"));

@@ -605,26 +605,22 @@ class FilesystemController {
 		$this->idProvider->move($item, $to);
 	}
 
-	public function copy($item, $to) {
-		Logging::logDebug('copying ' . $item->id() . "[" . $item->internalPath() . '] to ' . $to->id() . "[" . $to->internalPath() . ']');
+	public function copy($item, $to, $name = NULL) {
+		Logging::logDebug('copying ' . $item->id() . "[" . $item->internalPath() . '] to ' . $to->id() . "[" . $to->internalPath() . '] ' . $name);
 
-		//TODO force $to being always target folder (parent), not target item? copy here?
-		$folder = $to;
+		if ($to->isFile()) {
+			throw new ServiceException("NOT_A_DIR", $to->path());
+		}
+
 		$target = $to;
 		if ($item->isFile()) {
-			if (!$to->isFile()) {
-				$target = $to->fileWithName($item->name());
-			} else {
-				$folder = $target->parent();
-			}
+			$target = $to->fileWithName($name != NULL ? $name : $item->name());
 		} else {
-			if ($to->isFile()) {
-				throw new ServiceException("NOT_A_DIR", $to->path());
-			}
+			$target = $to->folderWithName($name != NULL ? $name : $item->name());
 		}
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READ, "copy");
-		$this->assertRights($to->parent(), self::PERMISSION_LEVEL_READWRITE, "copy");
+		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "copy");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
 		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::COPY, array("to" => $to)));
@@ -636,17 +632,19 @@ class FilesystemController {
 			if (!$replace) {
 				throw new ServiceException("FILE_ALREADY_EXISTS");
 			}
+			$this->assertRights($target, self::PERMISSION_LEVEL_READWRITE, "copy");
 		}
 
-		$this->validateAction(FileEvent::COPY, $item, array("to" => $folder, "target" => $target, "replace" => $replace));
-		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $folder, "target" => $target, "replace" => $replace))) {
+		$this->validateAction(FileEvent::COPY, $item, array("to" => $to, "target" => $target, "replace" => $replace));
+		if ($this->triggerActionInterceptor(FileEvent::COPY, $item, array("to" => $to, "target" => $target, "replace" => $replace))) {
 			return;
 		}
 
 		if ($item->isFile() and $target->exists()) {
 			if ($overwrite) {
 				Logging::logDebug("File exists, overwriting");
-				$target->delete();
+				$target->delete(); //"soft-delete", just remove content, no events that remove meta-data
+				//TODO update content instead of delete&copy??
 			}
 		}
 
@@ -706,7 +704,7 @@ class FilesystemController {
 						Logging::logDebug("File exists " . $to->internalPath() . ", overwriting");
 					}
 
-					$to->delete();
+					$to->delete(); //"soft-delete", just remove content, no events that remove meta-data
 				}
 				$to = $item->copy($to);
 				$targets[] = $to;
@@ -747,6 +745,8 @@ class FilesystemController {
 			if ($to->fileExists($item->name())) {
 				if (!$replace) {
 					throw new ServiceException("FILE_ALREADY_EXISTS");
+				} else {
+					$this->assertRights($to->fileWithName($item->name()), self::PERMISSION_LEVEL_READWRITEDELETE);
 				}
 			}
 		} else {
@@ -764,7 +764,7 @@ class FilesystemController {
 			if ($overwrite) {
 				Logging::logDebug("File exists, overwriting");
 				$target = $to->fileWithName($item->name());
-				$target->delete();
+				$this->doDeleteItem($target); // "hard-delete", remove also meta-data
 			}
 		}
 		$to = $item->move($to);
@@ -797,7 +797,8 @@ class FilesystemController {
 					$replace = $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to));
 
 					if (!$replace) {
-						$existingFiles[] = $to->fileWithName($item->name());
+						$target = $to->fileWithName($item->name());
+						$existingFiles[] = $target;
 					}
 				}
 			} else {
@@ -811,12 +812,18 @@ class FilesystemController {
 			// cannot overwrite folders
 			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
-		if (count($existingFiles) > 0 and !$overwrite) {
-			$info = array();
-			foreach ($existingFiles as $file) {
-				$info[] = $file->data();
+		if (count($existingFiles) > 0) {
+			if (!$overwrite) {
+				$info = array();
+				foreach ($existingFiles as $file) {
+					$info[] = $file->data();
+				}
+				throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
+			} else {
+				foreach ($existingFiles as $file) {
+					$this->assertRights($file, self::PERMISSION_LEVEL_READWRITEDELETE);
+				}
 			}
-			throw new ServiceException("FILE_ALREADY_EXISTS", "One or more files already exists", array("files" => $info));
 		}
 
 		$this->validateAction(FileEvent::MOVE, $items, array("to" => $to, "replace" => $overwrite));
@@ -836,7 +843,7 @@ class FilesystemController {
 					if (Logging::isDebug()) {
 						Logging::logDebug("File exists " . $target->internalPath() . ", overwriting");
 					}
-					$target->delete();
+					$this->doDeleteItem($target); // "hard-delete", remove also meta-data
 				}
 			}
 
@@ -862,13 +869,22 @@ class FilesystemController {
 		if ($this->triggerActionInterceptor(FileEvent::DELETE, $item)) {
 			return;
 		}
+		$this->doDeleteItem($item);
+	}
 
+	private function doDeleteItem($item, $sendEvent = TRUE, $removeId = TRUE) {
 		$item->delete();
 
 		$this->env->permissions()->removeFilesystemPermissions($item);
 
-		$this->env->events()->onEvent(FileEvent::delete($item));
-		$this->idProvider->delete($item);
+		if ($sendEvent) {
+			$this->env->events()->onEvent(FileEvent::delete($item));
+		}
+
+		if ($removeId) {
+			$this->idProvider->delete($item);
+		}
+
 	}
 
 	public function deleteItems($items) {
@@ -888,14 +904,7 @@ class FilesystemController {
 		}
 
 		foreach ($items as $item) {
-			//$this->delete($item);
-			$item->delete();
-
-			if ($this->env->features()->isFeatureEnabled("descriptions")) {
-				$this->env->configuration()->removeItemDescription($item);
-			}
-
-			$this->env->permissions()->removeFilesystemPermissions($item);
+			$this->doDeleteItem($item, FALSE, FALSE);
 		}
 		$this->env->events()->onEvent(MultiFileEvent::delete($items));
 		foreach ($items as $item) {

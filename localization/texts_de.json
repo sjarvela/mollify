@@ -73,6 +73,7 @@
 		"mainviewChangePasswordTitle": "Passwort ändern",
 		"mainviewChangePasswordOld": "Altes Passwort",
 		"mainviewChangePasswordNew": "Neues Passwort",
+		"mainviewChangePasswordHint": "Kennwortindex",		
 		"mainviewChangePasswordVerify": "Passwort bestätigen",
 		"mainviewChangePasswordAction": "Ändern",
 		"mainviewChangePasswordErrorValueMissing": "Es fehlt etwas",

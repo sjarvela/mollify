@@ -926,6 +926,14 @@
             if (!window.isArray(i)) single = i;
             else if (i.length === 0) single = i[0];
 
+            if (mollify.settings["file-view"] && mollify.settings["file-view"].dragType) {
+                var t = typeof(mollify.settings["file-view"].dragType);
+                if (t == 'function') return mollify.settings["file-view"].dragType(to, i);
+                if (t == 'object') {
+                    //TODO constants??
+                }
+            }
+
             var copy = (!single || to.root_id != single.root_id);
             return copy ? "copy" : "move";
         };
@@ -935,13 +943,15 @@
             if (!window.isArray(itm)) single = itm;
             else if (itm.length === 0) single = itm[0];
 
+            var droptype = that.dropType(to, itm);
+
             if (single)
-                return that.dropType(to, single) == "copy" ? mollify.filesystem.canCopyTo(single, to) : mollify.filesystem.canMoveTo(single, to);
+                return (droptype == "copy") ? mollify.filesystem.canCopyTo(single, to) : mollify.filesystem.canMoveTo(single, to);
 
             var can = true;
             for (var i = 0; i < itm.length; i++) {
                 var item = itm[i];
-                if (!(that.dropType(to, item) == "copy" ? mollify.filesystem.canCopyTo(item, to) : mollify.filesystem.canMoveTo(item, to))) {
+                if (!(droptype == "copy" ? mollify.filesystem.canCopyTo(item, to) : mollify.filesystem.canMoveTo(item, to))) {
                     can = false;
                     break;
                 }
