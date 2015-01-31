@@ -612,7 +612,6 @@ class FilesystemController {
 			throw new ServiceException("NOT_A_DIR", $to->path());
 		}
 
-		$target = $to;
 		if ($item->isFile()) {
 			$target = $to->fileWithName($name != NULL ? $name : $item->name());
 		} else {
@@ -623,12 +622,14 @@ class FilesystemController {
 		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "copy");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
-		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::COPY, array("to" => $to)));
+		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::COPY, array("to" => $to, "target" => $target)));
 
-		if (!$item->isFile() and $target->exists()) {
-			throw new ServiceException("DIR_ALREADY_EXISTS");
-		}
-		if ($item->isFile() and $target->exists()) {
+		if ($target->exists()) {
+			if (!$item->isFile()) {
+				// cannot overwrite folder
+				throw new ServiceException("DIR_ALREADY_EXISTS");
+			}
+
 			if (!$replace) {
 				throw new ServiceException("FILE_ALREADY_EXISTS");
 			}
