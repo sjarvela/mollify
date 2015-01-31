@@ -41,6 +41,7 @@ class ServiceEnvironment {
 	private $request;
 	private $mailer = NULL;
 	private $urlRetriever = NULL;
+	private $imageGenerator = NULL;
 
 	public function __construct($db, $session, $responseHandler, $configuration, $settings) {
 		$this->db = $db;
@@ -72,6 +73,11 @@ class ServiceEnvironment {
 	private function createUrlRetriever() {
 		require_once $this->settings->setting("url_retriever_class");
 		return new UrlRetriever($this);
+	}
+
+	private function createImageGenerator() {
+		require_once $this->settings->setting("image_generator_class");
+		return new ImageGenerator($this);
 	}
 
 	public function db() {
@@ -148,6 +154,14 @@ class ServiceEnvironment {
 		}
 
 		return $this->urlRetriever;
+	}
+
+	public function imageGenerator() {
+		if ($this->imageGenerator == NULL) {
+			$this->imageGenerator = $this->createImageGenerator();
+		}
+
+		return $this->imageGenerator;
 	}
 
 	public function formatter() {

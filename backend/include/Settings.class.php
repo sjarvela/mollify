@@ -34,6 +34,7 @@ class Settings {
 		"support_output_buffer" => FALSE,
 		"mail_sender_class" => "mail/MailSender.class.php",
 		"url_retriever_class" => "UrlRetriever.class.php",
+		"image_generator_class" => "ImageGenerator.class.php",
 		"datetime_format" => "d.m.Y H:i:s",
 		"mime_types" => array(),
 		"authentication_methods" => array("pw"),
