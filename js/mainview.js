@@ -924,14 +924,16 @@
         this.dropType = function(to, i) {
             var single = false;
             if (!window.isArray(i)) single = i;
-            else if (i.length === 0) single = i[0];
+            else if (i.length == 1) single = i[0];
 
-            if (mollify.settings["file-view"] && mollify.settings["file-view"].dragType) {
-                var t = typeof(mollify.settings["file-view"].dragType);
-                if (t == 'function') return mollify.settings["file-view"].dragType(to, i);
-                if (t == 'object') {
-                    //TODO constants??
-                }
+            if (mollify.settings["file-view"] && mollify.settings["file-view"]["drop-type"]) {
+                var dt = mollify.settings["file-view"]["drop-type"];
+                var t = typeof(dt);
+                if (t == 'function') return dt(to, i);
+                else if (t == 'object') {
+                    if (single && dt.single) return dt.single;
+                    if (!single && dt.multi) return dt.multi;
+                } else if (t == 'string') return dt;
             }
 
             var copy = (!single || to.root_id != single.root_id);
@@ -941,7 +943,7 @@
         this.canDragAndDrop = function(to, itm) {
             var single = false;
             if (!window.isArray(itm)) single = itm;
-            else if (itm.length === 0) single = itm[0];
+            else if (itm.length == 1) single = itm[0];
 
             var droptype = that.dropType(to, itm);
 
