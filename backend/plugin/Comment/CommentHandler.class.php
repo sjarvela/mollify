@@ -10,6 +10,7 @@
  */
 
 require_once "dao/CommentDao.class.php";
+require_once "include/filesystem/BaseSearcher.class.php";
 
 class CommentHandler extends BaseSearcher {
 	private $env;

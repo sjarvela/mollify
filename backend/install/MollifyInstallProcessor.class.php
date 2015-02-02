@@ -22,6 +22,7 @@ class MollifyInstallProcessor {
 	private $plugins;
 	private $features;
 	private $cookies;
+	private $resources;
 
 	private $error = NULL;
 	private $errorDetails = NULL;
@@ -52,6 +53,7 @@ class MollifyInstallProcessor {
 		require_once "include/configuration/ConfigurationDao.class.php";
 		require_once "plugin/PluginController.class.php";
 		require_once "include/auth/PasswordHash.class.php";
+		require_once "include/ResourceLoader.class.php";
 
 		$this->db = $db;
 		$this->settings = new Settings($this->settingsVar);
@@ -63,6 +65,7 @@ class MollifyInstallProcessor {
 		$this->features = new Features($this->settings);
 		$this->cookies = new Cookie($this->settings);
 		$this->passwordHash = new Mollify_PasswordHash($this->settings);
+		$this->resources = new ResourceLoader($this);
 
 		$this->plugins->setup();
 		$this->session->initialize($this, NULL);
@@ -118,6 +121,10 @@ class MollifyInstallProcessor {
 
 	public function events() {
 		return $this;
+	}
+
+	public function resources() {
+		return $this->resources;
 	}
 
 	public function features() {
@@ -216,6 +223,8 @@ class MollifyInstallProcessor {
 	public function registerDetailsPlugin($p) {}
 
 	public function registerFilesystemPermission($p, $v = NULL) {}
+
+	public function registerSearcher($s) {}
 
 	public function installPlugins($util) {
 		$allPlugins = $this->plugins()->getPlugins();
