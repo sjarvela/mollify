@@ -90,7 +90,8 @@ class FilesystemController {
 		if ($type === FileEvent::CREATE_ITEM or $type === FileEvent::CREATE_FOLDER or $type === FileEvent::UPLOAD or $type === FileEvent::COPY) {
 			$items = array($e->item());
 			if ($type === FileEvent::COPY) {
-				$items = $e->info()["targets"];
+				$info = $e->info();
+				$items = $info["targets"];
 			}
 
 			foreach ($items as $item) {
