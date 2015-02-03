@@ -796,7 +796,7 @@ class FilesystemController {
 			//TODO support overwrite?
 			if ($item->isFile()) {
 				if ($to->fileExists($item->name())) {
-					$replace = $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to));
+					$replace = ($this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to)));
 
 					if (!$replace) {
 						$target = $to->fileWithName($item->name());
@@ -814,6 +814,7 @@ class FilesystemController {
 			// cannot overwrite folders
 			throw new ServiceException("DIR_ALREADY_EXISTS");
 		}
+		Logging::logDebug("Exists: " . count($existingFiles));
 		if (count($existingFiles) > 0) {
 			if (!$overwrite) {
 				$info = array();
