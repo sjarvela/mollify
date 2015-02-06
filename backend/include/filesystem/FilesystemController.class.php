@@ -860,10 +860,13 @@ class FilesystemController {
 		}
 	}
 
-	public function delete($item) {
+	public function delete($item, $allowRoot = FALSE) {
 		Logging::logDebug('deleting [' . $item->id() . ']');
 		if ($item->isRoot()) {
-			throw new ServiceException("INVALID_REQUEST", "Cannot delete root folders");
+			if (!$allowRoot or !$this->env->authentication()->isAdmin()) {
+				throw new ServiceException("INVALID_REQUEST", "Cannot delete root folders");
+			}
+
 		}
 
 		$this->assertRights($item, self::PERMISSION_LEVEL_READWRITEDELETE, "delete");

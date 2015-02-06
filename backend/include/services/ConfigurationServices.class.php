@@ -3,7 +3,7 @@
 /**
  * ConfigurationServices.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -107,7 +107,7 @@ class ConfigurationServices extends ServicesBase {
 	private function processGetSettings() {
 		$this->response()->success(array(
 			"authentication_methods" => $this->env->settings()->setting("authentication_methods"),
-			"published_folders_root" => $this->env->settings()->setting("published_folders_root")
+			"published_folders_root" => $this->env->settings()->setting("published_folders_root"),
 		));
 	}
 
@@ -115,7 +115,7 @@ class ConfigurationServices extends ServicesBase {
 		if (count($this->path) == 1) {
 			$this->response()->success(array(
 				"users" => $this->env->configuration()->getAllUsers(),
-				"groups" => $this->env->features()->isFeatureEnabled("user_groups") ? $this->env->configuration()->getAllUserGroups() : array()
+				"groups" => $this->env->features()->isFeatureEnabled("user_groups") ? $this->env->configuration()->getAllUserGroups() : array(),
 			));
 			return;
 		}
@@ -246,13 +246,13 @@ class ConfigurationServices extends ServicesBase {
 			$userId = $this->path[1];
 
 			switch ($this->path[2]) {
-					// user/xx/groups
+				// user/xx/groups
 				case 'groups':
 					$groups = $this->request->data;
 					$this->response()->success($this->env->configuration()->addUsersGroups($userId, $groups));
 					return;
 
-					// user/xx/folders
+				// user/xx/folders
 				case 'folders':
 					$folder = $this->request->data;
 					if (!is_array($folder) and !isset($folder['id'])) {
@@ -326,7 +326,7 @@ class ConfigurationServices extends ServicesBase {
 			$userId = $this->path[1];
 
 			switch ($this->path[2]) {
-					// users/xx/password
+				// users/xx/password
 				case 'password':
 					$this->env->features()->assertFeature("change_password");
 					if (!$this->env->permissions()->hasPermission("change_password")) {
@@ -762,7 +762,7 @@ class ConfigurationServices extends ServicesBase {
 		$folder = $roots[$id];
 
 		if ($this->request->hasParam("delete") and strcasecmp("true", $this->request->param("delete")) == 0) {
-			$this->env->filesystem()->delete($folder);
+			$this->env->filesystem()->deleteRoot($folder, TRUE);
 		}
 
 		$this->env->configuration()->removeFolder($id);
