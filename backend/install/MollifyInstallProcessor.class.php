@@ -228,18 +228,21 @@ class MollifyInstallProcessor {
 
 	public function installPlugins($util) {
 		$allPlugins = $this->plugins()->getPlugins();
+		$customPath = $this->resources()->getCustomizationsPath();
+		$settings = $this->settings()->setting("plugins");
 
 		foreach ($allPlugins as $id => $p) {
 			if ($p->version() == NULL) {
 				continue;
 			}
+			$ps = $settings[$id];
+			$custom = (isset($ps["custom"]) and $ps["custom"] == TRUE);
 
-			$util->execPluginCreateTables($id);
+			$util->execPluginCreateTables($id, ($custom ? $customPath : NULL));
 		}
 	}
 
 	public function createAdminUser($name, $pw) {
-
 		$id = $this->configuration()->addUser($name, NULL, NULL, Authentication::USER_TYPE_ADMIN, NULL);
 		$this->configuration()->storeUserAuth($id, $name, NULL, $pw, TRUE);
 	}

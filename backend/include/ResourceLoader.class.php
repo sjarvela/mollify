@@ -85,6 +85,10 @@ class ResourceLoader {
 		require_once $cls;
 	}
 
+	public function getCustomizationsPath() {
+		return $this->getCustomizationsAbsoluteLocation("");
+	}
+
 	public function getCustomPluginUrl($id, $path) {
 		if ($this->customizationsFolder == NULL) {
 			throw new ServiceException("INVALID_CONFIGURATION", "Cannot resolve custom plugin URL, no customization folder URL defined");
