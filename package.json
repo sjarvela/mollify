@@ -1,8 +1,8 @@
 {
     "name": "mollify"
   , "description": "Mollify"
-  , "version": "2.6.2"
-  , "revision": "14"
+  , "version": "2.6.3"
+  , "revision": "15"
   , "keywords": ["mollify"]
   , "homepage": "http://www.mollify.org/"
   , "author": "Samuli Järvelä"

@@ -762,7 +762,7 @@ class ConfigurationServices extends ServicesBase {
 		$folder = $roots[$id];
 
 		if ($this->request->hasParam("delete") and strcasecmp("true", $this->request->param("delete")) == 0) {
-			$this->env->filesystem()->deleteRoot($folder, TRUE);
+			$this->env->filesystem()->delete($folder, TRUE);
 		}
 
 		$this->env->configuration()->removeFolder($id);
