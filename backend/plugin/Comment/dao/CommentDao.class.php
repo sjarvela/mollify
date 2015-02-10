@@ -97,7 +97,8 @@ class CommentDao {
 	}
 
 	public function cleanupItemIds($ids) {
-		$this->db->update(sprintf("DELETE FROM " . $this->db->table("comment") . " WHERE item_id in (%s)", $this->db->arrayString($ids, TRUE)));
+		$db = $this->env->db();
+		$db->update(sprintf("DELETE FROM " . $db->table("comment") . " WHERE item_id in (%s)", $db->arrayString($ids, TRUE)));
 	}
 
 	public function __toString() {

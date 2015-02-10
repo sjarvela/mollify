@@ -1,38 +1,35 @@
 <?php
 
-	/**
-	 * page_update.php
-	 *
-	 * Copyright 2008- Samuli Järvelä
-	 * Released under GPL License.
-	 *
-	 * License: http://www.mollify.org/license.php
-	 */
-	 
-	 include("install/installation_page.php");	 
+/**
+ * page_update.php
+ *
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
+ * Released under GPL License.
+ *
+ * License: http://www.mollify.org/license.php
+ */
+
+include "install/installation_page.php";
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
-	<?php pageHeader("Mollify Update", "init"); ?>
-	
-	<body id="page-mysql-update-needed">
-		<?php pageBody("Update", "Database Update"); ?>
-		<div class="content">
-			<p>
-				<?php echo $installer->updateSummary(); ?>
-			</p>
-			<p>
-				Click "Update" to start update.
-			</p>
-			<p>
-				<a id="button-update" href="#" class="btn green">Update</a>
-			</p>
-		</div>
-		<?php pageFooter(); ?>
-	</body>
-	
+	<?php pageHeader("Mollify Update", "init");?>
+	<?php pageBody("Database Update");?>
+
+	<p>
+		<?php echo $installer->updateSummary();?>
+	</p>
+	<p>
+		Click "Update" to start update.
+	</p>
+	<p>
+		<a id="button-update" href="#" class="btn btn-success">Update</a>
+	</p>
+
+	<?php pageFooter();?>
+
 	<script type="text/javascript">
 		function init() {
 			$("#button-update").click(function() {
