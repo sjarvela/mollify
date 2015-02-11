@@ -3,4 +3,4 @@ mollify
 
 Web document management and sharing platform
 
-Visit project page: http://www.mollify.org/
+For features, downloads, screenshots etc, visit project page: http://www.mollify.org/
