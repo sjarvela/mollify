@@ -590,22 +590,7 @@ class ConfigurationServices extends ServicesBase {
 
 	private function processGetFolders() {
 		if (count($this->path) == 1) {
-			$list = $this->env->configuration()->getFolders();
-			$root = $this->env->settings()->setting("published_folders_root");
-
-			if ($root != NULL) {
-				$root = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-				$i = 0;
-				foreach ($list as $f) {
-					if (strpos($f["path"], $root) == 0) {
-						$list[$i]["path"] = substr($f["path"], strlen($root));
-					}
-
-					$i++;
-				}
-			}
-
-			$this->response()->success($list);
+			$this->response()->success($this->getAllFolders());
 			return;
 		}
 		$folderId = $this->path[1];
@@ -619,6 +604,24 @@ class ConfigurationServices extends ServicesBase {
 		}
 
 		throw $this->invalidRequestException();
+	}
+
+	private function getAllFolders() {
+		$list = $this->env->configuration()->getFolders();
+		$root = $this->env->settings()->setting("published_folders_root");
+
+		if ($root != NULL) {
+			$root = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+			$i = 0;
+			foreach ($list as $f) {
+				if (strpos($f["path"], $root) == 0) {
+					$list[$i]["path"] = substr($f["path"], strlen($root));
+				}
+
+				$i++;
+			}
+		}
+		return $list;
 	}
 
 	private function processPostFolders() {
@@ -673,16 +676,24 @@ class ConfigurationServices extends ServicesBase {
 			switch ($this->path[2]) {
 				case 'users':
 					$this->env->configuration()->addFolderUsers($id, $users);
-					$this->response()->success(TRUE);
+					$this->response()->success($this->getSessionFolderInfo());
 					return;
 				case 'remove_users':
 					$this->env->configuration()->removeFolderUsers($id, $users);
-					$this->response()->success(TRUE);
+					$this->response()->success($this->getSessionFolderInfo());
 					return;
 			}
 		}
 
 		throw $this->invalidRequestException();
+	}
+
+	private function getSessionFolderInfo() {
+		$si = $this->env->filesystem()->getSessionInfo();
+		return array(
+			"folders" => $si["folders"],
+			"roots" => $si["roots"],
+		);
 	}
 
 	private function processPutFolders() {
@@ -768,7 +779,7 @@ class ConfigurationServices extends ServicesBase {
 		$this->env->configuration()->removeFolder($id);
 
 		$this->env->events()->onEvent(FileEvent::delete($folder));
-		$this->response()->success(TRUE);
+		$this->response()->success($this->getSessionFolderInfo());
 
 	}
 

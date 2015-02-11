@@ -1386,12 +1386,15 @@
                                 title: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationTitle"),
                                 message: mollify.ui.texts.get("configAdminFoldersRemoveFolderConfirmationMessage", [f.name]),
                                 options: {
-                                	deleteContents: mollify.ui.texts.get("configAdminFoldersRemoveFolderContentConfirmation")
+                                    deleteContents: mollify.ui.texts.get("configAdminFoldersRemoveFolderContentConfirmation")
                                 },
                                 callback: function(opts) {
-                                	var p = "configuration/folders/" + f.id;
-                                	if (opts.deleteContents) p += '?delete=true'
-                                    mollify.service.del(p).done(updateFolders);
+                                    var p = "configuration/folders/" + f.id;
+                                    if (opts.deleteContents) p += '?delete=true'
+                                    mollify.service.del(p).done(function(f) {
+                                        mollify.filesystem.updateRoots(f.folders, f.roots);
+                                        updateFolders();
+                                    });
                                 }
                             });
                         }
@@ -1466,7 +1469,10 @@
                     }],
                     list: selectable,
                     onSelect: function(sel, o) {
-                        mollify.service.post("configuration/folders/" + f.id + "/users/", mollify.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
+                        mollify.service.post("configuration/folders/" + f.id + "/users/", mollify.helpers.extractValue(sel, "id")).done(function(f) {
+                            mollify.filesystem.updateRoots(f.folders, f.roots);
+                            updateUsersAndGroups()
+                        });
                     }
                 });
             }
@@ -1483,7 +1489,10 @@
                     cls: "btn-danger",
                     depends: "table-selection",
                     callback: function(sel) {
-                        mollify.service.post("configuration/folders/" + f.id + "/remove_users/", mollify.helpers.extractValue(sel, "id")).done(updateUsersAndGroups);
+                        mollify.service.post("configuration/folders/" + f.id + "/remove_users/", mollify.helpers.extractValue(sel, "id")).done(function(f) {
+                            mollify.filesystem.updateRoots(f.folders, f.roots);
+                            updateUsersAndGroups();
+                        });
                     }
                 }],
                 table: {

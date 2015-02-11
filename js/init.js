@@ -425,6 +425,10 @@ var mollifyDefaults = {
         mollify.filesystem.allRoots = false;
         mollify.filesystem.rootsById = {};
 
+        mfs.updateRoots(f, allRoots);
+    };
+
+    mfs.updateRoots = function(f, allRoots) {
         if (f && mollify.session.user) {
             mollify.filesystem.roots = f.sort(function(a, b) {
                 return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
