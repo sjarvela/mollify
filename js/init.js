@@ -15,7 +15,6 @@ var mollifyDefaults = {
     "view-url": false,
     "app-element-id": "mollify",
     "service-path": "backend/",
-    "limited-http-methods": false,
     "file-view": {
         "create-empty-file-action": false,
         "default-view-mode": false,
@@ -78,7 +77,7 @@ var mollifyDefaults = {
         mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
         mollify.settings = $.extend(true, {}, mollifyDefaults, s);
-        mollify.service.init(mollify.settings["limited-http-methods"]);
+        mollify.service.init(false);
 
         mollify.plugins.register(new mollify.plugin.Core());
         mollify.plugins.register(new mollify.plugin.PermissionsPlugin());
@@ -152,6 +151,8 @@ var mollifyDefaults = {
         var onError = function() {
             new mollify.ui.FullErrorView('Failed to initialize Mollify').show();
         };
+
+        mollify.service.init(s.features['limited_http_methods']);
 
         mollify.plugins.load(s.plugins).done(function() {
             mollify.filesystem.init(mollify.session.data.folders, ((mollify.session.user && mollify.session.user.admin) ? mollify.session.data.roots : false));
