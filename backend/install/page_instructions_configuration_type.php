@@ -25,7 +25,7 @@ global $CONFIGURATION;
 			<div class="bs-callout bs-callout-danger">
 				<h4>Database configuration is not valid.</h4>
 				<p>
-					Database type "<code><?php echo ($CONFIGURATION["db"]["type"]);?></code>" is invalid. For more information, see <a href="https://code.google.com/p/mollify/wiki/Installation" target="_blank">installation instructions</a>.
+					Database type "<code><?php echo ($CONFIGURATION["db"]["type"]);?></code>" is invalid. For more information, see <a href="https://github.com/sjarvela/mollify/wiki/Installation" target="_blank">installation instructions</a>.
 				</p>
 			</div>
 		</p>
@@ -56,7 +56,7 @@ global $CONFIGURATION;
 			<li>"<code>pdo</code>" for PDO (supports MySQL and SQLite)</li>
 		</ul>
 
-		When this is added, click "Continue". For more information about the installation, see <a href="https://code.google.com/p/mollify/wiki/Installation" target="_blank">installation instructions</a>.
+		When this is added, click "Continue". For more information about the installation, see <a href="https://github.com/sjarvela/mollify/wiki/Installation" target="_blank">installation instructions</a>.
 
 	</p>
 

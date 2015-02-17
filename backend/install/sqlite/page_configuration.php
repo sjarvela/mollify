@@ -30,7 +30,7 @@ include "install/installation_page.php";
 	<p>
 		Installer needs the SQLite database file location set in "<code>configuration.php</code>":
 
-		For more information, see <a href="https://code.google.com/p/mollify/wiki/Installation">Installation instructions</a>.
+		For more information, see <a href="https://github.com/sjarvela/mollify/wiki/Installation">Installation instructions</a>.
 	</p>
 
 	<p>

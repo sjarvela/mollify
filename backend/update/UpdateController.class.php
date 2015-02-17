@@ -105,7 +105,7 @@ class UpdateController {
 		}
 
 		if (!in_array($current, $versionHistory)) {
-			$this->installer->processor()->setError("Updater error", "Mollify updater does not contain the update required to update to current version, report a new updater issue at <a href='http://code.google.com/p/mollify/issues/list'>issue list</a>");
+			$this->installer->processor()->setError("Updater error", "Mollify updater does not contain the update required to update to current version, <a href='https://github.com/sjarvela/mollify/issues'>report a new updater issue</a>");
 			$this->installer->processor()->showPage("update_error");
 		}
 

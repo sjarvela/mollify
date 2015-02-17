@@ -38,7 +38,7 @@ include "installation_page.php";
 		To begin with the installation process, create configuration file called "<code>configuration.php</code>" in the Mollify backend directory. Example configuration files can be found from <code>backend/example</code>.
 	</p>
 	<p>
-		Alternatively, you can create full configuration based on <a href="https://code.google.com/p/mollify/wiki/Installation">Installation instructions</a>.
+		Alternatively, you can create full configuration based on <a href="https://github.com/sjarvela/mollify/wiki/Installation">Installation instructions</a>.
 	</p>
 	<p>
 		<a href="javascript: action('retry')" class="btn btn-success">Continue</a>

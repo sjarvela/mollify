@@ -41,7 +41,7 @@ include "install/installation_page.php";
 			<li>Charset (optional)</li>
 		</ul>
 
-		For more information, see <a href="https://code.google.com/p/mollify/wiki/Installation">Installation instructions</a>.
+		For more information, see <a href="https://github.com/sjarvela/mollify/wiki/Installation">Installation instructions</a>.
 	</p>
 	<p>
 		An example configuration:

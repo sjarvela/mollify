@@ -24,7 +24,7 @@ include "install/installation_page.php";
 		You can now log into Mollify using the admin account created.
 	</p>
 	<p>
-		For additional configuration options or instructions, see <a href="https://code.google.com/p/mollify/wiki/Installation" target="_blank">Installation instructions</a>.
+		For additional configuration options or instructions, see <a href="https://github.com/sjarvela/mollify/wiki/Installation" target="_blank">Installation instructions</a>.
 	</p>
 
 	<?php pageFooter();?>
