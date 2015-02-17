@@ -13,18 +13,25 @@ class Settings {
 	private $settings = array();
 
 	private static $VALUES = array(
-		"server_hash_salt" => "MOLLIFY_SERVER_SALT",
 		"db" => FALSE,
 		"plugins" => FALSE,
-		"email_login" => FALSE,
+
 		"host_public_address" => NULL,
 		"session_name" => NULL,
 		"session_time" => 7200,
 		"timezone" => NULL,
+
 		"enable_change_password" => TRUE,
-		"enable_descriptions" => FALSE,
+		"enable_descriptions" => TRUE,
 		"enable_mail_notification" => FALSE,
+		"enable_limited_http_methods" => FALSE,
 		"enable_retrieve_url" => FALSE,
+		"enable_thumbnails" => FALSE,
+		"enable_folder_protection" => FALSE,
+		"enable_guest_mode" => FALSE,
+
+		"server_hash_salt" => "MOLLIFY_SERVER_SALT",
+		"email_login" => FALSE,
 		"allowed_file_upload_types" => array(),
 		"forbidden_file_upload_types" => array(),
 		"firebug_logging" => FALSE,
@@ -46,9 +53,6 @@ class Settings {
 		"ldap_bind_dn" => NULL,
 		"ldap_bind_pw" => NULL,
 		"upload_temp_dir" => NULL,
-		"enable_thumbnails" => TRUE,
-		"enable_folder_protection" => FALSE,
-		"enable_guest_mode" => FALSE,
 		"guest_user_id" => FALSE,
 		"debug" => FALSE,
 		"debug_log" => NULL,
