@@ -15,6 +15,7 @@ var mollifyDefaults = {
     "view-url": false,
     "app-element-id": "mollify",
     "service-path": "backend/",
+    "service-param": false,
     "file-view": {
         "create-empty-file-action": false,
         "default-view-mode": false,
@@ -77,7 +78,7 @@ var mollifyDefaults = {
         mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
         mollify.settings = $.extend(true, {}, mollifyDefaults, s);
-        mollify.service.init(false);
+        mollify.service.init(false, mollify.settings["service-param"]);
 
         mollify.plugins.register(new mollify.plugin.Core());
         mollify.plugins.register(new mollify.plugin.PermissionsPlugin());
@@ -325,13 +326,15 @@ var mollifyDefaults = {
     /* SERVICE */
     var st = mollify.service;
 
-    st.init = function(limitedHttpMethods) {
+    st.init = function(limitedHttpMethods, serviceParam) {
         st._limitedHttpMethods = !!limitedHttpMethods;
+        st._serviceParam = !!serviceParam;
     };
 
     st.url = function(u, full) {
         if (u.startsWith('http')) return u;
-        var url = mollify.settings["service-path"] + "r.php/" + u;
+        var url = mollify.settings["service-path"] + "r.php";
+        url = url + (st._serviceParam ? ("?sp=" + u) : ("/" + u));
         if (!full) return url;
         return mollify.App.baseUrl + url;
     };
