@@ -134,6 +134,7 @@
 		"fileItemDetailsGroupFile": "Fichier",
 		"fileItemContextDataName": "Nom",
 		"fileItemContextDataPath": "Chemin",
+		"fileItemContextDataCreated": "Création",
 		"fileItemContextDataSize": "Taille du fichier",
 		"fileItemContextDataExtension": "Extension",
 		"fileItemContextDataLastModified": "Dernière modification",
