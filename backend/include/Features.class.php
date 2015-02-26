@@ -12,7 +12,7 @@
 class Features {
 	private $features = array(
 		"limited_http_methods" => FALSE,
-		"change_password" => FALSE,
+		"change_password" => TRUE,
 		"descriptions" => TRUE,
 		"user_groups" => TRUE,
 		"mail_notification" => FALSE,
