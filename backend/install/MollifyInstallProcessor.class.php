@@ -203,6 +203,11 @@ class MollifyInstallProcessor {
 		return $path . "page_" . $page . ".php";
 	}
 
+	public function getScriptRootPath() {
+		// get root folder (second parent for installer)
+		return dirname(dirname(dirname($_SERVER['SCRIPT_FILENAME'])));
+	}
+
 	public function showPage($page) {
 		$page = $this->getPagePath($page);
 		Logging::logDebug("Opening page: " . $page . " " . ($this->hasError() ? "(error=" . $this->error . ")" : ""));
