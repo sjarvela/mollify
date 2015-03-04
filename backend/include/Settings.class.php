@@ -60,7 +60,8 @@ class Settings {
 		"published_folders_root" => NULL,
 		"customizations_folder" => NULL,
 		"customizations_folder_url" => NULL,
-		"no_udev_random" => FALSE,
+		"no_udev_random" => FALSE, //typo in name, remove later
+		"no_dev_urandom" => FALSE,
 		"client_page" => NULL,
 	);
 
