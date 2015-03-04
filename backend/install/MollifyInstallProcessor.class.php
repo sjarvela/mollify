@@ -205,7 +205,7 @@ class MollifyInstallProcessor {
 
 	public function getScriptRootPath() {
 		// get root folder (parent for installer)
-		return dirname(dirname($_SERVER['SCRIPT_FILENAME']));
+		return dirname(dirname($_SERVER['SCRIPT_FILENAME'])) . DIRECTORY_SEPARATOR;
 	}
 
 	public function showPage($page) {

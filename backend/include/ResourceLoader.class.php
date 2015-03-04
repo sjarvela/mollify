@@ -52,7 +52,7 @@ class ResourceLoader {
 		}
 
 		$root = $this->env->getScriptRootPath();
-		return $this->truepath($root . DIRECTORY_SEPARATOR . $this->customizationsFolder . DIRECTORY_SEPARATOR . $file);
+		return $this->truepath($root . DIRECTORY_SEPARATOR . $this->customizationsFolder) . DIRECTORY_SEPARATOR . $file;
 	}
 
 	private function loadTextFile($file) {
