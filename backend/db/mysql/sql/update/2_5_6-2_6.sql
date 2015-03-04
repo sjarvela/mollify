@@ -1,7 +1,7 @@
 UPDATE `{TABLE_PREFIX}parameter` SET value = '2_6' WHERE name = 'version';
 
 CREATE TABLE `{TABLE_PREFIX}metadata` (
-  `item_id` char(255) NOT NULL,
+  `item_id` char(32) NOT NULL,
   `md_key` char(128) NOT NULL,
   `md_value` varchar(512) NULL,
   PRIMARY KEY (`item_id`, `md_key`)

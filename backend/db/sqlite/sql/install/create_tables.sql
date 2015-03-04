@@ -81,7 +81,7 @@ CREATE TABLE session_data (
   FOREIGN KEY(session_id) REFERENCES session(id)
 );
 CREATE TABLE metadata (
-  item_id char(255) NOT NULL,
+  item_id char(32) NOT NULL,
   md_key char(128) NOT NULL,
   md_value varchar(512) NULL,
   PRIMARY KEY (item_id, md_key)
