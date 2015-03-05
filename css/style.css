@@ -653,6 +653,12 @@ li#mollify-folder-hierarchy-item-root a.dropdown-toggle {
 .mollify-iconview.iconview-small .mollify-iconview-item-icon {
     background: url(images/mimetypes64/empty.png) no-repeat 4px 7px;
 }
+.mollify-iconview-item.item-type-pdf .mollify-iconview-item-icon {
+    background: url(images/mimetypes128/pdf.png) no-repeat 24px 7px;
+}
+.mollify-iconview.iconview-small .mollify-iconview-item.item-type-pdf .mollify-iconview-item-icon {
+    background: url(images/mimetypes64/pdf.png) no-repeat 4px 7px;
+}
 .mollify-iconview-item-label {
     width: 100%;
     text-overflow: ellipsis;
