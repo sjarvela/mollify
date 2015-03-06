@@ -23,16 +23,18 @@ class ItemCollectionDao {
 			$userCriteria = "and user_id=" . $db->string($userId, TRUE);
 		}
 
-		$list = $db->query("select ic.id as id, ic.name as name, ici.item_id as item_id from " . $db->table("itemcollection") . " ic," . $db->table("itemcollection_item") . " ici where ic.id = " . $db->string($id, TRUE) . " and ici.collection_id = ic.id " . $userCriteria . " order by ici.item_index asc")->rows();
-		if (count($list) == 0) {
+		$collections = $db->query("select id, name from " . $db->table("itemcollection") . " where id = " . $db->string($id, TRUE) . " " . $userCriteria)->rows();
+		if (count($collections) != 1) {
 			return FALSE;
 		}
+		$collection = $collections[0];
 
+		$list = $db->query("select item_id from " . $db->table("itemcollection_item") . " where collection_id = " . $db->string($id, TRUE) . " order by item_index asc")->rows();
 		$items = array();
 		foreach ($list as $c) {
 			$items[] = $c["item_id"];
 		}
-		return array("id" => $list[0]["id"], "name" => $list[0]["name"], "items" => $items);
+		return array("id" => $collection["id"], "name" => $collection["name"], "items" => $items);
 	}
 
 	public function getUserItemCollections($userId) {

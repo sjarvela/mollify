@@ -3,7 +3,7 @@
 /**
  * ItemCollectionServices.class.php
  *
- * Copyright 2008- Samuli Järvelä
+ * Copyright 2008- Samuli JÃ¤rvelÃ¤
  * Released under GPL License.
  *
  * License: http://www.mollify.org/license.php
@@ -71,6 +71,9 @@ class ItemCollectionServices extends ServicesBase {
 
 	private function getItems($ids) {
 		$result = array();
+		if ($ids == NULL or count($ids) == 0) {
+			return $result;
+		}
 
 		foreach ($ids as $itemId) {
 			$i = $this->env->filesystem()->item($itemId);
@@ -153,7 +156,7 @@ class ItemCollectionServices extends ServicesBase {
 
 			$result = array(
 				"ic" => $cc,
-				"data" => $this->env->filesystem()->getRequestData(NULL, $this->getItems($ic["items"]), $data["rq_data"])
+				"data" => $this->env->filesystem()->getRequestData(NULL, $this->getItems($ic["items"]), $data["rq_data"]),
 			);
 			$this->response()->success($result);
 			return;
