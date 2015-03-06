@@ -93,7 +93,7 @@ CREATE TABLE `{TABLE_PREFIX}session_data` (
 ) ENGINE = '{ENGINE}' COLLATE utf8_general_ci COMMENT = 'Mollify session data';
 
 CREATE TABLE `{TABLE_PREFIX}metadata` (
-  `item_id` char(255) NOT NULL,
+  `item_id` char(32) NOT NULL,
   `md_key` char(128) NOT NULL,
   `md_value` varchar(512) NULL,
   PRIMARY KEY (`item_id`, `md_key`)
