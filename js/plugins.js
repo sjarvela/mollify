@@ -3119,7 +3119,7 @@
             that.d = mollify.ui.controls.dynamicBubble({
                 element: cell,
                 title: item.name,
-                container: $("#mollify-filelist-main-items")
+                container: $("#mollify-filelist-main")
             });
 
             mollify.templates.load("shares-content", mollify.helpers.noncachedUrl(mollify.plugins.url("Share", "content.html"))).done(function() {
