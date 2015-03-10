@@ -12,7 +12,7 @@ var mollifyDefaults = {
         "default": "en",
         "options": ["en"]
     },
-    "view-url": false,
+    "view-url": true,
     "app-element-id": "mollify",
     "service-path": "backend/",
     "service-param": false,
