@@ -115,14 +115,14 @@ class FilesystemController {
 		$this->metadata->set($item, "created_by", $u);
 	}
 
-	public function getCreatedMetadataInfo($item) {
+	public function getCreatedMetadataInfo($item, $raw = FALSE) {
 		$at = $this->metadata->get($item, "created");
 		if ($at == NULL) {
 			return NULL;
 		}
 
 		$by = $this->metadata->get($item, "created_by");
-		if ($by != NULL) {
+		if ($by != NULL and !$raw) {
 			$user = $this->env->configuration()->getUser($by);
 			if ($user == NULL) {
 				$by = NULL;
@@ -741,7 +741,8 @@ class FilesystemController {
 		$this->assertRights($to, self::PERMISSION_LEVEL_READWRITE, "move");
 
 		$overwrite = $this->env->request()->hasData("overwrite") ? ($this->env->request()->data("overwrite") == 1) : FALSE;
-		$replace = ($overwrite or $this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to)));
+		$version = ($this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to)));
+		$replace = ($overwrite or $version);
 
 		if ($item->isFile()) {
 			if ($to->fileExists($item->name())) {
@@ -769,10 +770,22 @@ class FilesystemController {
 				$this->doDeleteItem($target); // "hard-delete", remove also meta-data
 			}
 		}
-		$to = $item->move($to);
 
-		$this->env->events()->onEvent(FileEvent::move($item, $to, $replace));
-		$this->idProvider->move($item, $to);
+		$moved = $item->move($to);
+		if (!$version) {
+			$this->env->events()->onEvent(FileEvent::move($item, $moved, $replace));
+			$this->idProvider->move($item, $moved);
+		} else {
+			//when versioning, "move" only created metadata and remove original item's other data
+			$target = $to->fileWithName($item->name());
+
+			$meta = $this->getCreatedMetadataInfo($item, TRUE);
+			if ($meta != NULL) {
+				$this->setCreatedMetadata($target, $meta["at"], $meta["by"]);
+			}
+
+			$this->doDeleteItem($item, TRUE, TRUE, FALSE); // "hard-delete", remove also meta-data
+		}
 	}
 
 	public function moveItems($items, $to) {
@@ -793,7 +806,6 @@ class FilesystemController {
 				throw new ServiceException("INVALID_REQUEST", "Cannot move root folder:" . $item->id());
 			}
 
-			//TODO support overwrite?
 			if ($item->isFile()) {
 				if ($to->fileExists($item->name())) {
 					$replace = ($this->env->plugins()->hasPlugin("History") and $this->env->plugins()->getPlugin("History")->isItemActionVersioned($item, FileEvent::MOVE, array("to" => $to)));
@@ -834,6 +846,7 @@ class FilesystemController {
 			return;
 		}
 
+		//TODO versioning?
 		$new = array();
 		$targets = array();
 		foreach ($items as $item) {
@@ -878,8 +891,10 @@ class FilesystemController {
 		$this->doDeleteItem($item);
 	}
 
-	private function doDeleteItem($item, $sendEvent = TRUE, $removeId = TRUE) {
-		$item->delete();
+	private function doDeleteItem($item, $sendEvent = TRUE, $removeId = TRUE, $removeFile = TRUE) {
+		if ($removeFile) {
+			$item->delete();
+		}
 
 		$this->env->permissions()->removeFilesystemPermissions($item);
 
@@ -890,7 +905,6 @@ class FilesystemController {
 		if ($removeId) {
 			$this->idProvider->delete($item);
 		}
-
 	}
 
 	public function deleteItems($items) {
