@@ -78,6 +78,9 @@ var mollifyDefaults = {
         mollify.App.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
         mollify.settings = $.extend(true, {}, mollifyDefaults, s);
+        // don't merge file list columns
+        if (s["file-view"]["file-list-columns"]) mollify.settings["file-view"]["file-list-columns"] = s["file-view"]["file-list-columns"];
+
         mollify.service.init(false, mollify.settings["service-param"]);
 
         mollify.plugins.register(new mollify.plugin.Core());
