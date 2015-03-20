@@ -89,7 +89,7 @@ class MollifyInstallProcessor {
 
 	public function registerItemCleanupHandler($p) {}
 
-	public function registerPermission($p, $v) {}
+	public function registerPermission($p, $v = NULL) {}
 
 	public function onError($e) {
 		Logging::logException($e);
